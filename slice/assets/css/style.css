@@ -1,0 +1,113 @@
+/* Custom CSS for Mazaq Al Cinema */
+/* Use Tailwind utilities primarily, only custom styles here if needed */
+body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Web Design Guidelines */
+html {
+    color-scheme: light;
+}
+html.dark {
+    color-scheme: dark;
+}
+
+/* Touch & Interaction */
+a, button, input, select, textarea {
+    touch-action: manipulation;
+}
+
+/* Accessibility: Focus States */
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+    outline: 2px solid #D4AF37; /* cinematic gold */
+    outline-offset: 2px;
+}
+
+/* Typography Balance */
+h1, h2, h3, h4, h5, h6 {
+    text-wrap: balance;
+}
+
+p, li {
+    text-wrap: pretty;
+}
+
+/* Base transitions */
+.transition-smooth {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1; /* tailwind slate-300 */
+    border-radius: 4px;
+}
+.dark ::-webkit-scrollbar-thumb {
+    background-color: #475569; /* tailwind slate-600 */
+}
+
+/* Reading Progress Bar */
+#reading-progress-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    z-index: 9999;
+}
+#reading-progress-bar {
+    height: 100%;
+    background-color: #D4AF37; /* Cinematic Gold */
+    width: 0%;
+    transition: width 0.1s ease-out;
+}
+
+/* Lazy Load Image Placeholder */
+.lazy-image {
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+}
+.lazy-image.loaded {
+    opacity: 1;
+}
+
+/* Google Ad Container Placeholder */
+.ad-container {
+    background-color: #f1f5f9; /* slate-100 */
+    border: 1px dashed #cbd5e1; /* slate-300 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8; /* slate-400 */
+    font-size: 0.875rem;
+    overflow: hidden;
+    margin: 2rem 0;
+}
+.dark .ad-container {
+    background-color: #0f172a; /* slate-900 */
+    border-color: #334155; /* slate-700 */
+    color: #64748b; /* slate-500 */
+}
+
+/* Article specific styling to override if necessary */
+.article-content p {
+    margin-bottom: 1.5rem;
+    line-height: 2;
+}
+.article-content h2 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+    color: #1e293b;
+}
+.dark .article-content h2 {
+    color: #f8fafc;
+}
