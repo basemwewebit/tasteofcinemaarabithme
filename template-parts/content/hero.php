@@ -1,13 +1,6 @@
 <?php
-$hero_post_id = function_exists('get_field') ? (int) get_field('hero_featured_post', 'option') : 0;
-if (!$hero_post_id) {
-    $sticky = get_option('sticky_posts');
-    $hero_post_id = !empty($sticky) ? (int) $sticky[0] : 0;
-}
-if (!$hero_post_id) {
-    $latest = get_posts(['post_type' => 'post', 'posts_per_page' => 1, 'fields' => 'ids']);
-    $hero_post_id = !empty($latest) ? (int) $latest[0] : 0;
-}
+$hero_post_id = mazaq_get_hero_post_id();
+
 if (!$hero_post_id) {
     return;
 }

@@ -96,3 +96,17 @@ function mazaq_balance_content_tags(string $content): string
     return force_balance_tags($content);
 }
 add_filter('the_content', 'mazaq_balance_content_tags', 999);
+
+function mazaq_get_hero_post_id(): int
+{
+    $hero_post_id = function_exists('get_field') ? (int) get_field('hero_featured_post', 'option') : 0;
+    if ($hero_post_id === 0) {
+        $sticky = get_option('sticky_posts');
+        $hero_post_id = !empty($sticky) ? (int) $sticky[0] : 0;
+    }
+    if ($hero_post_id === 0) {
+        $latest = get_posts(['post_type' => 'post', 'posts_per_page' => 1, 'fields' => 'ids']);
+        $hero_post_id = !empty($latest) ? (int) $latest[0] : 0;
+    }
+    return $hero_post_id;
+}

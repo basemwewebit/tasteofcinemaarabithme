@@ -20,17 +20,31 @@
                     'post_status' => 'publish',
                     'posts_per_page' => 6,
                     'paged' => 1,
+                    'post__not_in' => [mazaq_get_hero_post_id()],
                 ]);
 
                 if ($query->have_posts()) :
                     $index = 1;
+                    $paged = get_query_var('paged') ? get_query_var('paged') : 1;
                     while ($query->have_posts()) :
                         $query->the_post();
+                        
+                        $global_index = (($paged - 1) * 6) + $index;
+                        
+                        // Inject Ad when global index is a multiple of 8
+                        // We check $global_index % 8 == 1 to show it AFTER the 8th item, or just use 0 depending on the logic.
+                        // Actually if we want an ad every 8 posts, and index is 1-based, we can output the ad BEFORE the 9th post (i.e. global_index % 8 === 1 && global_index > 1) or AFTER the 8th post (output ad after the template part)
+                        
+                        if ($global_index > 1 && ($global_index - 1) % 8 === 0) {
+                            get_template_part('template-parts/ads/ad-grid');
+                        }
+
                         if ($index % 3 === 0) {
                             get_template_part('template-parts/content/card-wide');
                         } else {
                             get_template_part('template-parts/content/card');
                         }
+                        
                         $index++;
                     endwhile;
                     wp_reset_postdata();

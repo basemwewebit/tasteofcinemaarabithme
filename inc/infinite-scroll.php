@@ -12,13 +12,27 @@ function mazaq_ajax_load_more_posts(): void
         'post_status' => 'publish',
         'paged' => $page,
         'posts_per_page' => 6,
+        'post__not_in' => [mazaq_get_hero_post_id()],
     ]);
 
     ob_start();
     if ($query->have_posts()) {
+        $index = 1;
         while ($query->have_posts()) {
             $query->the_post();
-            get_template_part('template-parts/content/card');
+            
+            $global_index = (($page - 1) * 6) + $index;
+            
+            if ($global_index > 1 && ($global_index - 1) % 8 === 0) {
+                get_template_part('template-parts/ads/ad-grid');
+            }
+
+            if ($index % 3 === 0) {
+                get_template_part('template-parts/content/card-wide');
+            } else {
+                get_template_part('template-parts/content/card');
+            }
+            $index++;
         }
     }
     wp_reset_postdata();
