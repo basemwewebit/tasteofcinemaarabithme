@@ -34,6 +34,7 @@ if (!$og_image) {
             if(isDark){ document.documentElement.classList.add('dark'); }
         })();
     </script>
+    <meta name="google-adsense-account" content="ca-pub-8042646813554704">
     <?php wp_head(); ?>
 </head>
 <body <?php body_class('bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 transition-colors duration-300 antialiased font-sans'); ?>>
