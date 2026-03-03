@@ -168,6 +168,122 @@ jQuery(function ($) {
         });
     }
 
+    const adBlockPromptStorageKey = 'toc_adblock_prompt_dismissed_until';
+    const adBlockPrompts = {
+        friendly: {
+            title: 'وجودك معنا يفرق',
+            body: 'الإعلانات الخفيفة تساعدنا على الاستمرار في تقديم محتوى مجاني ومفيد. إذا رغبت، عطّل مانع الإعلانات لهذا الموقع.',
+            cta: 'دعم الموقع'
+        },
+        practical: {
+            title: 'ساعدنا نحافظ على المحتوى مجانيًا',
+            body: 'نعتمد على الإعلانات لتغطية تكاليف التحرير والاستضافة. أضف موقعنا إلى القائمة المسموح بها.',
+            cta: 'السماح بالإعلانات'
+        },
+        minimalist: {
+            title: 'المحتوى المجاني يحتاج دعمك',
+            body: 'رجاءً اسمح بالإعلانات لهذا الموقع.',
+            cta: 'تم'
+        }
+    };
+
+    function getMutedUntil() {
+        try {
+            return parseInt(localStorage.getItem(adBlockPromptStorageKey) || '0', 10);
+        } catch (e) {
+            return 0;
+        }
+    }
+
+    function mutePromptForDays(days) {
+        try {
+            const mutedUntil = Date.now() + (days * 24 * 60 * 60 * 1000);
+            localStorage.setItem(adBlockPromptStorageKey, String(mutedUntil));
+        } catch (e) {
+            // Ignore localStorage failures (private mode, blocked storage, etc.)
+        }
+    }
+
+    function isPromptMuted() {
+        const mutedUntil = getMutedUntil();
+        return Number.isFinite(mutedUntil) && mutedUntil > Date.now();
+    }
+
+    function pickPromptVariant() {
+        if (window.matchMedia('(max-width: 480px)').matches) {
+            return 'minimalist';
+        }
+        if (document.body.classList.contains('single')) {
+            return 'practical';
+        }
+        return 'friendly';
+    }
+
+    function renderAdBlockPrompt() {
+        if ($('#toc-adblock-prompt').length) {
+            return;
+        }
+
+        const promptCopy = adBlockPrompts[pickPromptVariant()] || adBlockPrompts.friendly;
+        const prompt = $(
+            '<aside id="toc-adblock-prompt" class="adblock-prompt" role="dialog" aria-live="polite" aria-label="دعم الموقع">' +
+                '<button type="button" class="adblock-prompt-close" aria-label="إغلاق الرسالة">&times;</button>' +
+                '<h3 class="adblock-prompt-title"></h3>' +
+                '<p class="adblock-prompt-body"></p>' +
+                '<button type="button" class="adblock-prompt-action"></button>' +
+            '</aside>'
+        );
+
+        prompt.find('.adblock-prompt-title').text(promptCopy.title);
+        prompt.find('.adblock-prompt-body').text(promptCopy.body);
+        prompt.find('.adblock-prompt-action').text(promptCopy.cta);
+
+        prompt.on('click', '.adblock-prompt-close', function () {
+            mutePromptForDays(3);
+            prompt.remove();
+        });
+
+        prompt.on('click', '.adblock-prompt-action', function () {
+            mutePromptForDays(14);
+            prompt.remove();
+        });
+
+        $('body').append(prompt);
+    }
+
+    function detectAdBlocker(callback) {
+        const bait = document.createElement('div');
+        bait.className = 'adsbox ad-banner ad-unit ad-zone';
+        bait.setAttribute('aria-hidden', 'true');
+        bait.style.position = 'absolute';
+        bait.style.left = '-9999px';
+        bait.style.top = '-9999px';
+        bait.style.width = '1px';
+        bait.style.height = '1px';
+        bait.style.pointerEvents = 'none';
+        document.body.appendChild(bait);
+
+        window.setTimeout(function () {
+            const computed = window.getComputedStyle(bait);
+            const blocked = (
+                bait.offsetWidth === 0 ||
+                bait.offsetHeight === 0 ||
+                computed.display === 'none' ||
+                computed.visibility === 'hidden'
+            );
+            bait.remove();
+            callback(blocked);
+        }, 120);
+    }
+
+    if (!isPromptMuted()) {
+        detectAdBlocker(function (isBlocked) {
+            if (isBlocked) {
+                renderAdBlockPrompt();
+            }
+        });
+    }
+
     $('.filter-btn').on('click', function () {
         const filterBtns = $('.filter-btn');
         filterBtns.removeClass('bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md').addClass('bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700');

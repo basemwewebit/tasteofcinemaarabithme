@@ -211,3 +211,98 @@ li {
 .dark .article-content blockquote {
     background-color: rgb(30 41 59);
 }
+
+.adblock-prompt {
+    position: fixed;
+    right: 1rem;
+    left: 1rem;
+    bottom: 1rem;
+    z-index: 90;
+    max-width: 28rem;
+    margin: 0 auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.9rem;
+    background-color: #ffffff;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.18);
+    padding: 1rem 1rem 0.9rem;
+}
+
+.dark .adblock-prompt {
+    background-color: #0f172a;
+    border-color: #334155;
+    box-shadow: 0 14px 32px rgba(2, 6, 23, 0.55);
+}
+
+.adblock-prompt-title {
+    margin: 0 0 0.45rem;
+    font-size: 1rem;
+    line-height: 1.6;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.dark .adblock-prompt-title {
+    color: #f8fafc;
+}
+
+.adblock-prompt-body {
+    margin: 0;
+    padding-left: 1.75rem;
+    font-size: 0.9rem;
+    line-height: 1.8;
+    color: #475569;
+}
+
+.dark .adblock-prompt-body {
+    color: #cbd5e1;
+}
+
+.adblock-prompt-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 0.85rem;
+    border: 0;
+    border-radius: 0.65rem;
+    background-color: #d4af37;
+    color: #111827;
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 0.5rem 0.85rem;
+    cursor: pointer;
+    transition: filter 0.2s ease;
+}
+
+.adblock-prompt-action:hover {
+    filter: brightness(0.95);
+}
+
+.adblock-prompt-close {
+    position: absolute;
+    top: 0.55rem;
+    left: 0.55rem;
+    width: 1.65rem;
+    height: 1.65rem;
+    border: 0;
+    border-radius: 9999px;
+    background: transparent;
+    color: #94a3b8;
+    font-size: 1.25rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.adblock-prompt-close:hover {
+    color: #64748b;
+}
+
+.dark .adblock-prompt-close {
+    color: #94a3b8;
+}
+
+@media (min-width: 640px) {
+    .adblock-prompt {
+        left: auto;
+        margin: 0;
+    }
+}
