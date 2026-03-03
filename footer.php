@@ -1,0 +1,41 @@
+<?php
+
+declare(strict_types=1);
+
+$social_twitter = function_exists('get_field') ? (string) get_field('social_twitter', 'option') : '';
+$social_website = function_exists('get_field') ? (string) get_field('social_website', 'option') : '';
+?>
+<footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 transition-colors pt-16 pb-8">
+    <div class="max-w-7xl mx-auto px-4">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+            <div class="md:col-span-2">
+                <a href="<?php echo esc_url(home_url('/')); ?>" class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white block mb-6">مذاق<span class="text-primary">السينما</span></a>
+                <p class="text-slate-600 dark:text-slate-400 max-w-sm leading-relaxed mb-6">مجلة رقمية تهتم بشؤون الفن السابع. مراجعات، قوائم، تحليلات وأخبار السينما العالمية نقربها للمشاهد العربي بأسلوب عصري وحيوي.</p>
+                <div class="flex items-center gap-4">
+                    <?php if ($social_twitter): ?>
+                        <a href="<?php echo esc_url($social_twitter); ?>" class="hover:text-primary transition-colors">Twitter</a>
+                    <?php endif; ?>
+                    <?php if ($social_website): ?>
+                        <a href="<?php echo esc_url($social_website); ?>" class="hover:text-primary transition-colors">Website</a>
+                    <?php endif; ?>
+                </div>
+            </div>
+            <div>
+                <h4 class="text-lg font-bold text-slate-900 dark:text-white mb-6">الأقسام</h4>
+                <?php wp_nav_menu(['theme_location' => 'footer-sections', 'container' => false, 'menu_class' => 'flex flex-col gap-3 text-slate-600 dark:text-slate-400 font-medium']); ?>
+            </div>
+            <div>
+                <h4 class="text-lg font-bold text-slate-900 dark:text-white mb-6">روابط هامة</h4>
+                <?php wp_nav_menu(['theme_location' => 'footer-links', 'container' => false, 'menu_class' => 'flex flex-col gap-3 text-slate-600 dark:text-slate-400 font-medium']); ?>
+            </div>
+        </div>
+
+        <div class="border-t border-slate-200 dark:border-slate-800 pt-8 flex flex-col md:flex-row items-center justify-between text-sm text-slate-500 font-mono text-center md:text-right">
+            <p>&copy; <?php echo esc_html((string) date('Y')); ?> مذاق السينما. جميع الحقوق محفوظة.</p>
+            <div class="mt-4 md:mt-0">تصميم وتطوير بأناقة وبساطة</div>
+        </div>
+    </div>
+</footer>
+<?php wp_footer(); ?>
+</body>
+</html>
