@@ -1,1 +1,5 @@
-<?php mazaq_render_ad('ad_slot_hero_banner', 'horizontal', 'col-span-1 md:col-span-2 w-full min-h-[90px] md:min-h-[120px] rounded-xl my-2 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 flex items-center justify-center overflow-hidden'); ?>
+<?php
+$slot = isset($args['slot']) ? $args['slot'] : 'ad_slot_hero_banner'; // Default slot
+mazaq_render_ad($slot, 'rectangle', 'col-span-1 w-full min-h-[300px] rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center overflow-hidden shadow-sm');
+?>
+

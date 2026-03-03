@@ -28,7 +28,16 @@ $bg_url = $bg_id ? wp_get_attachment_image_url($bg_id, 'full') : '';
 
 <main class="max-w-7xl mx-auto px-4 py-4 mb-20 flex-1 w-full">
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <?php if (have_posts()) : while (have_posts()) : the_post(); get_template_part('template-parts/content/card-category'); endwhile; else : ?>
+        <?php if (have_posts()) : 
+            $post_index = 0;
+            while (have_posts()) : the_post(); 
+                $post_index++;
+                get_template_part('template-parts/content/card-category'); 
+                if ($post_index % 6 === 0) {
+                    get_template_part('template-parts/ads/ad-grid', null, ['slot' => 'ad_slot_archive_banner']);
+                }
+            endwhile; 
+        else : ?>
             <p class="col-span-full text-center text-slate-500">لا توجد مقالات في هذا التصنيف</p>
         <?php endif; ?>
     </div>
