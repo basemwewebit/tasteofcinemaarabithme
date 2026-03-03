@@ -8,10 +8,20 @@
         <p class="text-lg md:text-xl text-slate-300 font-medium max-w-2xl mx-auto leading-relaxed"><?php echo esc_html(get_the_archive_description()); ?></p>
     </div>
 </div>
+<div class="container mx-auto px-4 mt-8"><?php mazaq_render_ad('ad_slot_archive_banner', 'horizontal'); ?></div>
 
 <main class="max-w-7xl mx-auto px-4 py-4 mb-20">
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <?php if (have_posts()) : while (have_posts()) : the_post(); get_template_part('template-parts/content/card-category'); endwhile; endif; ?>
+        <?php if (have_posts()) : 
+            $post_index = 0;
+            while (have_posts()) : the_post(); 
+                $post_index++;
+                get_template_part('template-parts/content/card-category'); 
+                if ($post_index % 6 === 0) {
+                    get_template_part('template-parts/ads/ad-grid', null, ['slot' => 'ad_slot_archive_banner']);
+                }
+            endwhile; 
+        endif; ?>
     </div>
     <?php get_template_part('template-parts/navigation/pagination'); ?>
 </main>

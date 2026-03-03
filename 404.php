@@ -7,6 +7,7 @@
         <p class="text-white text-xl md:text-2xl mb-3">عذراً، يبدو أن المخرج قد استغنى عن هذا المشهد!</p>
         <p class="text-slate-300 mb-8">الصفحة التي تبحث عنها غير موجودة.</p>
         <a href="<?php echo esc_url(home_url('/')); ?>" class="inline-block bg-primary text-slate-900 font-bold px-8 py-4 rounded-xl">العودة للصفحة الرئيسية</a>
+        <?php get_template_part('template-parts/ads/ad-404'); ?>
     </div>
 </main>
 

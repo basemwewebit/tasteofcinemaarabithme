@@ -28,6 +28,7 @@ function mazaq_register_acf_fields(): void
         ['key' => 'field_ad_slot_bottom_article', 'label' => 'Bottom Article Slot', 'name' => 'ad_slot_bottom_article', 'type' => 'text'],
         ['key' => 'field_ad_slot_sidebar_vertical', 'label' => 'Sidebar Vertical Slot', 'name' => 'ad_slot_sidebar_vertical', 'type' => 'text'],
         ['key' => 'field_ad_slot_archive_banner', 'label' => 'Archive Banner Slot', 'name' => 'ad_slot_archive_banner', 'type' => 'text'],
+        ['key' => 'field_ad_slot_404_banner', 'label' => '404 Banner Slot', 'name' => 'ad_slot_404_banner', 'type' => 'text'],
         ['key' => 'field_hero_featured_post', 'label' => 'Hero Featured Post', 'name' => 'hero_featured_post', 'type' => 'post_object', 'post_type' => ['post'], 'return_format' => 'id'],
         ['key' => 'field_contact_email', 'label' => 'Contact Email', 'name' => 'contact_email', 'type' => 'email'],
         ['key' => 'field_contact_address', 'label' => 'Contact Address', 'name' => 'contact_address', 'type' => 'textarea'],
