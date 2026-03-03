@@ -13,6 +13,7 @@ $mazaq_includes = [
     'inc/infinite-scroll.php',
     'inc/breadcrumb.php',
     'inc/helpers.php',
+    'inc/loader-ads-customizer.php',
 ];
 
 foreach ($mazaq_includes as $file) {
