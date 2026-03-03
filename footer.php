@@ -9,7 +9,9 @@ $social_website = function_exists('get_field') ? (string) get_field('social_webs
     <div class="max-w-7xl mx-auto px-4">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
             <div class="md:col-span-2">
-                <a href="<?php echo esc_url(home_url('/')); ?>" class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white block mb-6">مذاق<span class="text-primary">السينما</span></a>
+                <a href="<?php echo esc_url(home_url('/')); ?>" class="block mb-6">
+                    <img src="<?php echo esc_url(get_template_directory_uri() . '/assets/images/logo.png'); ?>" alt="<?php bloginfo('name'); ?>" class="h-16 w-auto dark:brightness-125 transition-all">
+                </a>
                 <p class="text-slate-600 dark:text-slate-400 max-w-sm leading-relaxed mb-6">مجلة رقمية تهتم بشؤون الفن السابع. مراجعات، قوائم، تحليلات وأخبار السينما العالمية نقربها للمشاهد العربي بأسلوب عصري وحيوي.</p>
                 <div class="flex items-center gap-4">
                     <?php if ($social_twitter): ?>

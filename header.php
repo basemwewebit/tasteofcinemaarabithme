@@ -56,8 +56,8 @@ if (!$og_image) {
             ?>
         </nav>
 
-        <a href="<?php echo esc_url(home_url('/')); ?>" class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white hover:text-primary dark:hover:text-primary transition-colors">
-            مذاق<span class="text-primary">السينما</span>
+        <a href="<?php echo esc_url(home_url('/')); ?>" class="block">
+            <img src="<?php echo esc_url(get_template_directory_uri() . '/assets/images/logo.png'); ?>" alt="<?php bloginfo('name'); ?>" class="h-12 w-auto dark:brightness-125 transition-all">
         </a>
 
         <div class="flex items-center gap-4">
