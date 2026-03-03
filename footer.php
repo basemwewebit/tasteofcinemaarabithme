@@ -38,6 +38,42 @@ $social_website = function_exists('get_field') ? (string) get_field('social_webs
         </div>
     </div>
 </footer>
+
+<!-- T005: Loader Session Logic -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const loader = document.getElementById('toc-site-loader');
+        if (!loader) return;
+
+        // Check if already seen in this session
+        if (sessionStorage.getItem('toc_loader_seen') === 'true') {
+            // Instantly hide it to prevent flash
+            loader.style.display = 'none';
+        } else {
+            // Show it visibly for debugging just to be sure
+            loader.style.opacity = '1';
+            loader.style.visibility = 'visible';
+
+            // Wait for full window load, then smoothly hide and set flag
+            window.addEventListener('load', function() {
+                // Add a small delay for the animation to be appreciated
+                setTimeout(function() {
+                    loader.style.opacity = '0';
+                    loader.style.visibility = 'hidden';
+                    loader.style.pointerEvents = 'none';
+                    loader.classList.add('toc-loader-hidden');
+                    sessionStorage.setItem('toc_loader_seen', 'true');
+                    
+                    // Remove from DOM after transition completes to free memory
+                    setTimeout(function() {
+                        if(loader.parentNode) loader.remove();
+                    }, 500); // Matches the 500ms duration in tailwind transition class
+                }, 1200); // Increased delay
+            });
+        }
+    });
+</script>
+
 <?php wp_footer(); ?>
 </body>
 </html>

@@ -39,6 +39,13 @@ if (!$og_image) {
 <body <?php body_class('bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 transition-colors duration-300 antialiased font-sans'); ?>>
 <?php wp_body_open(); ?>
 
+<!-- T003: Brand-Aligned Site Loader -->
+<div id="toc-site-loader" class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white dark:bg-slate-900 transition-all duration-500">
+    <div class="loader-logo-container">
+        <img src="<?php echo esc_url(get_template_directory_uri() . '/assets/images/logo.png'); ?>" alt="Loading..." class="h-20 w-auto toc-pulse-animation dark:brightness-125">
+    </div>
+</div>
+
 <header class="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors">
     <div class="container mx-auto px-4 h-20 flex items-center justify-between">
         <button id="mobile-menu-toggle" aria-label="Toggle Mobile Menu" class="lg:hidden p-2 text-slate-600 dark:text-slate-300 hover:text-primary transition-colors focus:outline-none">

@@ -14,9 +14,18 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         <?php if (have_posts()) : 
             $post_index = 0;
+            $ad_enabled = get_option('toc_ad_injection_enabled', false);
+            $ad_interval = (int) get_option('toc_ad_injection_interval', 6);
+            
             while (have_posts()) : the_post(); 
                 $post_index++;
                 get_template_part('template-parts/content/card-category'); 
+                
+                // T006: Inject Ad Slot
+                if ($ad_enabled && $ad_interval > 0 && $post_index % $ad_interval === 0) {
+                    get_template_part('template-parts/ad-slot', null, ['context' => 'archive']);
+                }
+                
                 if ($post_index % 6 === 0) {
                     get_template_part('template-parts/ads/ad-grid', null, ['slot' => 'ad_slot_archive_banner']);
                 }

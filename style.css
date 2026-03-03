@@ -4,7 +4,7 @@ Theme URI: https://mazaqcinema.com/
 Author: Taste of Cinema Arabic
 Author URI: https://mazaqcinema.com/
 Description: قالب عربي سينمائي متوافق RTL لمجلة مذاق السينما.
-Version: 1.0.0
+Version: 1.0.1
 Requires at least: 6.4
 Tested up to: 6.6
 Requires PHP: 8.1
@@ -12,3 +12,45 @@ Text Domain: mazaq
 Domain Path: /languages
 Tags: rtl-language-support, blog, news, custom-logo
 */
+
+/* --- T004: Loader Animations --- */
+@keyframes toc-pulse {
+    0% { transform: scale(0.95); opacity: 0.8; }
+    50% { transform: scale(1.05); opacity: 1; }
+    100% { transform: scale(0.95); opacity: 0.8; }
+}
+
+.toc-pulse-animation {
+    animation: toc-pulse 2s ease-in-out infinite;
+    will-change: transform, opacity;
+}
+
+/* Class to fade out and hide the loader */
+.toc-loader-hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+/* --- T007: Ad Slot Anti-CLS --- */
+/* Ensure the ad wrapper has a minimum height to prevent Cumulative Layout Shift (CLS) */
+.ad-slot-wrapper {
+    min-height: 250px; /* Adjust this value based on typical ad heights */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    clear: both;
+}
+
+/* Specific context overrides if needed */
+.ad-slot-archive,
+.ad-slot-category,
+.ad-slot-author,
+.ad-slot-index {
+    /* Full width on mobile, span full columns on larger screens if using CSS grid (dependent on the container's grid-cols) */
+    grid-column: 1 / -1;
+}
+

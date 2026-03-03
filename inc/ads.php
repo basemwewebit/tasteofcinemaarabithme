@@ -20,8 +20,8 @@ function mazaq_render_ad(string $slot_name, string $format = 'responsive', strin
     $dummy_ads_enabled = false; // Set to false to disable dummy ads and show empty box or AdSense
 
     if ($slot_id && !$dummy_ads_enabled) {
-        echo '<ins class="adsbygoogle" style="display:block" data-ad-client="' . esc_attr((string) get_field('adsense_publisher_id', 'option')) . '" data-ad-slot="' . esc_attr($slot_id) . '" data-ad-format="' . esc_attr($format) . '" data-full-width-responsive="true"></ins>';
-        echo '<script>(adsbygoogle=window.adsbygoogle||[]).push({});</script>';
+        echo '<ins class="adsbygoogle w-full" style="display:block; min-width:100px;" data-ad-client="' . esc_attr((string) get_field('adsense_publisher_id', 'option')) . '" data-ad-slot="' . esc_attr($slot_id) . '" data-ad-format="' . esc_attr($format) . '" data-full-width-responsive="true"></ins>';
+        echo '<script>try { (adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) { console.warn("AdSense layout issue: No slot size"); }</script>';
     } else {
         if ($dummy_ads_enabled) {
             // Display purely HTML dummy banner for testing layout (no external images)
