@@ -10,6 +10,6 @@
     </div>
     <div class="p-5 flex-1 flex flex-col justify-between">
         <h3 class="font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors line-clamp-2 leading-[1.35]"><?php the_title(); ?></h3>
-        <span class="text-xs text-slate-500 mt-4 font-mono block"><?php echo esc_html(mazaq_relative_date(get_the_date('Y-m-d H:i:s'))); ?></span>
+        <span class="text-xs text-slate-500 mt-4 font-mono block"><?php echo esc_html(get_the_date('j F Y')); ?></span>
     </div>
 </a>

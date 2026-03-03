@@ -15,7 +15,7 @@
                 <?php echo get_avatar(get_the_author_meta('ID'), 24, '', '', ['class' => 'w-6 h-6 rounded-full']); ?>
                 <span><?php the_author(); ?></span>
             </div>
-            <span><?php echo esc_html(mazaq_relative_date(get_the_date('Y-m-d H:i:s'))); ?></span>
+            <span><?php echo esc_html(get_the_date('j F Y')); ?></span>
         </div>
     </div>
 </article>

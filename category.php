@@ -13,7 +13,7 @@ $bg_url = $bg_id ? wp_get_attachment_image_url($bg_id, 'full') : '';
     <div class="max-w-4xl mx-auto px-4 relative z-10 w-full flex flex-col items-center">
         <div class="bg-primary text-slate-900 font-bold px-4 py-1.5 rounded-full text-sm mb-6">قسم التصنيفات</div>
         <h1 class="text-4xl md:text-6xl font-bold mb-6 text-white tracking-wide leading-[1.2]"><?php single_cat_title(); ?></h1>
-        <p class="text-lg md:text-xl text-slate-300 font-medium max-w-2xl mx-auto leading-relaxed"><?php echo esc_html(category_description()); ?></p>
+        <p class="text-lg md:text-xl text-slate-300 font-medium max-w-2xl mx-auto leading-relaxed"><?php echo (category_description()); ?></p>
     </div>
 </div>
 

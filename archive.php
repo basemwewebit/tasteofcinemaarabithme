@@ -5,7 +5,7 @@
     <div class="max-w-4xl mx-auto px-4 relative z-10 w-full flex flex-col items-center">
         <div class="bg-primary text-slate-900 font-bold px-4 py-1.5 rounded-full text-sm mb-6">الأرشيف</div>
         <h1 class="text-4xl md:text-6xl font-bold mb-6 text-white tracking-wide leading-[1.2]"><?php the_archive_title(); ?></h1>
-        <p class="text-lg md:text-xl text-slate-300 font-medium max-w-2xl mx-auto leading-relaxed"><?php echo esc_html(get_the_archive_description()); ?></p>
+        <p class="text-lg md:text-xl text-slate-300 font-medium max-w-2xl mx-auto leading-relaxed"><?php echo (get_the_archive_description()); ?></p>
     </div>
 </div>
 <div class="container mx-auto px-4 mt-8"><?php mazaq_render_ad('ad_slot_archive_banner', 'horizontal'); ?></div>

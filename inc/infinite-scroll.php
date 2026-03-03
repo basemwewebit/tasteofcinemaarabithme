@@ -15,6 +15,10 @@ function mazaq_ajax_load_more_posts(): void
         'post__not_in' => [mazaq_get_hero_post_id()],
     ]);
 
+    // Force site locale for AJAX responses so that formatted dates are not in English
+    $site_locale = get_option('WPLANG') ?: 'ar';
+    switch_to_locale($site_locale);
+
     ob_start();
     if ($query->have_posts()) {
         $index = 1;
@@ -36,9 +40,13 @@ function mazaq_ajax_load_more_posts(): void
         }
     }
     wp_reset_postdata();
+    
+    $html = ob_get_clean();
+    
+    restore_current_locale();
 
     wp_send_json_success([
-        'html' => ob_get_clean(),
+        'html' => $html,
         'has_more' => $query->max_num_pages > $page,
     ]);
 }
