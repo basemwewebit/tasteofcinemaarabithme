@@ -39,5 +39,18 @@ function mazaq_get_most_read_posts(int $count = 3): WP_Query
         'orderby' => 'meta_value_num',
         'order' => 'DESC',
         'no_found_rows' => true,
+        'date_query' => [
+            [
+                'after' => '1 week ago',
+            ],
+        ],
+        'meta_query' => [
+            [
+                'key'     => '_post_views_count',
+                'value'   => 0,
+                'compare' => '>',
+                'type'    => 'NUMERIC',
+            ],
+        ],
     ]);
 }
