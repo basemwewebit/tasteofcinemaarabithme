@@ -27,8 +27,8 @@ description: "Task list template for feature implementation"
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Create `inc/recaptcha/` directory structure and blank module files per implementation plan
-- [ ] T002 Include the root recaptcha module config inside `functions.php` to ensure files are loaded.
+- [x] T001 Create `inc/recaptcha/` directory structure and blank module files per implementation plan
+- [x] T002 Include the root recaptcha module config inside `functions.php` to ensure files are loaded.
 
 ---
 
@@ -38,8 +38,8 @@ description: "Task list template for feature implementation"
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T003 Implement backend verification HTTP API class `class-recaptcha-verify.php` to handle communication with `google.com/recaptcha/api/siteverify` using `wp_remote_post`. Ensure timeout is set to 3 seconds.
-- [ ] T004 Build fail-open logic inside the verification method (FR-006).
+- [x] T003 Implement backend verification HTTP API class `class-recaptcha-verify.php` to handle communication with `google.com/recaptcha/api/siteverify` using `wp_remote_post`. Ensure timeout is set to 3 seconds.
+- [x] T004 Build fail-open logic inside the verification method (FR-006).
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -53,8 +53,8 @@ description: "Task list template for feature implementation"
 
 ### Implementation for User Story 3
 
-- [ ] T005 [P] [US3] Create `class-recaptcha-admin.php` and register settings for `toc_recaptcha_site_key`, `toc_recaptcha_secret_key`, and `toc_recaptcha_score_threshold`.
-- [ ] T006 [P] [US3] Build the settings page UI logic in `class-recaptcha-admin.php` to render input fields and save values (default threshold 0.5).
+- [x] T005 [P] [US3] Create `class-recaptcha-admin.php` and register settings for `toc_recaptcha_site_key`, `toc_recaptcha_secret_key`, and `toc_recaptcha_score_threshold`.
+- [x] T006 [P] [US3] Build the settings page UI logic in `class-recaptcha-admin.php` to render input fields and save values (default threshold 0.5).
 
 **Checkpoint**: Admin Configuration completed and keys exist.
 
@@ -68,9 +68,9 @@ description: "Task list template for feature implementation"
 
 ### Implementation for User Story 1
 
-- [ ] T007 [P] [US1] Create frontend script `assets/js/recaptcha-handler.js` that intercepts contact form submissions, injects the `g-recaptcha-response` token, and submits.
-- [ ] T008 [US1] Create `class-recaptcha-hooks.php` to selectively enqueue the Google script URL and `recaptcha-handler.js` on the contact page.
-- [ ] T009 [US1] Update `inc/contact-form.php` backend handler to integrate with `class-recaptcha-verify.php` and validate token score against the db threshold before processing.
+- [x] T007 [P] [US1] Create frontend script `assets/js/recaptcha-handler.js` that intercepts contact form submissions, injects the `g-recaptcha-response` token, and submits.
+- [x] T008 [US1] Create `class-recaptcha-hooks.php` to selectively enqueue the Google script URL and `recaptcha-handler.js` on the contact page.
+- [x] T009 [US1] Update `inc/contact-form.php` backend handler to integrate with `class-recaptcha-verify.php` and validate token score against the db threshold before processing.
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
 
@@ -84,9 +84,9 @@ description: "Task list template for feature implementation"
 
 ### Implementation for User Story 2
 
-- [ ] T010 [P] [US2] Update `assets/js/recaptcha-handler.js` to correctly target standard WP login, registration, and password reset form IDs.
-- [ ] T011 [US2] Update `class-recaptcha-hooks.php` to hook into WordPress core hooks: `wp_authenticate_user` (Login verification), `registration_errors` (Registration), and `allow_password_reset`.
-- [ ] T012 [US2] Wire the authentication hooks to `class-recaptcha-verify.php` to reject logins/registrations where the score falls below the threshold. 
+- [x] T010 [P] [US2] Update `assets/js/recaptcha-handler.js` to correctly target standard WP login, registration, and password reset form IDs.
+- [x] T011 [US2] Update `class-recaptcha-hooks.php` to hook into WordPress core hooks: `wp_authenticate_user` (Login verification), `registration_errors` (Registration), and `allow_password_reset`.
+- [x] T012 [US2] Wire the authentication hooks to `class-recaptcha-verify.php` to reject logins/registrations where the score falls below the threshold. 
 
 **Checkpoint**: All user stories should now be independently functional
 
@@ -96,8 +96,8 @@ description: "Task list template for feature implementation"
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T013 [P] Add debug logging if a request fails for tracking purposes without disrupting user experience.
-- [ ] T014 Review scripts to ensure `wp_enqueue_script` targets are exactly strict to prevent CLS or performance drops on unrelated archives/single posts.
+- [x] T013 [P] Add debug logging if a request fails for tracking purposes without disrupting user experience.
+- [x] T014 Review scripts to ensure `wp_enqueue_script` targets are exactly strict to prevent CLS or performance drops on unrelated archives/single posts.
 
 ---
 
