@@ -13,6 +13,8 @@ Auto-generated from all feature plans. Last updated: 2026-03-03
 - WordPress Database (wp_options for settings) (001-loader-ads)
 - PHP 8+ (WordPress minimum requirements) + WordPress Core API (register_post_type, wp_insert_post), Advanced Custom Fields (ACF) PRO for the repeater field. (001-contact-enhancements)
 - WordPress MySQL Database (`wp_posts` and `wp_postmeta`) (001-contact-enhancements)
+- PHP 8.0+, JavaScript (ES6+), HTML5 + WordPress Core, Google reCAPTCHA v3 (001-google-recaptcha-v3)
+- WordPress Options Table (`wp_options`) (001-google-recaptcha-v3)
 
 - PHP 8.1+, JavaScript (ES6+/jQuery), HTML5, CSS3 + WordPress 6.4+, Tailwind CSS 3.x (compiled), jQuery (WP bundled), Secure Custom Fields (SCF) plugin (001-slice-to-wp-theme)
 
@@ -32,9 +34,9 @@ npm test && npm run lint
 PHP 8.1+, JavaScript (ES6+/jQuery), HTML5, CSS3: Follow standard conventions
 
 ## Recent Changes
+- 001-google-recaptcha-v3: Added PHP 8.0+, JavaScript (ES6+), HTML5 + WordPress Core, Google reCAPTCHA v3
+- 001-google-recaptcha-v3: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
 - 001-contact-enhancements: Added PHP 8+ (WordPress minimum requirements) + WordPress Core API (register_post_type, wp_insert_post), Advanced Custom Fields (ACF) PRO for the repeater field.
-- 001-loader-ads: Added PHP 8.x, JavaScript (ES6+), CSS3 + WordPress Core, Taste of Cinema Theme
-- 001-archive-ads-injection: Added PHP 8.x + WordPress Core, Secure Custom Fields (SCF)
 
 
 <!-- MANUAL ADDITIONS START -->
