@@ -34,7 +34,7 @@ $social_website = function_exists('get_field') ? (string) get_field('social_webs
 
         <div class="border-t border-slate-200 dark:border-slate-800 pt-8 flex flex-col md:flex-row items-center justify-between text-sm text-slate-500 font-mono text-center md:text-right">
             <p>&copy; <?php echo esc_html((string) date('Y')); ?> مذاق السينما. جميع الحقوق محفوظة.</p>
-            <div class="mt-4 md:mt-0">تصميم وتطوير بأناقة وبساطة</div>
+           
         </div>
     </div>
 </footer>

@@ -10,10 +10,7 @@ get_header();
             <p class="text-slate-500">آخر تحديث: <?php echo esc_html(get_the_modified_date('j F Y')); ?></p>
         </header>
         <div class="article-content text-slate-700 dark:text-slate-300 leading-loose"><?php the_content(); ?></div>
-        <div class="mt-12 p-6 rounded-2xl border border-primary/40 bg-primary/10">
-            <p class="mb-4">للاستفسارات حول الخصوصية يمكن التواصل معنا.</p>
-            <a href="<?php echo esc_url(home_url('/contact-us')); ?>" class="inline-block bg-primary text-slate-900 font-bold px-6 py-3 rounded-xl">اتصل بنا</a>
-        </div>
+       
     <?php endwhile; endif; ?>
 </main>
 
