@@ -12,7 +12,7 @@ function mazaq_handle_contact_form(): void
         return;
     }
 
-    $redirect = wp_get_referer() ?: home_url('/contact/');
+    $redirect = wp_get_referer() ?: home_url('/contact-us/');
     $nonce = isset($_POST['mazaq_contact_nonce']) ? sanitize_text_field((string) $_POST['mazaq_contact_nonce']) : '';
     if (!wp_verify_nonce($nonce, 'mazaq_contact_form')) {
         wp_safe_redirect(add_query_arg('contact_status', 'error', $redirect));
@@ -40,7 +40,25 @@ function mazaq_handle_contact_form(): void
     $body = "الاسم: {$name}\nالبريد: {$email}\n\n{$message}";
 
     $sent = wp_mail($to, $subject, $body, $headers);
-    wp_safe_redirect(add_query_arg('contact_status', $sent ? 'success' : 'error', $redirect));
+
+    $post_data = [
+        'post_title'   => wp_strip_all_tags($subject),
+        'post_content' => wp_kses_post($message),
+        'post_status'  => 'publish',
+        'post_type'    => 'contact_message',
+    ];
+
+    $post_id = wp_insert_post($post_data);
+    if ($post_id && !is_wp_error($post_id)) {
+        update_post_meta($post_id, '_contact_name', $name);
+        update_post_meta($post_id, '_contact_email', $email);
+        $saved = true;
+    } else {
+        $saved = false;
+    }
+
+    $status = ($sent || $saved) ? 'success' : 'error';
+    wp_safe_redirect(add_query_arg('contact_status', $status, $redirect));
     exit;
 }
 add_action('template_redirect', 'mazaq_handle_contact_form');

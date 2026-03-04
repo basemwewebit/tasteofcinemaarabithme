@@ -14,6 +14,7 @@ $mazaq_includes = [
     'inc/breadcrumb.php',
     'inc/helpers.php',
     'inc/loader-ads-customizer.php',
+    'inc/post-types/contact-message.php',
 ];
 
 foreach ($mazaq_includes as $file) {
