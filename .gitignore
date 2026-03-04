@@ -1,18 +1,7 @@
+# Theme overrides
+.env
+.env.*
 node_modules/
-dist/
-build/
 vendor/
 *.log
-.env*
-
-__pycache__/
-*.pyc
-.venv/
-venv/
-
-.DS_Store
-Thumbs.db
-*.tmp
-*.swp
-.vscode/
-.idea/
+*.cache

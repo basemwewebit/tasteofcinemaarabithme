@@ -25,6 +25,13 @@ function mazaq_handle_contact_form(): void
         exit;
     }
 
+    // Verify Google reCAPTCHA v3
+    $token = isset($_POST['g-recaptcha-response']) ? $_POST['g-recaptcha-response'] : '';
+    if (!class_exists('TOC_Recaptcha_Verify') || !TOC_Recaptcha_Verify::verify_token($token)) {
+        wp_safe_redirect(add_query_arg('contact_status', 'error', $redirect));
+        exit;
+    }
+
     $name = sanitize_text_field((string) ($_POST['name'] ?? ''));
     $email = sanitize_email((string) ($_POST['email'] ?? ''));
     $subject = sanitize_text_field((string) ($_POST['subject'] ?? ''));
