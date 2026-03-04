@@ -4,8 +4,6 @@ get_header();
 
 $contact_email = function_exists('get_field') ? (string) get_field('contact_email', 'option') : get_option('admin_email');
 $contact_address = function_exists('get_field') ? (string) get_field('contact_address', 'option') : '';
-$social_twitter = function_exists('get_field') ? (string) get_field('social_twitter', 'option') : '';
-$social_website = function_exists('get_field') ? (string) get_field('social_website', 'option') : '';
 $status = isset($_GET['contact_status']) ? sanitize_text_field((string) $_GET['contact_status']) : '';
 ?>
 
@@ -44,9 +42,19 @@ $status = isset($_GET['contact_status']) ? sanitize_text_field((string) $_GET['c
             </div>
             <div class="bg-white dark:bg-slate-800 rounded-2xl p-8 border border-slate-200 dark:border-slate-700 shadow-sm">
                 <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-6">تابعنا على</h3>
-                <div class="flex gap-4">
-                    <?php if ($social_twitter) : ?><a href="<?php echo esc_url($social_twitter); ?>" class="hover:text-primary">Twitter</a><?php endif; ?>
-                    <?php if ($social_website) : ?><a href="<?php echo esc_url($social_website); ?>" class="hover:text-primary">Website</a><?php endif; ?>
+                <div class="flex gap-4 flex-wrap">
+                    <?php if (function_exists('have_rows') && have_rows('social_links', 'option')) : ?>
+                        <?php while (have_rows('social_links', 'option')) : the_row();
+                            $platform_name = get_sub_field('platform_name');
+                            $url = get_sub_field('url');
+                        ?>
+                            <a href="<?php echo esc_url((string)$url); ?>" class="flex items-center justify-center px-6 py-2 rounded-full border border-slate-200 dark:border-slate-600 transition-colors bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 group" target="_blank" rel="noopener noreferrer">
+                                <span class="text-sm font-medium text-slate-700 dark:text-slate-100 group-hover:text-primary transition-colors"><?php echo esc_html((string)$platform_name); ?></span>
+                            </a>
+                        <?php endwhile; ?>
+                    <?php else: ?>
+                        <p class="text-sm text-slate-500">لا توجد روابط مسجلة.</p>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>

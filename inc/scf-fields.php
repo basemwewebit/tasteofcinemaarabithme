@@ -32,8 +32,18 @@ function mazaq_register_acf_fields(): void
         ['key' => 'field_hero_featured_post', 'label' => 'Hero Featured Post', 'name' => 'hero_featured_post', 'type' => 'post_object', 'post_type' => ['post'], 'return_format' => 'id'],
         ['key' => 'field_contact_email', 'label' => 'Contact Email', 'name' => 'contact_email', 'type' => 'email'],
         ['key' => 'field_contact_address', 'label' => 'Contact Address', 'name' => 'contact_address', 'type' => 'textarea'],
-        ['key' => 'field_social_twitter', 'label' => 'Social Twitter', 'name' => 'social_twitter', 'type' => 'url'],
-        ['key' => 'field_social_website', 'label' => 'Social Website', 'name' => 'social_website', 'type' => 'url'],
+        [
+            'key' => 'field_social_links',
+            'label' => 'Social Links',
+            'name' => 'social_links',
+            'type' => 'repeater',
+            'layout' => 'block',
+            'button_label' => 'Add Social Link',
+            'sub_fields' => [
+                ['key' => 'sub_field_platform_name', 'label' => 'Platform Name', 'name' => 'platform_name', 'type' => 'text', 'required' => 1],
+                ['key' => 'sub_field_social_url', 'label' => 'URL', 'name' => 'url', 'type' => 'url', 'required' => 1],
+            ]
+        ],
     ];
 
     acf_add_local_field_group([
