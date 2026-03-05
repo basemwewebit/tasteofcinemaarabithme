@@ -12,7 +12,7 @@ function mazaq_ajax_load_more_posts(): void
         'post_status' => 'publish',
         'paged' => $page,
         'posts_per_page' => 6,
-        'post__not_in' => [mazaq_get_hero_post_id()],
+        'post__not_in' => mazaq_get_hero_post_ids(),
     ]);
 
     // Force site locale for AJAX responses so that formatted dates are not in English

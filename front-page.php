@@ -20,7 +20,7 @@
                     'post_status' => 'publish',
                     'posts_per_page' => 6,
                     'paged' => 1,
-                    'post__not_in' => [mazaq_get_hero_post_id()],
+                    'post__not_in' => mazaq_get_hero_post_ids(),
                 ]);
 
                 if ($query->have_posts()) :
