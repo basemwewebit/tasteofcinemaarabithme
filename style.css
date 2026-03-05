@@ -4,7 +4,7 @@ Theme URI: https://mazaqcinema.com/
 Author: Taste of Cinema Arabic
 Author URI: https://mazaqcinema.com/
 Description: قالب عربي سينمائي متوافق RTL لمجلة مذاق السينما.
-Version: 1.0.5
+Version: 1.0.6
 Requires at least: 6.4
 Tested up to: 6.6
 Requires PHP: 8.1
@@ -54,3 +54,22 @@ Tags: rtl-language-support, blog, news, custom-logo
     grid-column: 1 / -1;
 }
 
+
+/* --- Hero Carousel --- */
+.hero-carousel__slide {
+    transition: opacity 700ms ease-in-out;
+    will-change: opacity;
+}
+
+.hero-carousel__dot {
+    transition: all 300ms ease;
+}
+
+.hero-carousel__dot.active {
+    width: 1.5rem;
+    background-color: rgba(255, 255, 255, 1) !important;
+}
+
+.hero-carousel__dots {
+    pointer-events: auto;
+}

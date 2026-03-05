@@ -311,3 +311,97 @@ jQuery(function ($) {
         }
     });
 });
+
+/**
+ * Hero Carousel Controller
+ * Implements cross-fade transitions for multiple sticky posts.
+ */
+(function () {
+    const track = document.querySelector('.hero-carousel');
+    if (!track) {
+        return;
+    }
+
+    const slides = track.querySelectorAll('.hero-carousel__slide');
+    const dots = track.querySelectorAll('.hero-carousel__dot');
+    const totalSlides = parseInt(track.dataset.total, 10) || slides.length;
+    const intervalMs = parseInt(track.dataset.interval, 10) || 6000;
+
+    let currentIndex = 0;
+    let timer = null;
+    let isPaused = false;
+    let touchStartX = 0;
+
+    function goTo(n) {
+        // Remove active classes from current slide and dot
+        slides[currentIndex].classList.remove('opacity-100', 'z-10');
+        slides[currentIndex].classList.add('opacity-0', 'z-0');
+        dots[currentIndex].classList.remove('bg-white', 'w-6', 'active');
+
+        // Update index (with wrapping)
+        currentIndex = (n + totalSlides) % totalSlides;
+
+        // Add active classes to new current slide and dot
+        slides[currentIndex].classList.remove('opacity-0', 'z-0');
+        slides[currentIndex].classList.add('opacity-100', 'z-10');
+        dots[currentIndex].classList.add('bg-white', 'w-6', 'active');
+
+        resetTimer();
+    }
+
+    function next() {
+        goTo(currentIndex + 1);
+    }
+
+    function prev() {
+        goTo(currentIndex - 1);
+    }
+
+    function startTimer() {
+        if (timer) {
+            clearInterval(timer);
+        }
+        timer = setInterval(() => {
+            if (!isPaused) {
+                next();
+            }
+        }, intervalMs);
+    }
+
+    function resetTimer() {
+        startTimer();
+    }
+
+    // Dot Click Events
+    dots.forEach(dot => {
+        dot.addEventListener('click', () => {
+            goTo(parseInt(dot.dataset.index, 10));
+        });
+    });
+
+    // Hover Pause
+    track.addEventListener('mouseenter', () => {
+        isPaused = true;
+    });
+    track.addEventListener('mouseleave', () => {
+        isPaused = false;
+    });
+
+    // Touch Swipe
+    track.addEventListener('touchstart', e => {
+        touchStartX = e.changedTouches[0].clientX;
+    }, { passive: true });
+
+    track.addEventListener('touchend', e => {
+        const delta = e.changedTouches[0].clientX - touchStartX;
+        if (delta > 50) {
+            prev();
+        } else if (delta < -50) {
+            next();
+        }
+    }, { passive: true });
+
+    // Initialize Auto-advance
+    startTimer();
+}());
+
