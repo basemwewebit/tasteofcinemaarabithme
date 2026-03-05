@@ -54,3 +54,22 @@ Tags: rtl-language-support, blog, news, custom-logo
     grid-column: 1 / -1;
 }
 
+
+/* --- Hero Carousel --- */
+.hero-carousel__slide {
+    transition: opacity 700ms ease-in-out;
+    will-change: opacity;
+}
+
+.hero-carousel__dot {
+    transition: all 300ms ease;
+}
+
+.hero-carousel__dot.active {
+    width: 1.5rem;
+    background-color: rgba(255, 255, 255, 1) !important;
+}
+
+.hero-carousel__dots {
+    pointer-events: auto;
+}

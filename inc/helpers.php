@@ -97,16 +97,51 @@ function mazaq_balance_content_tags(string $content): string
 }
 add_filter('the_content', 'mazaq_balance_content_tags', 999);
 
+/**
+ * Get all eligible hero post IDs based on priority:
+ * 1. ACF option 'hero_featured_post'
+ * 2. Sticky posts
+ * 3. Latest post fallback
+ *
+ * @return int[]
+ */
+function mazaq_get_hero_post_ids(): array
+{
+    $ids = [];
+
+    // 1. ACF Option
+    $acf_id = function_exists('get_field') ? (int) get_field('hero_featured_post', 'option') : 0;
+    if ($acf_id > 0) {
+        $ids[] = $acf_id;
+    }
+
+    // 2. Sticky Posts
+    if (empty($ids)) {
+        $sticky = get_option('sticky_posts');
+        if (!empty($sticky)) {
+            $ids = array_map('intval', (array) $sticky);
+        }
+    }
+
+    // 3. Fallback to latest post
+    if (empty($ids)) {
+        $latest = get_posts([
+            'post_type'      => 'post',
+            'posts_per_page' => 1,
+            'fields'         => 'ids',
+            'post_status'    => 'publish',
+        ]);
+        if (!empty($latest)) {
+            $ids[] = (int) $latest[0];
+        }
+    }
+
+    // Filter out zero/falsy values
+    return array_values(array_filter($ids));
+}
+
 function mazaq_get_hero_post_id(): int
 {
-    $hero_post_id = function_exists('get_field') ? (int) get_field('hero_featured_post', 'option') : 0;
-    if ($hero_post_id === 0) {
-        $sticky = get_option('sticky_posts');
-        $hero_post_id = !empty($sticky) ? (int) $sticky[0] : 0;
-    }
-    if ($hero_post_id === 0) {
-        $latest = get_posts(['post_type' => 'post', 'posts_per_page' => 1, 'fields' => 'ids']);
-        $hero_post_id = !empty($latest) ? (int) $latest[0] : 0;
-    }
-    return $hero_post_id;
+    return mazaq_get_hero_post_ids()[0] ?? 0;
 }
+
