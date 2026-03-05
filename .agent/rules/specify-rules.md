@@ -15,6 +15,8 @@ Auto-generated from all feature plans. Last updated: 2026-03-03
 - WordPress MySQL Database (`wp_posts` and `wp_postmeta`) (001-contact-enhancements)
 - PHP 8.0+, JavaScript (ES6+), HTML5 + WordPress Core, Google reCAPTCHA v3 (001-google-recaptcha-v3)
 - WordPress Options Table (`wp_options`) (001-google-recaptcha-v3)
+- PHP 8+, JavaScript (ES6+), HTML5 + jQuery, IntersectionObserver API (001-fix-mobile-load-more)
+- WordPress Database (WP_Query) (001-fix-mobile-load-more)
 
 - PHP 8.1+, JavaScript (ES6+/jQuery), HTML5, CSS3 + WordPress 6.4+, Tailwind CSS 3.x (compiled), jQuery (WP bundled), Secure Custom Fields (SCF) plugin (001-slice-to-wp-theme)
 
@@ -34,9 +36,9 @@ npm test && npm run lint
 PHP 8.1+, JavaScript (ES6+/jQuery), HTML5, CSS3: Follow standard conventions
 
 ## Recent Changes
+- 001-fix-mobile-load-more: Added PHP 8+, JavaScript (ES6+), HTML5 + jQuery, IntersectionObserver API
 - 001-google-recaptcha-v3: Added PHP 8.0+, JavaScript (ES6+), HTML5 + WordPress Core, Google reCAPTCHA v3
 - 001-google-recaptcha-v3: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
-- 001-contact-enhancements: Added PHP 8+ (WordPress minimum requirements) + WordPress Core API (register_post_type, wp_insert_post), Advanced Custom Fields (ACF) PRO for the repeater field.
 
 
 <!-- MANUAL ADDITIONS START -->
