@@ -54,8 +54,8 @@ description: "Task list for fixing mobile Load More bug"
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T003 Verify existing desktop infinite scroll functionality is not broken by the new observer in `assets/js/app.js`
-- [ ] T004 Run manual validation steps from `quickstart.md`
+- [x] T003 Verify existing desktop infinite scroll functionality is not broken by the new observer in `assets/js/app.js`
+- [x] T004 Run manual validation steps from `quickstart.md`
 
 ---
 
