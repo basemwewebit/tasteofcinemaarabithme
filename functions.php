@@ -104,3 +104,5 @@ function toc_get_related_posts($post_id, $count = 4) {
     
     return $related;
 }
+
+add_filter( 'wp_is_application_passwords_available', '__return_true' );
