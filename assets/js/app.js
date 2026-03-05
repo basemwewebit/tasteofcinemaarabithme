@@ -130,42 +130,54 @@ jQuery(function ($) {
     });
 
     const container = $('#infinite-scroll-container');
-    if (container.length) {
+    const loadingIndicator = $('#loading-indicator');
+    
+    if (container.length && loadingIndicator.length) {
         let currentPage = 2;
         let isLoading = false;
         let hasMore = true;
-        $(window).on('scroll', function () {
-            if (!hasMore || isLoading) {
-                return;
-            }
+        
+        // Show indicator initially since observer relies on intersection
+        loadingIndicator.removeClass('hidden');
 
-            if ($(window).scrollTop() + $(window).height() < $(document).height() - 300) {
-                return;
-            }
-
-            isLoading = true;
-            $('#loading-indicator').removeClass('hidden');
-
-            $.post(mazaq_ajax.ajax_url, {
-                action: 'load_more_posts',
-                nonce: mazaq_ajax.nonce,
-                page: currentPage
-            }).done(function (response) {
-                if (response.success && response.data.html) {
-                    container.append(response.data.html);
-                    hasMore = !!response.data.has_more;
-                    currentPage += 1;
-                } else {
-                    hasMore = false;
+        const infiniteScrollObserver = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                if (!entry.isIntersecting || isLoading || !hasMore) {
+                    return;
                 }
-                if (!hasMore) {
-                    container.after('<div class="text-center text-slate-500 dark:text-slate-400 py-8 text-sm">تم الوصول إلى نهاية المقالات</div>');
-                }
-            }).always(function () {
-                $('#loading-indicator').addClass('hidden');
-                isLoading = false;
+
+                isLoading = true;
+
+                $.post(mazaq_ajax.ajax_url, {
+                    action: 'load_more_posts',
+                    nonce: mazaq_ajax.nonce,
+                    page: currentPage
+                }).done(function (response) {
+                    if (response.success && response.data.html) {
+                        container.append(response.data.html);
+                        hasMore = !!response.data.has_more;
+                        currentPage += 1;
+                    } else {
+                        hasMore = false;
+                    }
+                    
+                    if (!hasMore) {
+                        infiniteScrollObserver.disconnect();
+                        loadingIndicator.addClass('hidden');
+                        container.after('<div class="text-center text-slate-500 dark:text-slate-400 py-8 text-sm">تم الوصول إلى نهاية المقالات</div>');
+                    }
+                }).always(function () {
+                    isLoading = false;
+                });
             });
+        }, {
+            // Options: trigger when indicator comes within 300px of viewport
+            rootMargin: '0px 0px 300px 0px',
+            threshold: 0
         });
+
+        // Start observing the loading indicator
+        infiniteScrollObserver.observe(loadingIndicator[0]);
     }
 
     const adBlockPromptStorageKey = 'toc_adblock_prompt_dismissed_until';

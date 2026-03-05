@@ -43,8 +43,8 @@ description: "Task list for fixing mobile Load More bug"
 
 ### Implementation for User Story 1
 
-- [ ] T001 [US1] Replace `$(window).on('scroll')` infinite scroll logic with `IntersectionObserver` observing `#loading-indicator` in `assets/js/app.js`
-- [ ] T002 [US1] Update the AJAX callback in `assets/js/app.js` to correctly disconnect the observer when no more posts exist and handle loading states without layout trashing
+- [x] T001 [US1] Replace `$(window).on('scroll')` infinite scroll logic with `IntersectionObserver` observing `#loading-indicator` in `assets/js/app.js`
+- [x] T002 [US1] Update the AJAX callback in `assets/js/app.js` to correctly disconnect the observer when no more posts exist and handle loading states without layout trashing
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
 
