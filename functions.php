@@ -13,6 +13,7 @@ $mazaq_includes = [
     'inc/infinite-scroll.php',
     'inc/breadcrumb.php',
     'inc/helpers.php',
+    'inc/admin-social-reminder.php',
     'inc/loader-ads-customizer.php',
     'inc/post-types/contact-message.php',
     'inc/recaptcha/class-recaptcha-admin.php',
