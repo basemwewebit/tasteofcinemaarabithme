@@ -44,32 +44,70 @@ $social_website = function_exists('get_field') ? (string) get_field('social_webs
     document.addEventListener('DOMContentLoaded', function() {
         const loader = document.getElementById('toc-site-loader');
         if (!loader) return;
+        const SESSION_KEY = 'toc_loader_seen';
+        const MIN_VISIBLE_MS = 450;
+        const MAX_VISIBLE_MS = 2500;
+        const HIDE_TRANSITION_MS = 450;
 
-        // Check if already seen in this session
-        if (sessionStorage.getItem('toc_loader_seen') === 'true') {
-            // Instantly hide it to prevent flash
+        const storage = (function() {
+            try {
+                const probeKey = '__toc_loader_probe__';
+                sessionStorage.setItem(probeKey, '1');
+                sessionStorage.removeItem(probeKey);
+                return sessionStorage;
+            } catch (e) {
+                return null;
+            }
+        })();
+
+        if (!storage) {
             loader.style.display = 'none';
-        } else {
-            // Show it visibly for debugging just to be sure
-            loader.style.opacity = '1';
-            loader.style.visibility = 'visible';
+            return;
+        }
 
-            // Wait for full window load, then smoothly hide and set flag
+        if (storage.getItem(SESSION_KEY) === 'true') {
+            loader.style.display = 'none';
+            return;
+        }
+
+        const startTime = Date.now();
+        let hideStarted = false;
+        let finished = false;
+
+        const hideLoader = function() {
+            if (hideStarted) return;
+            hideStarted = true;
+            loader.classList.add('toc-loader-hidden');
+            loader.setAttribute('aria-hidden', 'true');
+            window.setTimeout(function() {
+                if (loader.parentNode) {
+                    loader.remove();
+                }
+            }, HIDE_TRANSITION_MS);
+        };
+
+        const completeLoader = function() {
+            if (finished) return;
+            finished = true;
+            storage.setItem(SESSION_KEY, 'true');
+            const elapsed = Date.now() - startTime;
+            const waitForMinDuration = Math.max(0, MIN_VISIBLE_MS - elapsed);
+            window.setTimeout(hideLoader, waitForMinDuration);
+        };
+
+        const loadOrTimeout = function() {
+            completeLoader();
+        };
+
+        const hardTimeout = window.setTimeout(loadOrTimeout, MAX_VISIBLE_MS);
+        if (document.readyState === 'complete') {
+            window.clearTimeout(hardTimeout);
+            loadOrTimeout();
+        } else {
             window.addEventListener('load', function() {
-                // Add a small delay for the animation to be appreciated
-                setTimeout(function() {
-                    loader.style.opacity = '0';
-                    loader.style.visibility = 'hidden';
-                    loader.style.pointerEvents = 'none';
-                    loader.classList.add('toc-loader-hidden');
-                    sessionStorage.setItem('toc_loader_seen', 'true');
-                    
-                    // Remove from DOM after transition completes to free memory
-                    setTimeout(function() {
-                        if(loader.parentNode) loader.remove();
-                    }, 500); // Matches the 500ms duration in tailwind transition class
-                }, 1200); // Increased delay
-            });
+                window.clearTimeout(hardTimeout);
+                loadOrTimeout();
+            }, { once: true });
         }
     });
 </script>

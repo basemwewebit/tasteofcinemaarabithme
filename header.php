@@ -34,6 +34,17 @@ if (!$og_image) {
             if(isDark){ document.documentElement.classList.add('dark'); }
         })();
     </script>
+    <script>
+        (function () {
+            try {
+                if (sessionStorage.getItem('toc_loader_seen') === 'true') {
+                    document.documentElement.classList.add('toc-loader-seen');
+                }
+            } catch (e) {
+                document.documentElement.classList.add('toc-loader-seen');
+            }
+        })();
+    </script>
     <meta name="google-adsense-account" content="ca-pub-8042646813554704">
     <?php wp_head(); ?>
 </head>
@@ -41,9 +52,12 @@ if (!$og_image) {
 <?php wp_body_open(); ?>
 
 <!-- T003: Brand-Aligned Site Loader -->
-<div id="toc-site-loader" class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white dark:bg-slate-900 transition-all duration-500">
-    <div class="loader-logo-container">
-        <img src="<?php echo esc_url(get_template_directory_uri() . '/assets/images/logo.webp'); ?>" alt="Loading..." class="h-20 w-auto toc-pulse-animation dark:brightness-125">
+<div id="toc-site-loader" class="toc-site-loader fixed inset-0 z-[100] flex items-center justify-center" role="status" aria-live="polite" aria-label="<?php echo esc_attr__('Loading site', 'mazaq'); ?>">
+    <div class="toc-loader-core" aria-hidden="true">
+        <span class="toc-loader-glow"></span>
+        <span class="toc-loader-ring toc-loader-ring--outer"></span>
+        <span class="toc-loader-ring toc-loader-ring--inner"></span>
+        <img src="<?php echo esc_url(get_template_directory_uri() . '/assets/images/logo.webp'); ?>" alt="" class="toc-loader-logo dark:brightness-125" fetchpriority="high" decoding="async">
     </div>
 </div>
 
