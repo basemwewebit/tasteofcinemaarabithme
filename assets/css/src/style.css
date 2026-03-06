@@ -638,3 +638,6 @@ html:not(.dark) .hero-carousel__dot {
         width: 2rem;
     }
 }
+html,body {
+    overflow-x: hidden !important;
+}

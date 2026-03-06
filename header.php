@@ -43,7 +43,7 @@ if (!$og_image) {
 <!-- T003: Brand-Aligned Site Loader -->
 <div id="toc-site-loader" class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white dark:bg-slate-900 transition-all duration-500">
     <div class="loader-logo-container">
-        <img src="<?php echo esc_url(get_template_directory_uri() . '/assets/images/logo.png'); ?>" alt="Loading..." class="h-20 w-auto toc-pulse-animation dark:brightness-125">
+        <img src="<?php echo esc_url(get_template_directory_uri() . '/assets/images/logo.webp'); ?>" alt="Loading..." class="h-20 w-auto toc-pulse-animation dark:brightness-125">
     </div>
 </div>
 
@@ -65,7 +65,7 @@ if (!$og_image) {
         </nav>
 
         <a href="<?php echo esc_url(home_url('/')); ?>" class="block">
-            <img src="<?php echo esc_url(get_template_directory_uri() . '/assets/images/logo.png'); ?>" alt="<?php bloginfo('name'); ?>" class="h-12 w-auto dark:brightness-125 transition-all">
+            <img src="<?php echo esc_url(get_template_directory_uri() . '/assets/images/logo.webp'); ?>" alt="<?php bloginfo('name'); ?>" class="h-12 w-auto dark:brightness-125 transition-all">
         </a>
 
         <div class="flex items-center gap-4">
