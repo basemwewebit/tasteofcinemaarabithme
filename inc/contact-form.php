@@ -13,6 +13,16 @@ function mazaq_handle_contact_form(): void
     }
 
     $redirect = wp_get_referer() ?: home_url('/contact-us/');
+
+    // Rate limiting: 5 submissions per IP per hour
+    $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+    $transient_key = 'contact_form_limit_' . md5($ip);
+    $attempts = get_transient($transient_key);
+    if ($attempts !== false && $attempts >= 5) {
+        wp_safe_redirect(add_query_arg('contact_status', 'rate_limit', $redirect));
+        exit;
+    }
+
     $nonce = isset($_POST['mazaq_contact_nonce']) ? sanitize_text_field((string) $_POST['mazaq_contact_nonce']) : '';
     if (!wp_verify_nonce($nonce, 'mazaq_contact_form')) {
         wp_safe_redirect(add_query_arg('contact_status', 'error', $redirect));
@@ -32,6 +42,9 @@ function mazaq_handle_contact_form(): void
         exit;
     }
 
+    // Increment rate limit counter (expires after 1 hour)
+    set_transient($transient_key, ($attempts ?: 0) + 1, HOUR_IN_SECONDS);
+
     $name = sanitize_text_field((string) ($_POST['name'] ?? ''));
     $email = sanitize_email((string) ($_POST['email'] ?? ''));
     $subject = sanitize_text_field((string) ($_POST['subject'] ?? ''));
@@ -43,7 +56,9 @@ function mazaq_handle_contact_form(): void
     }
 
     $to = get_option('admin_email');
-    $headers = ['Reply-To: ' . $name . ' <' . $email . '>'];
+    // Prevent email header injection by removing any newline characters
+    $safe_name = preg_replace('/[\r\n]+/', '', sanitize_text_field($name));
+    $headers = ['Reply-To: ' . $safe_name . ' <' . sanitize_email($email) . '>'];
     $body = "الاسم: {$name}\nالبريد: {$email}\n\n{$message}";
 
     $sent = wp_mail($to, $subject, $body, $headers);
@@ -57,8 +72,9 @@ function mazaq_handle_contact_form(): void
 
     $post_id = wp_insert_post($post_data);
     if ($post_id && !is_wp_error($post_id)) {
-        update_post_meta($post_id, '_contact_name', $name);
-        update_post_meta($post_id, '_contact_email', $email);
+        // Sanitize data before storing in meta
+        update_post_meta($post_id, '_contact_name', sanitize_text_field($name));
+        update_post_meta($post_id, '_contact_email', sanitize_email($email));
         $saved = true;
     } else {
         $saved = false;

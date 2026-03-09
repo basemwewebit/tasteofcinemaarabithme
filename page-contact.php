@@ -17,6 +17,7 @@ $status = isset($_GET['contact_status']) ? sanitize_text_field((string) $_GET['c
 <main class="flex-1 max-w-7xl mx-auto px-4 py-8 mb-16 w-full">
     <?php if ($status === 'success') : ?><p class="mb-6 p-4 rounded bg-green-100 text-green-800">تم إرسال رسالتك بنجاح.</p><?php endif; ?>
     <?php if ($status === 'error') : ?><p class="mb-6 p-4 rounded bg-red-100 text-red-800">حدث خطأ أثناء إرسال الرسالة.</p><?php endif; ?>
+    <?php if ($status === 'rate_limit') : ?><p class="mb-6 p-4 rounded bg-yellow-100 text-yellow-800">لقد تجاوزت الحد المسموح من المحاولات. يرجى المحاولة مرة أخرى بعد ساعة.</p><?php endif; ?>
 
     <div class="flex flex-col lg:flex-row gap-12">
         <div class="w-full lg:w-2/3 bg-white dark:bg-slate-800 rounded-2xl p-8 border border-slate-200 dark:border-slate-700 shadow-sm">

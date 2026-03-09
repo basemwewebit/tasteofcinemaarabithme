@@ -13,6 +13,7 @@ class TOC_Recaptcha_Admin
     {
         add_action('admin_menu', [self::class, 'add_settings_page']);
         add_action('admin_init', [self::class, 'register_settings']);
+        add_action('admin_notices', [self::class, 'show_missing_keys_warning']);
     }
 
     public static function add_settings_page(): void
@@ -116,6 +117,32 @@ class TOC_Recaptcha_Admin
             </form>
         </div>
         <?php
+    }
+
+    /**
+     * Show admin warning if reCAPTCHA keys are not configured.
+     */
+    public static function show_missing_keys_warning(): void
+    {
+        // Only show this warning on the settings page or main dashboard
+        $screen = get_current_screen();
+        if ($screen && !in_array($screen->id, ['dashboard', 'settings_page_toc-recaptcha-settings'], true)) {
+            return;
+        }
+
+        $site_key = get_option('toc_recaptcha_site_key', '');
+        $secret_key = get_option('toc_recaptcha_secret_key', '');
+
+        if (empty($site_key) || empty($secret_key)) {
+            $settings_url = admin_url('options-general.php?page=toc-recaptcha-settings');
+            printf(
+                '<div class="notice notice-warning"><p><strong>%s</strong> %s <a href="%s">%s</a></p></div>',
+                esc_html__('Security Warning:', 'tasteofcinemaarabithme'),
+                esc_html__('Google reCAPTCHA is not fully configured. Contact form protection may be limited.', 'tasteofcinemaarabithme'),
+                esc_url($settings_url),
+                esc_html__('Configure reCAPTCHA', 'tasteofcinemaarabithme')
+            );
+        }
     }
 }
 

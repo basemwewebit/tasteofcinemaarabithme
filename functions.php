@@ -17,9 +17,9 @@ $mazaq_includes = [
     'inc/toc-source-monitor.php',
     'inc/loader-ads-customizer.php',
     'inc/post-types/contact-message.php',
-    'inc/recaptcha/class-recaptcha-admin.php',
-    'inc/recaptcha/class-recaptcha-verify.php',
-    'inc/recaptcha/class-recaptcha-hooks.php',
+    // 'inc/recaptcha/class-recaptcha-admin.php',
+    // 'inc/recaptcha/class-recaptcha-verify.php',
+    // 'inc/recaptcha/class-recaptcha-hooks.php',
 ];
 
 foreach ($mazaq_includes as $file) {
