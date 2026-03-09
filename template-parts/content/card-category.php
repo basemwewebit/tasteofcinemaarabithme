@@ -1,5 +1,5 @@
 <article class="bg-white dark:bg-slate-800 rounded-2xl overflow-hidden group border border-slate-200 dark:border-slate-700 hover:border-primary transition-smooth shadow-sm hover:shadow-xl archive-item">
-    <a href="<?php the_permalink(); ?>" class="block relative aspect-video overflow-hidden">
+    <a href="<?php the_permalink(); ?>" class="block relative aspect-video overflow-hidden card-thumbnail-wrapper thumbnail-fallback">
         <?php if (has_post_thumbnail()) { the_post_thumbnail('card-thumbnail', ['class' => 'w-full h-full object-cover transform group-hover:scale-105 transition-smooth duration-500']); } ?>
         <?php if(!is_category()) { ?>
             <?php $cats = get_the_category(); if (!empty($cats)) : ?><div class="absolute top-4 right-4 bg-primary text-slate-900 text-xs font-bold px-3 py-1 rounded-full"><?php echo esc_html($cats[0]->name); ?></div><?php endif; ?>

@@ -17,9 +17,7 @@ $mazaq_includes = [
     'inc/toc-source-monitor.php',
     'inc/loader-ads-customizer.php',
     'inc/post-types/contact-message.php',
-    'inc/recaptcha/class-recaptcha-admin.php',
-    'inc/recaptcha/class-recaptcha-verify.php',
-    'inc/recaptcha/class-recaptcha-hooks.php',
+    'inc/homepage-customizer.php',
 ];
 
 foreach ($mazaq_includes as $file) {
@@ -108,3 +106,16 @@ function toc_get_related_posts($post_id, $count = 4) {
 }
 
 add_filter( 'wp_is_application_passwords_available', '__return_true' );
+
+/**
+ * T022: One-time cleanup for reCAPTCHA options.
+ */
+function toc_remove_recaptcha_options() {
+    if (!get_option('toc_recaptcha_cleaned_up')) {
+        delete_option('toc_recaptcha_site_key');
+        delete_option('toc_recaptcha_secret_key');
+        delete_option('toc_recaptcha_score_threshold');
+        update_option('toc_recaptcha_cleaned_up', true);
+    }
+}
+add_action('admin_init', 'toc_remove_recaptcha_options');

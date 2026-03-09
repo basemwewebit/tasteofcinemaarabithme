@@ -1,5 +1,5 @@
 <a href="<?php the_permalink(); ?>" class="group flex flex-col bg-white dark:bg-slate-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl border border-slate-200 dark:border-slate-700 hover:border-primary transition-smooth">
-    <div class="aspect-[3/4] overflow-hidden relative">
+    <div class="aspect-[3/4] overflow-hidden relative card-thumbnail-wrapper thumbnail-fallback">
         <?php if (has_post_thumbnail()) : ?>
             <?php the_post_thumbnail('search-poster', ['class' => 'w-full h-full object-cover transform group-hover:scale-105 transition-smooth duration-700']); ?>
         <?php endif; ?>

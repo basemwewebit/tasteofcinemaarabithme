@@ -310,6 +310,39 @@ jQuery(function ($) {
             $('.archive-item[data-category="' + filterVal + '"]').fadeIn(200);
         }
     });
+
+    // Smart Sticky Header Logic
+    const mainHeader = $('header[data-scroll-state]');
+    if (mainHeader.length) {
+        let lastScrollY = window.scrollY;
+        let ticking = false;
+        const scrollThreshold = 80;
+
+        window.addEventListener('scroll', function () {
+            if (!ticking) {
+                window.requestAnimationFrame(function () {
+                    const currentScrollY = window.scrollY;
+                    
+                    if (currentScrollY <= scrollThreshold) {
+                        mainHeader.attr('data-scroll-state', 'top');
+                        mainHeader.removeClass('header--scrolled-down header--scrolled-up');
+                    } else if (currentScrollY > lastScrollY && currentScrollY > scrollThreshold) {
+                        // Scrolling down
+                        mainHeader.attr('data-scroll-state', 'scrolled-down');
+                        mainHeader.removeClass('header--scrolled-up').addClass('header--scrolled-down');
+                    } else if (currentScrollY < lastScrollY && currentScrollY > scrollThreshold) {
+                        // Scrolling up
+                        mainHeader.attr('data-scroll-state', 'scrolled-up');
+                        mainHeader.removeClass('header--scrolled-down').addClass('header--scrolled-up');
+                    }
+                    
+                    lastScrollY = currentScrollY > 0 ? currentScrollY : 0;
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        }, { passive: true });
+    }
 });
 
 /**

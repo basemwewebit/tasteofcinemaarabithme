@@ -61,7 +61,7 @@ if (!$og_image) {
     </div>
 </div>
 
-<header class="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors">
+<header data-scroll-state="top" class="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors">
     <div class="container mx-auto px-4 h-20 flex items-center justify-between">
         <button id="mobile-menu-toggle" aria-label="Toggle Mobile Menu" class="lg:hidden p-2 text-slate-600 dark:text-slate-300 hover:text-primary transition-colors focus:outline-none">
             <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>

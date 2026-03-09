@@ -35,12 +35,6 @@ function mazaq_handle_contact_form(): void
         exit;
     }
 
-    // Verify Google reCAPTCHA v3
-    $token = isset($_POST['g-recaptcha-response']) ? $_POST['g-recaptcha-response'] : '';
-    if (!class_exists('TOC_Recaptcha_Verify') || !TOC_Recaptcha_Verify::verify_token($token)) {
-        wp_safe_redirect(add_query_arg('contact_status', 'error', $redirect));
-        exit;
-    }
 
     // Increment rate limit counter (expires after 1 hour)
     set_transient($transient_key, ($attempts ?: 0) + 1, HOUR_IN_SECONDS);

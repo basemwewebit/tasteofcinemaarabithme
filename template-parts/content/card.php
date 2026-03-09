@@ -1,5 +1,5 @@
 <article class="bg-white dark:bg-slate-800 rounded-2xl overflow-hidden group cursor-pointer border border-slate-200 dark:border-slate-700 hover:border-primary dark:hover:border-primary transition-smooth shadow-sm hover:shadow-xl">
-    <a href="<?php the_permalink(); ?>" class="relative block aspect-video overflow-hidden">
+    <a href="<?php the_permalink(); ?>" class="relative block aspect-video overflow-hidden card-thumbnail-wrapper thumbnail-fallback">
         <?php if (has_post_thumbnail()) : ?>
             <?php the_post_thumbnail('card-thumbnail', ['class' => 'lazy-image loaded w-full h-full object-cover transform group-hover:scale-105 transition-smooth duration-500']); ?>
         <?php endif; ?>

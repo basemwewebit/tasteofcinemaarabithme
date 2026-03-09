@@ -1,67 +1,71 @@
 <?php get_header(); ?>
 
-<?php get_template_part('template-parts/content/hero'); ?>
+<?php
+$sections = [
+    'hero' => ['slug' => 'hero', 'priority' => get_theme_mod('toc_hp_hero_priority', 1), 'enabled' => get_theme_mod('toc_hp_hero_enabled', true)],
+    'articles' => ['slug' => 'articles', 'priority' => get_theme_mod('toc_hp_articles_priority', 2), 'enabled' => get_theme_mod('toc_hp_articles_enabled', true)],
+    'categories' => ['slug' => 'categories', 'priority' => get_theme_mod('toc_hp_categories_priority', 3), 'enabled' => get_theme_mod('toc_hp_categories_enabled', false)],
+    'banner' => ['slug' => 'banner', 'priority' => get_theme_mod('toc_hp_banner_priority', 4), 'enabled' => get_theme_mod('toc_hp_banner_enabled', false)],
+    'sidebar' => ['slug' => 'sidebar', 'priority' => get_theme_mod('toc_hp_sidebar_priority', 5), 'enabled' => get_theme_mod('toc_hp_sidebar_enabled', true)],
+];
+uasort($sections, function($a, $b) { return $a['priority'] <=> $b['priority']; });
 
-<div class="max-w-7xl mx-auto px-4">
-    <?php get_template_part('template-parts/ads/ad-responsive'); ?>
-</div>
+$enabled_sections = array_filter($sections, function($s) { return $s['enabled']; });
+?>
 
-<main class="max-w-7xl mx-auto px-4 py-8 mb-16">
-    <div class="flex flex-col lg:flex-row gap-12">
-        <div class="w-full lg:w-2/3">
-            <div class="flex items-center justify-between mb-8 pb-4 border-b border-slate-200 dark:border-slate-800">
-                <h2 class="text-3xl font-bold text-slate-900 dark:text-white flex items-center gap-3"><span class="w-2 h-8 bg-primary rounded"></span>أحدث المقالات المضافة</h2>
-            </div>
-
-            <div id="infinite-scroll-container" class="grid grid-cols-1 md:grid-cols-2 gap-8" data-page="2">
-                <?php
-                $query = new WP_Query([
-                    'post_type' => 'post',
-                    'post_status' => 'publish',
-                    'posts_per_page' => 6,
-                    'paged' => 1,
-                    'post__not_in' => mazaq_get_hero_post_ids(),
-                ]);
-
-                if ($query->have_posts()) :
-                    $index = 1;
-                    $paged = get_query_var('paged') ? get_query_var('paged') : 1;
-                    while ($query->have_posts()) :
-                        $query->the_post();
-                        
-                        $global_index = (($paged - 1) * 6) + $index;
-                        
-                        // Inject Ad when global index is a multiple of 8
-                        // We check $global_index % 8 == 1 to show it AFTER the 8th item, or just use 0 depending on the logic.
-                        // Actually if we want an ad every 8 posts, and index is 1-based, we can output the ad BEFORE the 9th post (i.e. global_index % 8 === 1 && global_index > 1) or AFTER the 8th post (output ad after the template part)
-                        
-                        if ($global_index > 1 && ($global_index - 1) % 8 === 0) {
-                            get_template_part('template-parts/ads/ad-grid');
-                        }
-
-                        if ($index % 3 === 0) {
-                            get_template_part('template-parts/content/card-wide');
-                        } else {
-                            get_template_part('template-parts/content/card');
-                        }
-                        
-                        $index++;
-                    endwhile;
-                    wp_reset_postdata();
-                endif;
-                ?>
-            </div>
-
-            <div id="loading-indicator" class="hidden mt-12 flex justify-center items-center py-4">
-                <svg class="animate-spin h-8 w-8 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                </svg>
-            </div>
-        </div>
-
-        <?php get_sidebar(); ?>
-    </div>
-</main>
+<?php if (empty($enabled_sections)): ?>
+    <main class="max-w-7xl mx-auto px-4 py-20 mb-16 text-center">
+        <h1 class="text-3xl font-bold mb-6 text-slate-900 dark:text-white">مرحباً بك في <?php bloginfo('name'); ?></h1>
+        <p class="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto"><?php bloginfo('description'); ?></p>
+    </main>
+<?php else: ?>
+    <main class="front-page-sections flex flex-col pt-0 pb-16">
+        <?php
+        // Buffer the main content blocks so we can layout correctly
+        $main_content = '';
+        ob_start();
+        foreach ($enabled_sections as $s) {
+            if ($s['slug'] !== 'sidebar' && $s['slug'] !== 'hero') {
+                get_template_part('template-parts/homepage/section', $s['slug']);
+            }
+        }
+        $main_content = ob_get_clean();
+        
+        // Loop again to output exactly in priority order, but wrap sidebar/articles together
+        $flex_started = false;
+        
+        foreach ($enabled_sections as $s) {
+            if ($s['slug'] === 'hero') {
+                // Hero breaks out, so if we started flex we must end it (though hero is usually first)
+                if ($flex_started) {
+                    echo '</div></div></div>';
+                    $flex_started = false;
+                }
+                get_template_part('template-parts/homepage/section', 'hero');
+                echo '<div class="h-8"></div>'; // Some spacing
+            } else {
+                if (!$flex_started) {
+                    echo '<div class="max-w-7xl mx-auto px-4 w-full">';
+                    echo '<div class="flex flex-col lg:flex-row gap-12">';
+                    echo '<div class="w-full ' . (!empty($enabled_sections['sidebar']) ? 'lg:w-2/3' : '') . ' flex flex-col gap-16">';
+                    $flex_started = true;
+                    // Echo main content once inside the flex layout
+                    echo $main_content;
+                    echo '</div>'; // end w-full / lg:w-2/3
+                    
+                    if (!empty($enabled_sections['sidebar'])) {
+                        get_template_part('template-parts/homepage/section', 'sidebar');
+                    }
+                    echo '</div></div>';
+                }
+            }
+        }
+        
+        if ($flex_started) {
+            // It's closed directly after main content within the loop.
+        }
+        ?>
+    </main>
+<?php endif; ?>
 
 <?php get_footer(); ?>
