@@ -7,6 +7,31 @@
 </div>
 
 <main class="max-w-7xl mx-auto px-4 py-8 mb-16">
+
+<?php
+
+    
+    $categories = get_categories([
+        'orderby' => 'count',
+        'order'   => 'DESC',
+        'hide_empty' => true,
+    ]);
+?>
+    <div class="w-full pb-16">
+       
+        
+        <div class="grid grid-cols-2 lg:grid-cols-3  gap-6">
+            <?php foreach ($categories as $category) : ?>
+                <a href="<?php echo esc_url(get_category_link($category->term_id)); ?>" class="group bg-slate-100 dark:bg-slate-800 rounded-xl p-6 text-center border border-slate-200 dark:border-slate-700 hover:border-primary dark:hover:border-primary transition-all hover:shadow-md">
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2 group-hover:text-primary transition-colors"><?php echo esc_html($category->name); ?></h3>
+                    <span class="text-sm text-slate-500 dark:text-slate-400 block"><?php echo sprintf(esc_html__('%d مقال', 'mazaq'), $category->count); ?></span>
+                </a>
+            <?php endforeach; ?>
+        </div>
+    </div>
+
+
+
     <div class="flex flex-col lg:flex-row gap-12">
         <div class="w-full lg:w-2/3">
             <div class="flex items-center justify-between mb-8 pb-4 border-b border-slate-200 dark:border-slate-800">
