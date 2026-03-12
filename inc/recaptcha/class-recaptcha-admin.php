@@ -30,6 +30,7 @@ class TOC_Recaptcha_Admin
     public static function register_settings(): void
     {
         register_setting(self::SETTINGS_GROUP, 'toc_recaptcha_site_key', ['type' => 'string']);
+        register_setting(self::SETTINGS_GROUP, 'toc_recaptcha_project_id', ['type' => 'string']);
         register_setting(self::SETTINGS_GROUP, 'toc_recaptcha_secret_key', ['type' => 'string']);
         
         register_setting(self::SETTINGS_GROUP, 'toc_recaptcha_score_threshold', [
@@ -54,8 +55,16 @@ class TOC_Recaptcha_Admin
         );
 
         add_settings_field(
+            'toc_recaptcha_project_id',
+            __('Project ID', 'tasteofcinemaarabithme'),
+            [self::class, 'render_project_id_field'],
+            'toc-recaptcha-settings',
+            'toc_recaptcha_main_section'
+        );
+
+        add_settings_field(
             'toc_recaptcha_secret_key',
-            __('Secret Key', 'tasteofcinemaarabithme'),
+            __('Secret Key/API Key', 'tasteofcinemaarabithme'),
             [self::class, 'render_secret_key_field'],
             'toc-recaptcha-settings',
             'toc_recaptcha_main_section'
@@ -85,11 +94,18 @@ class TOC_Recaptcha_Admin
         echo '<p class="description">' . esc_html__('The public reCAPTCHA v3 Site Key.', 'tasteofcinemaarabithme') . '</p>';
     }
 
+    public static function render_project_id_field(): void
+    {
+        $val = get_option('toc_recaptcha_project_id', '');
+        echo '<input type="text" name="toc_recaptcha_project_id" value="' . esc_attr($val) . '" class="regular-text" />';
+        echo '<p class="description">' . esc_html__('The Google Cloud Project ID for reCAPTCHA Enterprise.', 'tasteofcinemaarabithme') . '</p>';
+    }
+
     public static function render_secret_key_field(): void
     {
         $val = get_option('toc_recaptcha_secret_key', '');
         echo '<input type="password" name="toc_recaptcha_secret_key" value="' . esc_attr($val) . '" class="regular-text" />';
-        echo '<p class="description">' . esc_html__('The private reCAPTCHA v3 Secret Key.', 'tasteofcinemaarabithme') . '</p>';
+        echo '<p class="description">' . esc_html__('The private reCAPTCHA API/Secret Key (or legacy secret). If using Application Default Credentials, you may not need this.', 'tasteofcinemaarabithme') . '</p>';
     }
 
     public static function render_threshold_field(): void
@@ -131,14 +147,14 @@ class TOC_Recaptcha_Admin
         }
 
         $site_key = get_option('toc_recaptcha_site_key', '');
-        $secret_key = get_option('toc_recaptcha_secret_key', '');
+        $project_id = get_option('toc_recaptcha_project_id', '');
 
-        if (empty($site_key) || empty($secret_key)) {
+        if (empty($site_key) || empty($project_id)) {
             $settings_url = admin_url('options-general.php?page=toc-recaptcha-settings');
             printf(
                 '<div class="notice notice-warning"><p><strong>%s</strong> %s <a href="%s">%s</a></p></div>',
                 esc_html__('Security Warning:', 'tasteofcinemaarabithme'),
-                esc_html__('Google reCAPTCHA is not fully configured. Contact form protection may be limited.', 'tasteofcinemaarabithme'),
+                esc_html__('Google reCAPTCHA Enterprise is not fully configured. Contact form protection may be limited.', 'tasteofcinemaarabithme'),
                 esc_url($settings_url),
                 esc_html__('Configure reCAPTCHA', 'tasteofcinemaarabithme')
             );

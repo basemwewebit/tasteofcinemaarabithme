@@ -13,8 +13,8 @@ document.addEventListener('DOMContentLoaded', function () {
         form.addEventListener('submit', function (e) {
             e.preventDefault();
 
-            grecaptcha.ready(function () {
-                grecaptcha.execute(tocRecaptchaConfig.siteKey, {action: 'submit'}).then(function (token) {
+            grecaptcha.enterprise.ready(function () {
+                grecaptcha.enterprise.execute(tocRecaptchaConfig.siteKey, {action: 'submit'}).then(function (token) {
                     
                     // Remove any existing token input to avoid duplicates
                     const existingInput = form.querySelector('input[name="g-recaptcha-response"]');
@@ -29,9 +29,20 @@ document.addEventListener('DOMContentLoaded', function () {
                     tokenInput.value = token;
                     form.appendChild(tokenInput);
 
+                    // Add hidden input to simulate the submit button being pressed
+                    // This is required because form.submit() bypasses the submit button's value
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    if (submitBtn && submitBtn.name) {
+                        const hiddenSubmit = document.createElement('input');
+                        hiddenSubmit.type = 'hidden';
+                        hiddenSubmit.name = submitBtn.name;
+                        hiddenSubmit.value = submitBtn.value || '1';
+                        form.appendChild(hiddenSubmit);
+                    }
+
                     // Submit the form programmatically, bypassing this 'submit' event listener
                     form.submit();
-                });
+                }).catch(function(err) {});
             });
         });
     });

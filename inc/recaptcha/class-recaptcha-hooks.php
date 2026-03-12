@@ -48,8 +48,8 @@ class TOC_Recaptcha_Hooks
 
         if ($should_load) {
             wp_enqueue_script(
-                'google-recaptcha-v3',
-                'https://www.google.com/recaptcha/api.js?render=' . esc_attr($site_key),
+                'google-recaptcha-enterprise',
+                'https://www.google.com/recaptcha/enterprise.js?render=' . esc_attr($site_key),
                 [],
                 null,
                 true
@@ -58,7 +58,7 @@ class TOC_Recaptcha_Hooks
             wp_enqueue_script(
                 'toc-recaptcha-handler',
                 get_template_directory_uri() . '/assets/js/recaptcha-handler.js',
-                ['google-recaptcha-v3'],
+                ['google-recaptcha-enterprise'],
                 filemtime(get_template_directory() . '/assets/js/recaptcha-handler.js'),
                 true
             );
@@ -82,7 +82,7 @@ class TOC_Recaptcha_Hooks
 
         $token = $_POST['g-recaptcha-response'] ?? '';
         
-        if (!TOC_Recaptcha_Verify::verify_token($token)) {
+        if (!TOC_Recaptcha_Verify::verify_token($token, 'submit')) {
             return new WP_Error('recaptcha_failed', __('<strong>ERROR</strong>: reCAPTCHA verification failed. You may be a bot.', 'tasteofcinemaarabithme'));
         }
 
@@ -96,7 +96,7 @@ class TOC_Recaptcha_Hooks
     {
         $token = $_POST['g-recaptcha-response'] ?? '';
         
-        if (!TOC_Recaptcha_Verify::verify_token($token)) {
+        if (!TOC_Recaptcha_Verify::verify_token($token, 'submit')) {
             $errors->add('recaptcha_failed', __('<strong>ERROR</strong>: reCAPTCHA verification failed.', 'tasteofcinemaarabithme'));
         }
 
@@ -111,7 +111,7 @@ class TOC_Recaptcha_Hooks
         if (isset($_POST['user_login'])) {
             $token = $_POST['g-recaptcha-response'] ?? '';
             
-            if (!TOC_Recaptcha_Verify::verify_token($token)) {
+            if (!TOC_Recaptcha_Verify::verify_token($token, 'submit')) {
                 wp_die(__('<strong>ERROR</strong>: reCAPTCHA verification failed.', 'tasteofcinemaarabithme'));
             }
         }
