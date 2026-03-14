@@ -21,6 +21,11 @@ class TOC_Recaptcha_Hooks
 
     public static function enqueue_scripts(): void
     {
+        // Local development domains bypass reCAPTCHA verification and script loading.
+        if (class_exists('TOC_Recaptcha_Verify') && TOC_Recaptcha_Verify::is_local_environment()) {
+            return;
+        }
+
         $site_key = get_option('toc_recaptcha_site_key', '');
         
         // Skip loading if no site key is configured

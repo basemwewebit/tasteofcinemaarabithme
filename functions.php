@@ -18,6 +18,7 @@ $mazaq_includes = [
     'inc/breadcrumb.php',
     'inc/helpers.php',
     'inc/admin-social-reminder.php',
+    'inc/admin-hero-daily.php',
     'inc/toc-source-monitor.php',
     'inc/loader-ads-customizer.php',
     'inc/post-types/contact-message.php',

@@ -100,8 +100,9 @@ add_filter('the_content', 'mazaq_balance_content_tags', 999);
 /**
  * Get all eligible hero post IDs based on priority:
  * 1. ACF option 'hero_featured_post'
- * 2. Sticky posts
- * 3. Latest post fallback
+ * 2. Daily rotation hero posts (auto-generated)
+ * 3. Sticky posts
+ * 4. Latest posts fallback
  *
  * @return int[]
  */
@@ -109,30 +110,42 @@ function mazaq_get_hero_post_ids(): array
 {
     $ids = [];
 
-    // 1. ACF Option
+    // 1. ACF Option (highest priority - manual override)
     $acf_id = function_exists('get_field') ? (int) get_field('hero_featured_post', 'option') : 0;
     if ($acf_id > 0) {
-        $ids[] = $acf_id;
+        return [$acf_id];
     }
 
-    // 2. Sticky Posts
-    if (empty($ids)) {
-        $sticky = get_option('sticky_posts');
-        if (!empty($sticky)) {
-            $ids = array_map('intval', (array) $sticky);
+    // 2. Daily Rotation Hero Posts (auto-generated daily batch)
+    if (function_exists('mazaq_hero_daily_get_state')) {
+        $daily_state = mazaq_hero_daily_get_state();
+        if (!empty($daily_state['hero_post_ids']) && $daily_state['rotation_date'] === mazaq_hero_daily_today()) {
+            return $daily_state['hero_post_ids'];
+        }
+
+        // Generate batch if not exists for today (lazy generation)
+        $daily_state = mazaq_hero_daily_prepare_today_batch(false);
+        if (!empty($daily_state['hero_post_ids'])) {
+            return $daily_state['hero_post_ids'];
         }
     }
 
-    // 3. Fallback to latest post
+    // 3. Sticky Posts (legacy fallback)
+    $sticky = get_option('sticky_posts');
+    if (!empty($sticky)) {
+        $ids = array_map('intval', (array) $sticky);
+    }
+
+    // 4. Fallback to latest posts (2-3 posts)
     if (empty($ids)) {
         $latest = get_posts([
             'post_type'      => 'post',
-            'posts_per_page' => 1,
+            'posts_per_page' => 3,
             'fields'         => 'ids',
             'post_status'    => 'publish',
         ]);
         if (!empty($latest)) {
-            $ids[] = (int) $latest[0];
+            $ids = array_map('intval', $latest);
         }
     }
 

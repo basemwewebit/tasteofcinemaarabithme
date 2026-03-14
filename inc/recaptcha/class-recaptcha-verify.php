@@ -14,6 +14,48 @@ use Google\Cloud\RecaptchaEnterprise\V1\TokenProperties\InvalidReason;
 class TOC_Recaptcha_Verify
 {
     /**
+     * Detect local development domains where reCAPTCHA should be bypassed.
+     */
+    public static function is_local_environment(): bool
+    {
+        $hosts = [];
+
+        $home_host = wp_parse_url(home_url('/'), PHP_URL_HOST);
+        if (is_string($home_host) && '' !== $home_host) {
+            $hosts[] = strtolower($home_host);
+        }
+
+        $site_host = wp_parse_url(site_url('/'), PHP_URL_HOST);
+        if (is_string($site_host) && '' !== $site_host) {
+            $hosts[] = strtolower($site_host);
+        }
+
+        $http_host = $_SERVER['HTTP_HOST'] ?? '';
+        if (is_string($http_host) && '' !== $http_host) {
+            $parsed_http_host = wp_parse_url('http://' . $http_host, PHP_URL_HOST);
+            if (is_string($parsed_http_host) && '' !== $parsed_http_host) {
+                $hosts[] = strtolower($parsed_http_host);
+            }
+        }
+
+        $hosts = array_unique(array_filter($hosts));
+
+        foreach ($hosts as $host) {
+            $normalized_host = trim($host, '[]');
+
+            if (in_array($normalized_host, ['localhost', '127.0.0.1', '::1'], true)) {
+                return true;
+            }
+
+            if (str_ends_with($normalized_host, '.local') || str_ends_with($normalized_host, '.test')) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Validates a given token against the Google Cloud Recaptcha Enterprise API.
      *
      * @param string $token The g-recaptcha-response token.
@@ -22,6 +64,11 @@ class TOC_Recaptcha_Verify
      */
     public static function verify_token(string $token, string $action = 'submit'): bool
     {
+        // Explicit local bypass to keep local auth/forms usable without reCAPTCHA.
+        if (self::is_local_environment()) {
+            return true;
+        }
+
         $site_key = get_option('toc_recaptcha_site_key', '');
         $project_id = get_option('toc_recaptcha_project_id', '');
         
