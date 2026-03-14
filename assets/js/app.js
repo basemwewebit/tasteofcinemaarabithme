@@ -49,6 +49,175 @@ jQuery(function ($) {
         });
     });
 
+    const randomFilmPopup = $('#random-film-popup');
+    const randomFilmOpen = $('#random-film-open');
+    const randomFilmClose = $('#random-film-close');
+    const randomFilmNext = $('#random-film-next');
+    const randomFilmRetry = $('#random-film-retry');
+    const randomFilmDialog = $('#random-film-dialog');
+    const randomFilmLoading = $('#random-film-loading');
+    const randomFilmError = $('#random-film-error');
+    const randomFilmErrorText = $('#random-film-error-text');
+    const randomFilmContent = $('#random-film-content');
+    const randomFilmImage = $('#random-film-image');
+    const randomFilmCategory = $('#random-film-category');
+    const randomFilmCategorySelect = $('#random-film-category-select');
+    const randomFilmTitle = $('#random-film-title');
+    const randomFilmExcerpt = $('#random-film-excerpt');
+    const randomFilmReadLink = $('#random-film-read-link');
+
+    if (randomFilmPopup.length && randomFilmOpen.length) {
+        const shownFilmIds = [];
+        let isRandomFilmLoading = false;
+
+        function unlockBodyIfNoOverlayOpen() {
+            const isSearchOpen = searchOverlay.length && !searchOverlay.hasClass('hidden');
+            const isMenuOpen = menuOverlay.length && !menuOverlay.hasClass('hidden');
+
+            if (!isSearchOpen && !isMenuOpen) {
+                $('body').removeClass('overflow-hidden');
+            }
+        }
+
+        function setRandomFilmLoading(isLoading) {
+            isRandomFilmLoading = isLoading;
+            if (isLoading) {
+                randomFilmLoading.removeClass('hidden').addClass('flex');
+                randomFilmError.addClass('hidden');
+                return;
+            }
+
+            randomFilmLoading.addClass('hidden').removeClass('flex');
+        }
+
+        function renderRandomFilm(film) {
+            randomFilmTitle.text(film.title || '');
+            randomFilmExcerpt.text(film.excerpt || '');
+
+            if (film.category) {
+                randomFilmCategory.text(film.category).removeClass('hidden');
+            } else {
+                randomFilmCategory.text('').addClass('hidden');
+            }
+
+            randomFilmReadLink.attr('href', film.permalink || '#');
+            randomFilmImage.attr('src', film.image || '');
+            randomFilmImage.attr('alt', film.title || '');
+
+            randomFilmError.addClass('hidden');
+            randomFilmContent.removeClass('hidden');
+
+            const filmId = parseInt(film.id, 10);
+            if (Number.isFinite(filmId) && filmId > 0 && shownFilmIds.indexOf(filmId) === -1) {
+                shownFilmIds.push(filmId);
+                if (shownFilmIds.length > 15) {
+                    shownFilmIds.shift();
+                }
+            }
+        }
+
+        function showRandomFilmError(message) {
+            randomFilmErrorText.text(message || 'تعذر تحميل الاقتراح حالياً.');
+            randomFilmContent.addClass('hidden');
+            randomFilmError.removeClass('hidden');
+        }
+
+        function requestRandomFilm() {
+            if (isRandomFilmLoading) {
+                return;
+            }
+
+            const selectedCategoryId = randomFilmCategorySelect.length
+                ? parseInt(randomFilmCategorySelect.val(), 10) || 0
+                : 0;
+
+            setRandomFilmLoading(true);
+
+            $.post(mazaq_ajax.ajax_url, {
+                action: mazaq_ajax.random_film_action || 'mazaq_get_random_film',
+                nonce: mazaq_ajax.random_film_nonce,
+                category_id: selectedCategoryId,
+                exclude_ids: shownFilmIds
+            }).done(function (response) {
+                if (response.success && response.data && response.data.film) {
+                    renderRandomFilm(response.data.film);
+                    return;
+                }
+
+                const message = response && response.data && response.data.message
+                    ? response.data.message
+                    : 'تعذر تحميل الاقتراح حالياً.';
+                showRandomFilmError(message);
+            }).fail(function () {
+                showRandomFilmError('حدث خطأ في الاتصال. حاول مرة أخرى.');
+            }).always(function () {
+                setRandomFilmLoading(false);
+            });
+        }
+
+        function openRandomFilmPopup() {
+            randomFilmPopup.removeClass('hidden').addClass('flex');
+            randomFilmPopup.attr('aria-hidden', 'false');
+            $('body').addClass('overflow-hidden');
+            requestRandomFilm();
+        }
+
+        function closeRandomFilmPopup() {
+            randomFilmPopup.addClass('hidden').removeClass('flex');
+            randomFilmPopup.attr('aria-hidden', 'true');
+            unlockBodyIfNoOverlayOpen();
+        }
+
+        randomFilmOpen.on('click', function (e) {
+            e.preventDefault();
+            openRandomFilmPopup();
+        });
+
+        randomFilmClose.on('click', function (e) {
+            e.preventDefault();
+            closeRandomFilmPopup();
+        });
+
+        randomFilmPopup.on('click', function (e) {
+            if (!randomFilmDialog.length) {
+                closeRandomFilmPopup();
+                return;
+            }
+
+            if (randomFilmDialog.is(e.target) || randomFilmDialog.has(e.target).length) {
+                return;
+            }
+
+            closeRandomFilmPopup();
+        });
+
+        randomFilmNext.on('click', function (e) {
+            e.preventDefault();
+            requestRandomFilm();
+        });
+
+        randomFilmRetry.on('click', function (e) {
+            e.preventDefault();
+            requestRandomFilm();
+        });
+
+        if (randomFilmCategorySelect.length) {
+            randomFilmCategorySelect.on('change', function () {
+                shownFilmIds.length = 0;
+
+                if (!randomFilmPopup.hasClass('hidden')) {
+                    requestRandomFilm();
+                }
+            });
+        }
+
+        $(document).on('keydown', function (e) {
+            if (e.key === 'Escape' && !randomFilmPopup.hasClass('hidden')) {
+                closeRandomFilmPopup();
+            }
+        });
+    }
+
     const lazyImages = $('.lazy-image');
     if ('IntersectionObserver' in window) {
         const lazyObserver = new IntersectionObserver(function (entries, observer) {

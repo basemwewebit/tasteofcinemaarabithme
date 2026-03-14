@@ -9,12 +9,21 @@
 <main class="max-w-7xl mx-auto px-4 py-8 mb-16">
 
 <?php
-
-    
     $categories = get_categories([
         'orderby' => 'count',
         'order'   => 'DESC',
         'hide_empty' => true,
+    ]);
+
+    $categories = array_values(array_filter(
+        $categories,
+        static function ($category): bool {
+            return isset($category->count) && (int) $category->count > 0;
+        }
+    ));
+
+    get_template_part('template-parts/common/random-film-popup', null, [
+        'categories' => $categories,
     ]);
 ?>
     <div class="w-full pb-16">

@@ -791,6 +791,29 @@ html:not(.dark) .hero-carousel__dot {
         width: 2rem;
     }
 }
+
+.random-film-card-glow {
+    position: relative;
+    background-image:
+        radial-gradient(circle at 12% 8%, rgba(212, 175, 55, 0.12), transparent 35%),
+        radial-gradient(circle at 88% 90%, rgba(148, 163, 184, 0.14), transparent 34%);
+}
+
+.dark .random-film-card-glow {
+    background-image:
+        radial-gradient(circle at 14% 8%, rgba(212, 175, 55, 0.18), transparent 32%),
+        radial-gradient(circle at 86% 88%, rgba(15, 23, 42, 0.75), transparent 42%);
+}
+
+html[dir="rtl"] .random-film-arrow {
+    transform: scaleX(-1);
+}
+
+html[dir="rtl"] #random-film-close {
+    right: 1rem;
+    left: auto;
+}
+
 html,body {
     overflow-x: hidden !important;
 }

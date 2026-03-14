@@ -17,6 +17,7 @@ $mazaq_includes = [
     'inc/infinite-scroll.php',
     'inc/breadcrumb.php',
     'inc/helpers.php',
+    'inc/random-film-popup.php',
     'inc/admin-social-reminder.php',
     'inc/admin-hero-daily.php',
     'inc/toc-source-monitor.php',
