@@ -26,9 +26,11 @@ if (isset($args['categories']) && is_array($args['categories'])) {
                 <?php endforeach; ?>
             </select>
 
-            <button id="random-film-open" type="button" class="h-12 inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold px-5 shadow-md hover:scale-[1.01] transition-transform">
-                <span><?php esc_html_e('اقترح لي فيلم', 'mazaq'); ?></span>
-                <svg class="random-film-arrow w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            <button id="random-film-open" type="button" class="random-film-trigger h-12 inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold px-5 shadow-md hover:scale-[1.01] transition-transform">
+                <span class="random-film-button-text"><?php esc_html_e('اقترح لي فيلم', 'mazaq'); ?></span>
+                <span class="random-film-arrow-wrap" aria-hidden="true">
+                    <svg class="random-film-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </span>
             </button>
         </div>
     </div>
