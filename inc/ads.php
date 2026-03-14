@@ -13,14 +13,15 @@ function mazaq_get_ad_slot(string $slot_name): string
 function mazaq_render_ad(string $slot_name, string $format = 'responsive', string $classes = ''): void
 {
     $slot_id = mazaq_get_ad_slot($slot_name);
+    $publisher = function_exists('get_field') ? (string) get_field('adsense_publisher_id', 'option') : '';
 
     $class_attr = trim('ad-container ' . $classes);
     echo '<div class="' . esc_attr($class_attr) . '" data-slot-name="' . esc_attr($slot_name) . '">';
 
     $dummy_ads_enabled = false; // Set to false to disable dummy ads and show empty box or AdSense
 
-    if ($slot_id && !$dummy_ads_enabled) {
-        echo '<ins class="adsbygoogle w-full" style="display:block; min-width:100px;" data-ad-client="' . esc_attr((string) get_field('adsense_publisher_id', 'option')) . '" data-ad-slot="' . esc_attr($slot_id) . '" data-ad-format="' . esc_attr($format) . '" data-full-width-responsive="true"></ins>';
+    if ($slot_id && $publisher && !$dummy_ads_enabled) {
+        echo '<ins class="adsbygoogle w-full" style="display:block; min-width:100px;" data-ad-client="' . esc_attr((string) $publisher) . '" data-ad-slot="' . esc_attr($slot_id) . '" data-ad-format="' . esc_attr($format) . '" data-full-width-responsive="true"></ins>';
         echo '<script>try { (adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) { console.warn("AdSense layout issue: No slot size"); }</script>';
     } else {
         if ($dummy_ads_enabled) {
@@ -67,26 +68,33 @@ function mazaq_inject_in_article_ads(string $content): string
         return $content;
     }
 
-    // Optional: remove early exit so the ad placeholders are ALWAYS shown in admin/preview.
-    // if (!mazaq_get_ad_slot('ad_slot_in_article')) {
-    //    return $content;
-    // }
-
     $parts = explode('</p>', $content);
-    if (count($parts) < 4) {
+    
+    // We need at least 3 paragraphs to inject an ad
+    if (count($parts) <= 3) {
         return $content;
     }
 
     $new_content = '';
+    $max_ads = 3; // Maximum 3 injected ads to avoid clutter
+    $ad_count = 0;
+
     foreach ($parts as $index => $part) {
-        if (trim($part) === '') {
-            continue;
+        // If it's the last element, it's either empty (if string ended in </p>) 
+        // or contains the remainder of the content. Don't append </p>.
+        if ($index === count($parts) - 1) {
+            $new_content .= $part;
+            break;
         }
+
         $new_content .= $part . '</p>';
-        if (($index + 1) % 3 === 0) {
+
+        // Check if the current part actually contains text to avoid injecting after empty splits or spacer divs
+        if (strlen(trim(strip_tags($part))) > 0 && ($index + 1) % 3 === 0 && $ad_count < $max_ads) {
             ob_start();
             get_template_part('template-parts/ads/ad-in-article');
             $new_content .= (string) ob_get_clean();
+            $ad_count++;
         }
     }
 
