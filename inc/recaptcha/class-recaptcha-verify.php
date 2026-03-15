@@ -124,15 +124,9 @@ class TOC_Recaptcha_Verify
         $site_key = get_option('toc_recaptcha_site_key', '');
         $project_id = get_option('toc_recaptcha_project_id', '');
 
-        // Get fail-open setting from admin (default to closed for security)
-        $fail_open = get_option('toc_recaptcha_fail_open', '0') === '1';
-
-        // Configuration check - fail closed in production unless fail-open is enabled
+        // Configuration check - fail closed in production
         if (empty($site_key) || empty($project_id)) {
-            if ($fail_open) {
-                return true;
-            }
-            error_log('reCAPTCHA Configuration Error: Missing site_key or project_id');
+            error_log('reCAPTCHA Configuration Error: Missing credentials');
             return false;
         }
 
@@ -174,11 +168,7 @@ class TOC_Recaptcha_Verify
             } else {
                 // Fallback to REST API passing the API Key or Legacy Secret
                 if (empty($api_key)) {
-                    if ($fail_open) {
-                        error_log('reCAPTCHA Verify Error: Missing API Key for REST fallback. Failing open.');
-                        return true;
-                    }
-                    error_log('reCAPTCHA Verify Error: Missing API Key for REST fallback.');
+                    error_log('reCAPTCHA Verify Error: Missing API Key');
                     return false;
                 }
 
@@ -196,11 +186,7 @@ class TOC_Recaptcha_Verify
                     ]);
 
                     if (is_wp_error($response)) {
-                        if ($fail_open) {
-                            error_log('reCAPTCHA Verify Error: ' . $response->get_error_message() . ' -> Failing open.');
-                            return true;
-                        }
-                        error_log('reCAPTCHA Verify Error: ' . $response->get_error_message());
+                        error_log('reCAPTCHA Verify Error: Request failed');
                         return false;
                     }
 
@@ -208,11 +194,7 @@ class TOC_Recaptcha_Verify
                     $result = json_decode($body_json, true);
 
                     if (empty($result)) {
-                        if ($fail_open) {
-                            error_log('reCAPTCHA Verify Legacy REST Error: Empty response -> Failing open.');
-                            return true;
-                        }
-                        error_log('reCAPTCHA Verify Legacy REST Error: Empty response.');
+                        error_log('reCAPTCHA Verify Error: Empty response');
                         return false;
                     }
 
@@ -239,11 +221,7 @@ class TOC_Recaptcha_Verify
                     ]);
 
                     if (is_wp_error($response)) {
-                        if ($fail_open) {
-                            error_log('reCAPTCHA Verify Error: ' . $response->get_error_message() . ' -> Failing open.');
-                            return true;
-                        }
-                        error_log('reCAPTCHA Verify Error: ' . $response->get_error_message());
+                        error_log('reCAPTCHA Verify Error: Request failed');
                         return false;
                     }
 
@@ -251,11 +229,7 @@ class TOC_Recaptcha_Verify
                     $result = json_decode($body_json, true);
 
                     if (empty($result) || isset($result['error'])) {
-                        if ($fail_open) {
-                            error_log('reCAPTCHA Verify REST Error: ' . ($result['error']['message'] ?? 'Unknown Error') . ' -> Failing open.');
-                            return true;
-                        }
-                        error_log('reCAPTCHA Verify REST Error: ' . ($result['error']['message'] ?? 'Unknown Error'));
+                        error_log('reCAPTCHA Verify Error: API error');
                         return false;
                     }
 
@@ -268,27 +242,23 @@ class TOC_Recaptcha_Verify
 
             // Check if the token is valid.
             if (!$is_valid) {
-                error_log("reCAPTCHA Verify Error: Token invalid. Reason: {$invalid_reason}");
+                error_log('reCAPTCHA Verify Error: Invalid token');
                 return false;
             }
 
             // Check if the expected action was executed.
             if ($response_action !== $action) {
-                error_log("reCAPTCHA Verify Error: Action mismatch. Expected: {$action}, Got: {$response_action}");
+                error_log('reCAPTCHA Verify Error: Action mismatch');
                 return false;
             }
 
             if ($score < $threshold) {
-                error_log("reCAPTCHA Verify failed score. Score is: {$score}");
+                error_log('reCAPTCHA Verify Error: Score below threshold');
                 return false; // Spam/bot detected
             }
 
         } catch (\Exception $e) {
-            if ($fail_open) {
-                error_log('reCAPTCHA Verify Exception: ' . $e->getMessage() . ' -> Failing open.');
-                return true;
-            }
-            error_log('reCAPTCHA Verify Exception: ' . $e->getMessage());
+            error_log('reCAPTCHA Verify Exception: Validation failed');
             return false;
         } finally {
             if (isset($client)) {

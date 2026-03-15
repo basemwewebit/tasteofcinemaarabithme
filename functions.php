@@ -113,4 +113,10 @@ function toc_get_related_posts($post_id, $count = 4) {
     return $related;
 }
 
-add_filter( 'wp_is_application_passwords_available', '__return_true' );
+/**
+ * Restrict application passwords to users who can edit posts (editors, admins, etc.)
+ */
+add_filter('wp_is_application_passwords_available', function ($available, $user) {
+    // Only allow application passwords for users with edit_posts capability
+    return $user && user_can($user, 'edit_posts');
+}, 10, 2);
