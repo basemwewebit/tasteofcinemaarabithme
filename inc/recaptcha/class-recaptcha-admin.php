@@ -39,6 +39,12 @@ class TOC_Recaptcha_Admin
             'default'           => 0.5
         ]);
 
+        register_setting(self::SETTINGS_GROUP, 'toc_recaptcha_fail_open', [
+            'type'              => 'string',
+            'sanitize_callback' => function($input) { return $input === '1' ? '1' : '0'; },
+            'default'           => '0'
+        ]);
+
         add_settings_section(
             'toc_recaptcha_main_section',
             __('API Configuration', 'tasteofcinemaarabithme'),
@@ -74,6 +80,14 @@ class TOC_Recaptcha_Admin
             'toc_recaptcha_score_threshold',
             __('Score Threshold', 'tasteofcinemaarabithme'),
             [self::class, 'render_threshold_field'],
+            'toc-recaptcha-settings',
+            'toc_recaptcha_main_section'
+        );
+
+        add_settings_field(
+            'toc_recaptcha_fail_open',
+            __('Fail-Open Mode', 'tasteofcinemaarabithme'),
+            [self::class, 'render_fail_open_field'],
             'toc-recaptcha-settings',
             'toc_recaptcha_main_section'
         );
@@ -115,6 +129,24 @@ class TOC_Recaptcha_Admin
         echo '<p class="description">' . esc_html__('Minimum passing score between 0.0 and 1.0. A score of 0.5 is recommended.', 'tasteofcinemaarabithme') . '</p>';
     }
 
+    public static function render_fail_open_field(): void
+    {
+        $val = get_option('toc_recaptcha_fail_open', '0');
+        $checked = checked($val, '1', false);
+
+        echo '<label>';
+        echo '<input type="checkbox" name="toc_recaptcha_fail_open" value="1" ' . $checked . ' />';
+        echo ' ' . esc_html__('Allow form submissions when reCAPTCHA verification fails (not recommended for production)', 'tasteofcinemaarabithme');
+        echo '</label>';
+
+        $current_env = function_exists('wp_get_environment_type') ? wp_get_environment_type() : 'unknown';
+        if (in_array($current_env, ['local', 'development'], true)) {
+            echo '<p class="description">' . esc_html__('Current environment: ' . $current_env . ' - Fail-open may be appropriate for local development.', 'tasteofcinemaarabithme') . '</p>';
+        } else {
+            echo '<p class="description notice notice-warning inline" style="margin-top:10px;">' . esc_html__('Warning: Enabling this on production is a security risk!', 'tasteofcinemaarabithme') . '</p>';
+        }
+    }
+
     public static function render_settings_page(): void
     {
         if (!current_user_can('manage_options')) {
@@ -148,15 +180,25 @@ class TOC_Recaptcha_Admin
 
         $site_key = get_option('toc_recaptcha_site_key', '');
         $project_id = get_option('toc_recaptcha_project_id', '');
+        $fail_open = get_option('toc_recaptcha_fail_open', '0') === '1';
 
-        if (empty($site_key) || empty($project_id)) {
+        if ((empty($site_key) || empty($project_id)) && !$fail_open) {
+            $settings_url = admin_url('options-general.php?page=toc-recaptcha-settings');
+            printf(
+                '<div class="notice notice-error"><p><strong>%s</strong> %s <a href="%s">%s</a></p></div>',
+                esc_html__('Security Alert:', 'tasteofcinemaarabithme'),
+                esc_html__('Google reCAPTCHA Enterprise is not configured. Form submissions are being BLOCKED. Configure keys or enable fail-open mode.', 'tasteofcinemaarabithme'),
+                esc_url($settings_url),
+                esc_html__('Configure Now', 'tasteofcinemaarabithme')
+            );
+        } elseif ((empty($site_key) || empty($project_id)) && $fail_open) {
             $settings_url = admin_url('options-general.php?page=toc-recaptcha-settings');
             printf(
                 '<div class="notice notice-warning"><p><strong>%s</strong> %s <a href="%s">%s</a></p></div>',
                 esc_html__('Security Warning:', 'tasteofcinemaarabithme'),
-                esc_html__('Google reCAPTCHA Enterprise is not fully configured. Contact form protection may be limited.', 'tasteofcinemaarabithme'),
+                esc_html__('reCAPTCHA is running in fail-open mode with incomplete configuration. Forms are unprotected!', 'tasteofcinemaarabithme'),
                 esc_url($settings_url),
-                esc_html__('Configure reCAPTCHA', 'tasteofcinemaarabithme')
+                esc_html__('Configure Keys', 'tasteofcinemaarabithme')
             );
         }
     }

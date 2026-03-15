@@ -21,8 +21,8 @@ class TOC_Recaptcha_Hooks
 
     public static function enqueue_scripts(): void
     {
-        // Local development domains bypass reCAPTCHA verification and script loading.
-        if (class_exists('TOC_Recaptcha_Verify') && TOC_Recaptcha_Verify::is_local_environment()) {
+        // Use improved environment detection
+        if (class_exists('TOC_Recaptcha_Verify') && TOC_Recaptcha_Verify::should_bypass_recaptcha()) {
             return;
         }
 

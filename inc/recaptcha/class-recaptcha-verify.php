@@ -14,6 +14,34 @@ use Google\Cloud\RecaptchaEnterprise\V1\TokenProperties\InvalidReason;
 class TOC_Recaptcha_Verify
 {
     /**
+     * Sanitizes and validates a hostname to prevent header injection.
+     * Returns empty string if invalid.
+     */
+    private static function sanitize_host(string $host): string
+    {
+        // Remove port if present
+        $host = (string) parse_url('http://' . $host, PHP_URL_HOST);
+        if (empty($host)) {
+            return '';
+        }
+
+        // Convert to lowercase and trim
+        $host = strtolower(trim($host, '[]'));
+
+        // Validate hostname format (RFC 952/1123)
+        if (!preg_match('/^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*$/', $host)) {
+            return '';
+        }
+
+        // Prevent excessively long hostnames
+        if (strlen($host) > 253) {
+            return '';
+        }
+
+        return $host;
+    }
+
+    /**
      * Detect local development domains where reCAPTCHA should be bypassed.
      */
     public static function is_local_environment(): bool
@@ -22,19 +50,25 @@ class TOC_Recaptcha_Verify
 
         $home_host = wp_parse_url(home_url('/'), PHP_URL_HOST);
         if (is_string($home_host) && '' !== $home_host) {
-            $hosts[] = strtolower($home_host);
+            $sanitized = self::sanitize_host($home_host);
+            if ($sanitized !== '') {
+                $hosts[] = $sanitized;
+            }
         }
 
         $site_host = wp_parse_url(site_url('/'), PHP_URL_HOST);
         if (is_string($site_host) && '' !== $site_host) {
-            $hosts[] = strtolower($site_host);
+            $sanitized = self::sanitize_host($site_host);
+            if ($sanitized !== '') {
+                $hosts[] = $sanitized;
+            }
         }
 
         $http_host = $_SERVER['HTTP_HOST'] ?? '';
         if (is_string($http_host) && '' !== $http_host) {
-            $parsed_http_host = wp_parse_url('http://' . $http_host, PHP_URL_HOST);
-            if (is_string($parsed_http_host) && '' !== $parsed_http_host) {
-                $hosts[] = strtolower($parsed_http_host);
+            $sanitized = self::sanitize_host($http_host);
+            if ($sanitized !== '') {
+                $hosts[] = $sanitized;
             }
         }
 
@@ -56,6 +90,24 @@ class TOC_Recaptcha_Verify
     }
 
     /**
+     * Enhanced environment detection using WordPress function.
+     * Combines domain-based detection with WP environment type.
+     */
+    public static function should_bypass_recaptcha(): bool
+    {
+        // Check for WordPress environment type first (most reliable)
+        if (function_exists('wp_get_environment_type')) {
+            $env = wp_get_environment_type();
+            if (in_array($env, ['local', 'development'], true)) {
+                return true;
+            }
+        }
+
+        // Use domain-based detection as final check
+        return self::is_local_environment();
+    }
+
+    /**
      * Validates a given token against the Google Cloud Recaptcha Enterprise API.
      *
      * @param string $token The g-recaptcha-response token.
@@ -65,16 +117,23 @@ class TOC_Recaptcha_Verify
     public static function verify_token(string $token, string $action = 'submit'): bool
     {
         // Explicit local bypass to keep local auth/forms usable without reCAPTCHA.
-        if (self::is_local_environment()) {
+        if (self::should_bypass_recaptcha()) {
             return true;
         }
 
         $site_key = get_option('toc_recaptcha_site_key', '');
         $project_id = get_option('toc_recaptcha_project_id', '');
-        
-        // Quickstart requirement: if configuration is missing, skip validation (fail open for local testing)
+
+        // Get fail-open setting from admin (default to closed for security)
+        $fail_open = get_option('toc_recaptcha_fail_open', '0') === '1';
+
+        // Configuration check - fail closed in production unless fail-open is enabled
         if (empty($site_key) || empty($project_id)) {
-            return true; // Fail open
+            if ($fail_open) {
+                return true;
+            }
+            error_log('reCAPTCHA Configuration Error: Missing site_key or project_id');
+            return false;
         }
 
         if (empty($token)) {
@@ -115,8 +174,12 @@ class TOC_Recaptcha_Verify
             } else {
                 // Fallback to REST API passing the API Key or Legacy Secret
                 if (empty($api_key)) {
-                    error_log('reCAPTCHA Verify Error: Missing API Key for REST fallback. Failing open.');
-                    return true;
+                    if ($fail_open) {
+                        error_log('reCAPTCHA Verify Error: Missing API Key for REST fallback. Failing open.');
+                        return true;
+                    }
+                    error_log('reCAPTCHA Verify Error: Missing API Key for REST fallback.');
+                    return false;
                 }
 
                 // If it looks like a legacy secret key (starts with 6L), use the siteverify endpoint
@@ -133,16 +196,24 @@ class TOC_Recaptcha_Verify
                     ]);
 
                     if (is_wp_error($response)) {
-                        error_log('reCAPTCHA Verify Error: ' . $response->get_error_message() . ' -> Failing open.');
-                        return true;
+                        if ($fail_open) {
+                            error_log('reCAPTCHA Verify Error: ' . $response->get_error_message() . ' -> Failing open.');
+                            return true;
+                        }
+                        error_log('reCAPTCHA Verify Error: ' . $response->get_error_message());
+                        return false;
                     }
 
                     $body_json = wp_remote_retrieve_body($response);
                     $result = json_decode($body_json, true);
 
                     if (empty($result)) {
-                        error_log('reCAPTCHA Verify Legacy REST Error: Empty response -> Failing open.');
-                        return true;
+                        if ($fail_open) {
+                            error_log('reCAPTCHA Verify Legacy REST Error: Empty response -> Failing open.');
+                            return true;
+                        }
+                        error_log('reCAPTCHA Verify Legacy REST Error: Empty response.');
+                        return false;
                     }
 
                     $is_valid = !empty($result['success']) && $result['success'] === true;
@@ -168,16 +239,24 @@ class TOC_Recaptcha_Verify
                     ]);
 
                     if (is_wp_error($response)) {
-                        error_log('reCAPTCHA Verify Error: ' . $response->get_error_message() . ' -> Failing open.');
-                        return true;
+                        if ($fail_open) {
+                            error_log('reCAPTCHA Verify Error: ' . $response->get_error_message() . ' -> Failing open.');
+                            return true;
+                        }
+                        error_log('reCAPTCHA Verify Error: ' . $response->get_error_message());
+                        return false;
                     }
 
                     $body_json = wp_remote_retrieve_body($response);
                     $result = json_decode($body_json, true);
 
                     if (empty($result) || isset($result['error'])) {
-                        error_log('reCAPTCHA Verify REST Error: ' . ($result['error']['message'] ?? 'Unknown Error') . ' -> Failing open.');
-                        return true;
+                        if ($fail_open) {
+                            error_log('reCAPTCHA Verify REST Error: ' . ($result['error']['message'] ?? 'Unknown Error') . ' -> Failing open.');
+                            return true;
+                        }
+                        error_log('reCAPTCHA Verify REST Error: ' . ($result['error']['message'] ?? 'Unknown Error'));
+                        return false;
                     }
 
                     $is_valid = $result['tokenProperties']['valid'] ?? false;
@@ -205,8 +284,12 @@ class TOC_Recaptcha_Verify
             }
 
         } catch (\Exception $e) {
-            error_log('reCAPTCHA Verify Exception: ' . $e->getMessage() . ' -> Failing open.');
-            return true; // Fail open on API failure
+            if ($fail_open) {
+                error_log('reCAPTCHA Verify Exception: ' . $e->getMessage() . ' -> Failing open.');
+                return true;
+            }
+            error_log('reCAPTCHA Verify Exception: ' . $e->getMessage());
+            return false;
         } finally {
             if (isset($client)) {
                 $client->close();

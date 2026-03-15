@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls -la /home/basem/sites/tasteofcinemaarabi/wp-content/themes/tasteofcinemaarabithme/*.php)",
+      "Read(//home/basem/sites/tasteofcinemaarabi/wp-content/**)"
+    ]
+  }
+}
