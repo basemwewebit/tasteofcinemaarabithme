@@ -218,6 +218,455 @@ jQuery(function ($) {
         });
     }
 
+    const notificationRoot = $('#mazaq-notification-root');
+    const notificationPrompt = $('#mazaq-notification-prompt');
+    const notificationPromptClose = $('#mazaq-notification-prompt-close');
+    const notificationPromptDismiss = $('#mazaq-notification-dismiss');
+    const notificationPromptSubscribe = $('#mazaq-notification-subscribe');
+    const notificationPromptStatus = $('#mazaq-notification-prompt-status');
+    const notificationToast = $('#mazaq-notification-toast');
+    const notificationToastClose = $('#mazaq-notification-toast-close');
+    const notificationToastDismiss = $('#mazaq-notification-toast-dismiss');
+    const notificationToastKicker = $('#mazaq-notification-toast-kicker');
+    const notificationToastTitle = $('#mazaq-notification-toast-title');
+    const notificationToastBody = $('#mazaq-notification-toast-body');
+    const notificationToastLink = $('#mazaq-notification-toast-link');
+
+    if (notificationRoot.length) {
+        const promptDismissKey = 'mazaq_notification_prompt_dismissed_until';
+        const subscribedKey = 'mazaq_notification_subscribed';
+        const seenNotificationsKey = 'mazaq_notification_seen_ids';
+        const promptDelayMs = 45000;
+        let notificationBootstrap = null;
+        let serviceWorkerPromise = null;
+        let isSubscribed = false;
+        let promptShown = false;
+        let engagementTriggered = false;
+        let promptTimerId = null;
+        let fallbackQueue = [];
+
+        function storageGet(key, fallbackValue) {
+            try {
+                const value = localStorage.getItem(key);
+                return value === null ? fallbackValue : value;
+            } catch (e) {
+                return fallbackValue;
+            }
+        }
+
+        function storageSet(key, value) {
+            try {
+                localStorage.setItem(key, value);
+            } catch (e) {
+                // Ignore storage errors.
+            }
+        }
+
+        function storageRemove(key) {
+            try {
+                localStorage.removeItem(key);
+            } catch (e) {
+                // Ignore storage errors.
+            }
+        }
+
+        function getSeenNotificationIds() {
+            try {
+                const parsed = JSON.parse(storageGet(seenNotificationsKey, '[]'));
+                return Array.isArray(parsed) ? parsed : [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function setSeenNotificationIds(ids) {
+            storageSet(seenNotificationsKey, JSON.stringify(ids.slice(-20)));
+        }
+
+        function hasSeenNotification(id) {
+            if (!id) {
+                return false;
+            }
+
+            return getSeenNotificationIds().indexOf(id) !== -1;
+        }
+
+        function markNotificationSeen(id) {
+            if (!id || hasSeenNotification(id)) {
+                return;
+            }
+
+            const seenIds = getSeenNotificationIds();
+            seenIds.push(id);
+            setSeenNotificationIds(seenIds);
+        }
+
+        function getPromptMutedUntil() {
+            const rawValue = parseInt(storageGet(promptDismissKey, '0'), 10);
+            return Number.isFinite(rawValue) ? rawValue : 0;
+        }
+
+        function mutePromptForDays(days) {
+            storageSet(promptDismissKey, String(Date.now() + (days * 24 * 60 * 60 * 1000)));
+        }
+
+        function isPromptMuted() {
+            return getPromptMutedUntil() > Date.now();
+        }
+
+        function supportsPushNotifications() {
+            return (
+                'Notification' in window &&
+                'serviceWorker' in navigator &&
+                'PushManager' in window
+            );
+        }
+
+        function shouldOfferPrompt() {
+            if (!notificationBootstrap || !notificationBootstrap.promptEligible) {
+                return false;
+            }
+
+            if (!supportsPushNotifications()) {
+                return false;
+            }
+
+            if (Notification.permission === 'denied') {
+                return false;
+            }
+
+            if (isPromptMuted() || isSubscribed) {
+                return false;
+            }
+
+            return true;
+        }
+
+        function showPromptStatus(message, isError) {
+            if (!notificationPromptStatus.length) {
+                return;
+            }
+
+            notificationPromptStatus
+                .text(message || '')
+                .removeClass('hidden text-slate-600 text-red-600 dark:text-slate-200 dark:text-red-300')
+                .addClass(isError ? 'text-red-600 dark:text-red-300' : 'text-slate-600 dark:text-slate-200');
+        }
+
+        function clearPromptStatus() {
+            notificationPromptStatus.addClass('hidden').text('');
+        }
+
+        function hidePrompt() {
+            notificationPrompt.addClass('hidden');
+        }
+
+        function showPrompt() {
+            if (promptShown || !shouldOfferPrompt()) {
+                return;
+            }
+
+            promptShown = true;
+            clearPromptStatus();
+            notificationPrompt.removeClass('hidden');
+        }
+
+        function hideToast() {
+            notificationToast.addClass('hidden');
+        }
+
+        function nextUnseenNotification() {
+            for (let index = 0; index < fallbackQueue.length; index += 1) {
+                const item = fallbackQueue[index];
+                if (item && item.id && !hasSeenNotification(item.id)) {
+                    return item;
+                }
+            }
+
+            return null;
+        }
+
+        function showNextFallbackToast() {
+            if (isSubscribed) {
+                hideToast();
+                return;
+            }
+
+            const notification = nextUnseenNotification();
+            if (!notification) {
+                hideToast();
+                return;
+            }
+
+            notificationToast.data('notificationId', notification.id || '');
+            notificationToastKicker.text(notification.type === 'new_post' ? 'مقال جديد' : 'اقتراح اليوم');
+            notificationToastTitle.text(notification.title || '');
+            notificationToastBody.text(notification.body || '');
+            notificationToastLink.attr('href', notification.url || mazaq_ajax.home_url || '/');
+            notificationToast.removeClass('hidden');
+        }
+
+        function encodeApplicationServerKey(base64String) {
+            const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+            const normalized = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+            const raw = window.atob(normalized);
+            const output = new Uint8Array(raw.length);
+
+            for (let i = 0; i < raw.length; i += 1) {
+                output[i] = raw.charCodeAt(i);
+            }
+
+            return output;
+        }
+
+        function ensureServiceWorker() {
+            if (!supportsPushNotifications() || !mazaq_ajax.notifications_service_worker_url) {
+                return Promise.resolve(null);
+            }
+
+            if (!serviceWorkerPromise) {
+                serviceWorkerPromise = navigator.serviceWorker.register(
+                    mazaq_ajax.notifications_service_worker_url,
+                    { scope: '/' }
+                ).catch(function () {
+                    serviceWorkerPromise = null;
+                    return null;
+                });
+            }
+
+            return serviceWorkerPromise;
+        }
+
+        function fetchJson(url, options) {
+            return fetch(url, options).then(function (response) {
+                return response.json().then(function (data) {
+                    return {
+                        ok: response.ok,
+                        status: response.status,
+                        data: data
+                    };
+                });
+            });
+        }
+
+        function setSubscribedState(subscribed) {
+            isSubscribed = !!subscribed;
+
+            if (isSubscribed) {
+                storageSet(subscribedKey, '1');
+                hidePrompt();
+                hideToast();
+                return;
+            }
+
+            storageRemove(subscribedKey);
+        }
+
+        function syncExistingSubscriptionState() {
+            if (!notificationBootstrap || !notificationBootstrap.publicVapidKey || !supportsPushNotifications()) {
+                setSubscribedState(storageGet(subscribedKey, '') === '1');
+                showNextFallbackToast();
+                return Promise.resolve();
+            }
+
+            return ensureServiceWorker().then(function (registration) {
+                if (!registration || !registration.pushManager) {
+                    setSubscribedState(storageGet(subscribedKey, '') === '1');
+                    showNextFallbackToast();
+                    return;
+                }
+
+                return registration.pushManager.getSubscription().then(function (subscription) {
+                    setSubscribedState(!!subscription);
+                    showNextFallbackToast();
+                }).catch(function () {
+                    setSubscribedState(storageGet(subscribedKey, '') === '1');
+                    showNextFallbackToast();
+                });
+            });
+        }
+
+        function subscribeToNotifications() {
+            if (!notificationBootstrap || !notificationBootstrap.publicVapidKey) {
+                showPromptStatus('التنبيهات غير جاهزة حالياً. أضف مفاتيح VAPID من لوحة التحكم.', true);
+                return;
+            }
+
+            if (!supportsPushNotifications()) {
+                showPromptStatus('متصفحك لا يدعم تنبيهات الويب.', true);
+                return;
+            }
+
+            notificationPromptSubscribe.prop('disabled', true).text('جارٍ التفعيل...');
+            clearPromptStatus();
+
+            ensureServiceWorker().then(function (registration) {
+                if (!registration || !registration.pushManager) {
+                    throw new Error('service-worker');
+                }
+
+                if (Notification.permission === 'denied') {
+                    throw new Error('permission-denied');
+                }
+
+                const permissionPromise = Notification.permission === 'granted'
+                    ? Promise.resolve('granted')
+                    : Notification.requestPermission();
+
+                return permissionPromise.then(function (permission) {
+                    if (permission !== 'granted') {
+                        throw new Error(permission === 'denied' ? 'permission-denied' : 'permission-default');
+                    }
+
+                    return registration.pushManager.getSubscription().then(function (existingSubscription) {
+                        if (existingSubscription) {
+                            return existingSubscription;
+                        }
+
+                        return registration.pushManager.subscribe({
+                            userVisibleOnly: true,
+                            applicationServerKey: encodeApplicationServerKey(notificationBootstrap.publicVapidKey)
+                        });
+                    });
+                });
+            }).then(function (subscription) {
+                return fetchJson(mazaq_ajax.notifications_subscription_url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(subscription.toJSON())
+                });
+            }).then(function (response) {
+                if (!response.ok || !response.data || !response.data.success) {
+                    throw new Error('subscription-save');
+                }
+
+                setSubscribedState(true);
+                showPromptStatus('تم تفعيل التنبيهات بنجاح.', false);
+                window.setTimeout(hidePrompt, 900);
+            }).catch(function (error) {
+                if (error && error.message === 'permission-denied') {
+                    showPromptStatus('تم حظر التنبيهات من المتصفح. يمكنك إعادة تفعيلها من إعدادات المتصفح.', true);
+                    mutePromptForDays(7);
+                    window.setTimeout(hidePrompt, 1500);
+                    return;
+                }
+
+                if (error && error.message === 'permission-default') {
+                    showPromptStatus('لم يتم منح الإذن بعد. جرّب مرة أخرى عندما تكون جاهزاً.', true);
+                    return;
+                }
+
+                showPromptStatus('تعذر تفعيل التنبيهات الآن. حاول لاحقاً.', true);
+            }).finally(function () {
+                notificationPromptSubscribe.prop('disabled', false).text('اشترك الآن');
+            });
+        }
+
+        function dismissPromptForLater() {
+            mutePromptForDays(7);
+            hidePrompt();
+        }
+
+        function revealPromptAfterEngagement() {
+            if (engagementTriggered) {
+                return;
+            }
+
+            engagementTriggered = true;
+            if (promptTimerId) {
+                window.clearTimeout(promptTimerId);
+            }
+
+            showPrompt();
+            window.removeEventListener('scroll', handleScrollEngagement);
+        }
+
+        function handleScrollEngagement() {
+            const doc = document.documentElement;
+            const maxScroll = doc.scrollHeight - window.innerHeight;
+            if (maxScroll <= 0) {
+                return;
+            }
+
+            const scrollRatio = window.scrollY / maxScroll;
+            if (scrollRatio >= 0.5) {
+                revealPromptAfterEngagement();
+            }
+        }
+
+        function initPromptEngagementWatchers() {
+            if (!shouldOfferPrompt()) {
+                return;
+            }
+
+            promptTimerId = window.setTimeout(revealPromptAfterEngagement, promptDelayMs);
+            window.addEventListener('scroll', handleScrollEngagement, { passive: true });
+        }
+
+        function hydrateNotificationBootstrap() {
+            if (!mazaq_ajax.notifications_bootstrap_url) {
+                return;
+            }
+
+            fetchJson(mazaq_ajax.notifications_bootstrap_url, {
+                credentials: 'same-origin'
+            }).then(function (response) {
+                if (!response.ok || !response.data) {
+                    return;
+                }
+
+                notificationBootstrap = response.data;
+                fallbackQueue = Array.isArray(notificationBootstrap.fallbackNotifications)
+                    ? notificationBootstrap.fallbackNotifications
+                    : [];
+
+                return syncExistingSubscriptionState().then(function () {
+                    initPromptEngagementWatchers();
+                });
+            }).catch(function () {
+                // Ignore bootstrap failures and leave notifications inactive for this request.
+            });
+        }
+
+        notificationPromptSubscribe.on('click', function (e) {
+            e.preventDefault();
+            subscribeToNotifications();
+        });
+
+        notificationPromptClose.on('click', function (e) {
+            e.preventDefault();
+            dismissPromptForLater();
+        });
+
+        notificationPromptDismiss.on('click', function (e) {
+            e.preventDefault();
+            dismissPromptForLater();
+        });
+
+        notificationToastClose.on('click', function (e) {
+            e.preventDefault();
+            const currentId = notificationToast.data('notificationId');
+            markNotificationSeen(currentId);
+            showNextFallbackToast();
+        });
+
+        notificationToastDismiss.on('click', function (e) {
+            e.preventDefault();
+            const currentId = notificationToast.data('notificationId');
+            markNotificationSeen(currentId);
+            showNextFallbackToast();
+        });
+
+        notificationToastLink.on('click', function () {
+            const currentId = notificationToast.data('notificationId');
+            markNotificationSeen(currentId);
+        });
+
+        hydrateNotificationBootstrap();
+    }
+
     const lazyImages = $('.lazy-image');
     if ('IntersectionObserver' in window) {
         const lazyObserver = new IntersectionObserver(function (entries, observer) {
@@ -573,4 +1022,3 @@ jQuery(function ($) {
     // Initialize Auto-advance
     startTimer();
 }());
-

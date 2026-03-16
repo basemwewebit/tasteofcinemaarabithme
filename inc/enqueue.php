@@ -35,6 +35,9 @@ function mazaq_enqueue_assets(): void
         'random_film_nonce' => wp_create_nonce('mazaq_random_film_nonce'),
         'random_film_action' => 'mazaq_get_random_film',
         'home_url' => home_url('/'),
+        'notifications_bootstrap_url' => esc_url_raw(rest_url('mazaq/v1/notifications/bootstrap')),
+        'notifications_subscription_url' => esc_url_raw(rest_url('mazaq/v1/notifications/subscription')),
+        'notifications_service_worker_url' => '/mazaq-sw.js',
     ]);
 }
 add_action('wp_enqueue_scripts', 'mazaq_enqueue_assets');

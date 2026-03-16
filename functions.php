@@ -17,6 +17,7 @@ $mazaq_includes = [
     'inc/infinite-scroll.php',
     'inc/breadcrumb.php',
     'inc/helpers.php',
+    'inc/browser-notifications.php',
     'inc/random-film-popup.php',
     'inc/admin-social-reminder.php',
     'inc/admin-hero-daily.php',
@@ -116,7 +117,11 @@ function toc_get_related_posts($post_id, $count = 4) {
 /**
  * Restrict application passwords to users who can edit posts (editors, admins, etc.)
  */
-add_filter('wp_is_application_passwords_available', function ($available, $user) {
-    // Only allow application passwords for users with edit_posts capability
-    return $user && user_can($user, 'edit_posts');
+add_filter('wp_is_application_passwords_available', function ($available, $user = null) {
+    if (!$user) {
+        return (bool) $available;
+    }
+
+    // Only allow application passwords for users with edit_posts capability.
+    return user_can($user, 'edit_posts');
 }, 10, 2);
