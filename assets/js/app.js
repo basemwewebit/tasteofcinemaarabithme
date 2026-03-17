@@ -798,121 +798,325 @@ jQuery(function ($) {
         infiniteScrollObserver.observe(loadingIndicator[0]);
     }
 
-    const adBlockPromptStorageKey = 'toc_adblock_prompt_dismissed_until';
-    const adBlockPrompts = {
-        friendly: {
-            title: 'وجودك معنا يفرق',
-            body: 'الإعلانات الخفيفة تساعدنا على الاستمرار في تقديم محتوى مجاني ومفيد. إذا رغبت، عطّل مانع الإعلانات لهذا الموقع.',
-            cta: 'دعم الموقع'
-        },
-        practical: {
-            title: 'ساعدنا نحافظ على المحتوى مجانيًا',
-            body: 'نعتمد على الإعلانات لتغطية تكاليف التحرير والاستضافة. أضف موقعنا إلى القائمة المسموح بها.',
-            cta: 'السماح بالإعلانات'
-        },
-        minimalist: {
-            title: 'المحتوى المجاني يحتاج دعمك',
-            body: 'رجاءً اسمح بالإعلانات لهذا الموقع.',
-            cta: 'تم'
-        }
+    const adBlockConfig = (window.mazaq_ajax && window.mazaq_ajax.adblock) || {};
+    const adBlockStateSessionKey = adBlockConfig.session_storage_key || 'mazaq_adblock_state';
+    const adBlockPromptStorageKey = adBlockConfig.mute_storage_key || 'mazaq_adblock_prompt_muted_until';
+    const adBlockPromptShownSessionKey = 'mazaq_adblock_prompt_session_shown';
+    const adContainerSelector = '[data-ad-container="true"][data-expects-network-ad="1"]';
+    const fallbackCopy = {
+        title: adBlockConfig.fallback_title || 'ادعم استمرار المحتوى',
+        body: adBlockConfig.fallback_body || 'هذه المساحة غير متاحة حاليًا. يمكنك دعم الموقع بالسماح بالإعلانات أو التواصل معنا.',
+        cta: adBlockConfig.fallback_cta || 'اعرف كيف تدعمنا',
+        supportUrl: adBlockConfig.support_url || (mazaq_ajax && mazaq_ajax.home_url ? mazaq_ajax.home_url : '/')
+    };
+    const promptCopy = {
+        title: adBlockConfig.prompt_title || 'يسعدنا دعمك للموقع',
+        body: adBlockConfig.prompt_body || 'الإعلانات الخفيفة تساعدنا في استمرار المحتوى مجانًا. يمكنك متابعة التصفح أو التواصل معنا للدعم.',
+        primaryCta: adBlockConfig.prompt_primary_cta || 'اعرف كيف تدعمنا',
+        secondaryCta: adBlockConfig.prompt_secondary_cta || 'متابعة التصفح',
+        supportUrl: adBlockConfig.support_url || (mazaq_ajax && mazaq_ajax.home_url ? mazaq_ajax.home_url : '/')
     };
 
-    function getMutedUntil() {
+    function pushMonetizationEvent(eventName, payload) {
+        const dataLayer = window.dataLayer = window.dataLayer || [];
+        dataLayer.push($.extend({
+            event: eventName,
+            source: 'adblock_module'
+        }, payload || {}));
+    }
+
+    function getLocalNumber(key) {
         try {
-            return parseInt(localStorage.getItem(adBlockPromptStorageKey) || '0', 10);
+            return parseInt(localStorage.getItem(key) || '0', 10);
         } catch (e) {
             return 0;
         }
     }
 
-    function mutePromptForDays(days) {
+    function setLocalNumber(key, value) {
         try {
-            const mutedUntil = Date.now() + (days * 24 * 60 * 60 * 1000);
-            localStorage.setItem(adBlockPromptStorageKey, String(mutedUntil));
+            localStorage.setItem(key, String(value));
         } catch (e) {
             // Ignore localStorage failures (private mode, blocked storage, etc.)
         }
     }
 
+    function getSessionJson(key) {
+        try {
+            const raw = sessionStorage.getItem(key);
+            return raw ? JSON.parse(raw) : null;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function setSessionJson(key, value) {
+        try {
+            sessionStorage.setItem(key, JSON.stringify(value));
+        } catch (e) {
+            // Ignore sessionStorage failures.
+        }
+    }
+
     function isPromptMuted() {
-        const mutedUntil = getMutedUntil();
+        const mutedUntil = getLocalNumber(adBlockPromptStorageKey);
         return Number.isFinite(mutedUntil) && mutedUntil > Date.now();
     }
 
-    function pickPromptVariant() {
-        if (window.matchMedia('(max-width: 480px)').matches) {
-            return 'minimalist';
-        }
-        if (document.body.classList.contains('single')) {
-            return 'practical';
-        }
-        return 'friendly';
+    function mutePromptForDays(days) {
+        setLocalNumber(adBlockPromptStorageKey, Date.now() + (days * 24 * 60 * 60 * 1000));
     }
 
-    function renderAdBlockPrompt() {
-        if ($('#toc-adblock-prompt').length) {
+    function detectByBaitElement() {
+        return new Promise(function (resolve) {
+            const bait = document.createElement('div');
+            bait.className = 'adsbox ad-banner ad-unit ad-zone';
+            bait.setAttribute('aria-hidden', 'true');
+            bait.style.position = 'absolute';
+            bait.style.left = '-9999px';
+            bait.style.top = '-9999px';
+            bait.style.width = '1px';
+            bait.style.height = '1px';
+            bait.style.pointerEvents = 'none';
+            document.body.appendChild(bait);
+
+            window.setTimeout(function () {
+                const computed = window.getComputedStyle(bait);
+                const blocked = (
+                    bait.offsetWidth === 0 ||
+                    bait.offsetHeight === 0 ||
+                    computed.display === 'none' ||
+                    computed.visibility === 'hidden'
+                );
+                bait.remove();
+                resolve(blocked);
+            }, 140);
+        });
+    }
+
+    function hasLoadedAnyAdFrame() {
+        const adContainers = document.querySelectorAll(adContainerSelector);
+        if (!adContainers.length) {
+            return false;
+        }
+
+        return Array.prototype.some.call(adContainers, function (container) {
+            const adNode = container.querySelector('ins.adsbygoogle, ins[data-ad-ins="true"]');
+            if (!adNode) {
+                return false;
+            }
+
+            if (adNode.querySelector('iframe')) {
+                return true;
+            }
+
+            const status = adNode.getAttribute('data-adsbygoogle-status');
+            if (status === 'done') {
+                return true;
+            }
+
+            return false;
+        });
+    }
+
+    function isContainerAdFilled(container) {
+        const adNode = container.querySelector('ins.adsbygoogle, ins[data-ad-ins="true"]');
+        if (!adNode) {
+            return false;
+        }
+
+        if (adNode.querySelector('iframe')) {
+            return true;
+        }
+
+        return adNode.getAttribute('data-adsbygoogle-status') === 'done';
+    }
+
+    function detectByRuntimeSignals() {
+        return new Promise(function (resolve) {
+            const expectedAdCount = document.querySelectorAll(adContainerSelector).length;
+            if (!expectedAdCount) {
+                resolve(false);
+                return;
+            }
+
+            window.setTimeout(function () {
+                const hasAdSenseScript = !!document.querySelector('script[src*="pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"]');
+                const hasRuntime = typeof window.adsbygoogle !== 'undefined';
+                const hasRenderedFrame = hasLoadedAnyAdFrame();
+                resolve(Boolean(hasAdSenseScript && !hasRuntime && !hasRenderedFrame));
+            }, 2600);
+        });
+    }
+
+    async function resolveAdBlockState() {
+        const cached = getSessionJson(adBlockStateSessionKey);
+        if (cached && typeof cached.blocked === 'boolean') {
+            return cached;
+        }
+
+        const results = await Promise.all([
+            detectByBaitElement(),
+            detectByRuntimeSignals()
+        ]);
+
+        const state = {
+            blocked: Boolean(results[0] || results[1]),
+            baitBlocked: Boolean(results[0]),
+            runtimeBlocked: Boolean(results[1]),
+            timestamp: Date.now()
+        };
+
+        setSessionJson(adBlockStateSessionKey, state);
+        return state;
+    }
+
+    function createFallbackNode(slotName) {
+        const card = document.createElement('section');
+        card.className = 'ad-fallback-card';
+
+        const title = document.createElement('h4');
+        title.className = 'ad-fallback-card__title';
+        title.textContent = fallbackCopy.title;
+
+        const body = document.createElement('p');
+        body.className = 'ad-fallback-card__body';
+        body.textContent = fallbackCopy.body;
+
+        const link = document.createElement('a');
+        link.className = 'ad-fallback-card__cta';
+        link.href = fallbackCopy.supportUrl;
+        link.textContent = fallbackCopy.cta;
+        link.setAttribute('rel', 'noopener');
+
+        link.addEventListener('click', function () {
+            pushMonetizationEvent('ad_fallback_click', {
+                slot_name: slotName || 'unknown'
+            });
+        });
+
+        card.appendChild(title);
+        card.appendChild(body);
+        card.appendChild(link);
+
+        return card;
+    }
+
+    function applyAdFallbackToEmptySlots(forceFallback) {
+        const adContainers = document.querySelectorAll(adContainerSelector);
+        if (!adContainers.length) {
             return;
         }
 
-        const promptCopy = adBlockPrompts[pickPromptVariant()] || adBlockPrompts.friendly;
+        Array.prototype.forEach.call(adContainers, function (container) {
+            if (container.getAttribute('data-ad-fallback-rendered') === '1') {
+                return;
+            }
+
+            const slotName = container.getAttribute('data-slot-name') || 'unknown';
+            const hasFilledAd = isContainerAdFilled(container);
+
+            if (!forceFallback && hasFilledAd) {
+                return;
+            }
+
+            const adNode = container.querySelector('ins.adsbygoogle, ins[data-ad-ins="true"]');
+            const adStatus = adNode ? adNode.getAttribute('data-adsbygoogle-status') : '';
+            const shouldFallback = forceFallback || !adNode || adStatus === 'unfilled' || !hasFilledAd;
+
+            if (!shouldFallback) {
+                return;
+            }
+
+            container.innerHTML = '';
+            container.classList.add('ad-container--fallback');
+            container.appendChild(createFallbackNode(slotName));
+            container.setAttribute('data-ad-fallback-rendered', '1');
+
+            pushMonetizationEvent('ad_fallback_rendered', {
+                slot_name: slotName,
+                forced: forceFallback ? 1 : 0
+            });
+        });
+    }
+
+    function renderAdBlockPrompt() {
+        if ($('#toc-adblock-prompt').length || isPromptMuted()) {
+            return;
+        }
+
         const prompt = $(
             '<aside id="toc-adblock-prompt" class="adblock-prompt" role="dialog" aria-live="polite" aria-label="دعم الموقع">' +
                 '<button type="button" class="adblock-prompt-close" aria-label="إغلاق الرسالة">&times;</button>' +
                 '<h3 class="adblock-prompt-title"></h3>' +
                 '<p class="adblock-prompt-body"></p>' +
-                '<button type="button" class="adblock-prompt-action"></button>' +
+                '<div class="adblock-prompt-actions">' +
+                    '<a class="adblock-prompt-action" target="_self"></a>' +
+                    '<button type="button" class="adblock-prompt-secondary"></button>' +
+                '</div>' +
             '</aside>'
         );
 
         prompt.find('.adblock-prompt-title').text(promptCopy.title);
         prompt.find('.adblock-prompt-body').text(promptCopy.body);
-        prompt.find('.adblock-prompt-action').text(promptCopy.cta);
+        prompt.find('.adblock-prompt-action').attr('href', promptCopy.supportUrl).text(promptCopy.primaryCta);
+        prompt.find('.adblock-prompt-secondary').text(promptCopy.secondaryCta);
 
         prompt.on('click', '.adblock-prompt-close', function () {
             mutePromptForDays(3);
             prompt.remove();
+            pushMonetizationEvent('ad_prompt_closed');
+        });
+
+        prompt.on('click', '.adblock-prompt-secondary', function () {
+            mutePromptForDays(3);
+            prompt.remove();
+            pushMonetizationEvent('ad_prompt_continue');
         });
 
         prompt.on('click', '.adblock-prompt-action', function () {
             mutePromptForDays(14);
-            prompt.remove();
+            pushMonetizationEvent('ad_prompt_support_click');
         });
 
         $('body').append(prompt);
     }
 
-    function detectAdBlocker(callback) {
-        const bait = document.createElement('div');
-        bait.className = 'adsbox ad-banner ad-unit ad-zone';
-        bait.setAttribute('aria-hidden', 'true');
-        bait.style.position = 'absolute';
-        bait.style.left = '-9999px';
-        bait.style.top = '-9999px';
-        bait.style.width = '1px';
-        bait.style.height = '1px';
-        bait.style.pointerEvents = 'none';
-        document.body.appendChild(bait);
+    resolveAdBlockState().then(function (state) {
+        if (state.blocked) {
+            applyAdFallbackToEmptySlots(true);
 
-        window.setTimeout(function () {
-            const computed = window.getComputedStyle(bait);
-            const blocked = (
-                bait.offsetWidth === 0 ||
-                bait.offsetHeight === 0 ||
-                computed.display === 'none' ||
-                computed.visibility === 'hidden'
-            );
-            bait.remove();
-            callback(blocked);
-        }, 120);
-    }
-
-    if (!isPromptMuted()) {
-        detectAdBlocker(function (isBlocked) {
-            if (isBlocked) {
-                renderAdBlockPrompt();
+            const promptShownInSession = getSessionJson(adBlockPromptShownSessionKey);
+            if (!promptShownInSession) {
+                window.setTimeout(function () {
+                    renderAdBlockPrompt();
+                }, 900);
+                setSessionJson(adBlockPromptShownSessionKey, true);
             }
-        });
-    }
+
+            pushMonetizationEvent('adblock_detected', {
+                bait_blocked: state.baitBlocked ? 1 : 0,
+                runtime_blocked: state.runtimeBlocked ? 1 : 0
+            });
+        } else {
+            window.setTimeout(function () {
+                applyAdFallbackToEmptySlots(false);
+            }, 4500);
+        }
+
+        if ('MutationObserver' in window) {
+            const dynamicContainer = document.getElementById('infinite-scroll-container');
+            if (dynamicContainer) {
+                const observer = new MutationObserver(function () {
+                    applyAdFallbackToEmptySlots(state.blocked);
+                });
+                observer.observe(dynamicContainer, {
+                    childList: true,
+                    subtree: true
+                });
+            }
+        }
+    });
 
     $('.filter-btn').on('click', function () {
         const filterBtns = $('.filter-btn');

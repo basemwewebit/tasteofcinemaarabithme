@@ -14,14 +14,14 @@ function mazaq_render_ad(string $slot_name, string $format = 'responsive', strin
 {
     $slot_id = mazaq_get_ad_slot($slot_name);
     $publisher = function_exists('get_field') ? (string) get_field('adsense_publisher_id', 'option') : '';
+    $dummy_ads_enabled = false; // Set to false to disable dummy ads and show empty box or AdSense
+    $expects_network_ad = (bool) ($slot_id && $publisher && !$dummy_ads_enabled);
 
     $class_attr = trim('ad-container ' . $classes);
-    echo '<div class="' . esc_attr($class_attr) . '" data-slot-name="' . esc_attr($slot_name) . '">';
+    echo '<div class="' . esc_attr($class_attr) . '" data-slot-name="' . esc_attr($slot_name) . '" data-ad-container="true" data-ad-format="' . esc_attr($format) . '" data-expects-network-ad="' . ($expects_network_ad ? '1' : '0') . '">';
 
-    $dummy_ads_enabled = false; // Set to false to disable dummy ads and show empty box or AdSense
-
-    if ($slot_id && $publisher && !$dummy_ads_enabled) {
-        echo '<ins class="adsbygoogle w-full" style="display:block; min-width:100px;" data-ad-client="' . esc_attr((string) $publisher) . '" data-ad-slot="' . esc_attr($slot_id) . '" data-ad-format="' . esc_attr($format) . '" data-full-width-responsive="true"></ins>';
+    if ($expects_network_ad) {
+        echo '<ins class="adsbygoogle w-full" style="display:block; min-width:100px;" data-ad-ins="true" data-ad-client="' . esc_attr((string) $publisher) . '" data-ad-slot="' . esc_attr($slot_id) . '" data-ad-format="' . esc_attr($format) . '" data-full-width-responsive="true"></ins>';
         echo '<script>try { (adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) { console.warn("AdSense layout issue: No slot size"); }</script>';
     } else {
         if ($dummy_ads_enabled) {

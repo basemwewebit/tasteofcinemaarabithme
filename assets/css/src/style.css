@@ -430,6 +430,44 @@ li {
     filter: brightness(0.95);
 }
 
+.adblock-prompt-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.85rem;
+}
+
+.adblock-prompt-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    border: 1px solid #cbd5e1;
+    border-radius: 0.65rem;
+    background-color: transparent;
+    color: #334155;
+    font-weight: 600;
+    font-size: 0.82rem;
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.adblock-prompt-secondary:hover {
+    background-color: #f8fafc;
+    border-color: #94a3b8;
+}
+
+.dark .adblock-prompt-secondary {
+    border-color: #334155;
+    color: #cbd5e1;
+}
+
+.dark .adblock-prompt-secondary:hover {
+    background-color: #1e293b;
+    border-color: #475569;
+}
+
 .adblock-prompt-close {
     position: absolute;
     top: 0.55rem;
@@ -451,6 +489,69 @@ li {
 
 .dark .adblock-prompt-close {
     color: #94a3b8;
+}
+
+.ad-container--fallback {
+    border-style: solid;
+}
+
+.ad-fallback-card {
+    width: 100%;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.5rem;
+    text-align: right;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    background: linear-gradient(130deg, #fff8e1 0%, #fff 40%, #f8fafc 100%);
+    border: 1px solid #f5e5a7;
+}
+
+.dark .ad-fallback-card {
+    background: linear-gradient(130deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%);
+    border-color: rgba(212, 175, 55, 0.4);
+}
+
+.ad-fallback-card__title {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.dark .ad-fallback-card__title {
+    color: #f8fafc;
+}
+
+.ad-fallback-card__body {
+    margin: 0;
+    font-size: 0.82rem;
+    line-height: 1.8;
+    color: #475569;
+}
+
+.dark .ad-fallback-card__body {
+    color: #cbd5e1;
+}
+
+.ad-fallback-card__cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: fit-content;
+    border-radius: 0.6rem;
+    background-color: #d4af37;
+    color: #111827;
+    font-size: 0.82rem;
+    font-weight: 700;
+    padding: 0.45rem 0.75rem;
+    text-decoration: none;
+}
+
+.ad-fallback-card__cta:hover {
+    filter: brightness(0.95);
 }
 
 @media (min-width: 640px) {
