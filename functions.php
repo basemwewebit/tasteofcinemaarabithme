@@ -22,6 +22,7 @@ $mazaq_includes = [
     'inc/content-rotation-settings.php',
     'inc/admin-social-reminder.php',
     'inc/admin-hero-daily.php',
+    'inc/admin-toc-missing-widget.php',
     'inc/toc-source-monitor.php',
     'inc/loader-ads-customizer.php',
     'inc/post-types/contact-message.php',
