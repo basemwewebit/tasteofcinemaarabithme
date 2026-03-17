@@ -15,12 +15,13 @@ const TOC_MONITOR_PENDING_OPTION = 'toc_monitor_pending_posts';
 const TOC_MONITOR_FEED_URL    = 'https://www.tasteofcinema.com/feed/';
 const TOC_MONITOR_DISMISS_ACTION = 'toc_monitor_dismiss';
 const TOC_MONITOR_DISMISS_NONCE = 'toc_monitor_dismiss_nonce';
+const TOC_MONITOR_EMAIL_ENABLED_OPTION = 'toc_monitor_email_enabled';
 
 // ---------------------------------------------------------------------------
 // Cron scheduling
 // ---------------------------------------------------------------------------
 
-add_action('wp', 'toc_monitor_schedule_cron');
+add_action('init', 'toc_monitor_schedule_cron');
 
 function toc_monitor_schedule_cron(): void
 {
@@ -35,47 +36,146 @@ add_action(TOC_MONITOR_CRON_HOOK, 'toc_monitor_fetch_feed');
 // Feed fetcher
 // ---------------------------------------------------------------------------
 
+function toc_monitor_disable_feed_cache_lifetime(int $seconds): int
+{
+    return 0;
+}
+
+function toc_monitor_prepare_item_data($item): array
+{
+    if (!is_object($item) || !method_exists($item, 'get_permalink')) {
+        return [];
+    }
+
+    $url = esc_url_raw((string) $item->get_permalink());
+    if (empty($url)) {
+        return [];
+    }
+
+    return [
+        'url' => $url,
+        'title' => sanitize_text_field((string) $item->get_title()),
+        'date' => sanitize_text_field((string) $item->get_date('Y-m-d H:i:s')),
+    ];
+}
+
+function toc_monitor_email_enabled(): bool
+{
+    $enabled = get_option(TOC_MONITOR_EMAIL_ENABLED_OPTION, '1');
+
+    return '0' !== (string) $enabled;
+}
+
+function toc_monitor_send_email(array $new_posts): void
+{
+    if (empty($new_posts) || !toc_monitor_email_enabled()) {
+        return;
+    }
+
+    $to = sanitize_email((string) get_option('admin_email'));
+    if (empty($to)) {
+        return;
+    }
+
+    $site_name = wp_specialchars_decode(get_bloginfo('name'), ENT_QUOTES);
+    $count = count($new_posts);
+    $subject = $count === 1
+        ? sprintf(__('مقال جديد على TasteOfCinema - %s', 'mazaq'), $site_name)
+        : sprintf(__('مقالات جديدة على TasteOfCinema (%d) - %s', 'mazaq'), $count, $site_name);
+
+    $lines = [
+        $count === 1
+            ? __('تم رصد مقال جديد على TasteOfCinema:', 'mazaq')
+            : sprintf(__('تم رصد %d مقالات جديدة على TasteOfCinema:', 'mazaq'), $count),
+        '',
+    ];
+
+    foreach ($new_posts as $index => $post) {
+        $title = isset($post['title']) ? (string) $post['title'] : '';
+        $url = isset($post['url']) ? (string) $post['url'] : '';
+        $date = isset($post['date']) ? (string) $post['date'] : '';
+
+        $lines[] = sprintf('%d. %s', $index + 1, $title !== '' ? $title : $url);
+        if ($url !== '') {
+            $lines[] = sprintf(__('الرابط: %s', 'mazaq'), $url);
+        }
+        if ($date !== '') {
+            $lines[] = sprintf(__('التاريخ: %s', 'mazaq'), $date);
+        }
+        $lines[] = '';
+    }
+
+    wp_mail($to, $subject, implode("\n", $lines));
+}
+
 function toc_monitor_fetch_feed(): void
 {
     // Bypass SimplePie cache so we always get fresh data.
-    add_filter('wp_feed_cache_transient_lifetime', fn() => 0);
+    add_filter('wp_feed_cache_transient_lifetime', 'toc_monitor_disable_feed_cache_lifetime');
 
     $feed = fetch_feed(TOC_MONITOR_FEED_URL);
 
-    remove_filter('wp_feed_cache_transient_lifetime', fn() => 0);
+    remove_filter('wp_feed_cache_transient_lifetime', 'toc_monitor_disable_feed_cache_lifetime');
 
     if (is_wp_error($feed)) {
         return;
     }
 
-    $latest = $feed->get_item(0);
-    if (! $latest) {
+    $items = $feed->get_items(0, 20);
+    if (empty($items)) {
         return;
     }
 
-    $url   = esc_url_raw($latest->get_permalink());
-    $title = sanitize_text_field($latest->get_title());
-    $date  = $latest->get_date('Y-m-d H:i:s');
+    $latest = toc_monitor_prepare_item_data($items[0]);
+    if (empty($latest['url'])) {
+        return;
+    }
 
     $last_seen = get_option(TOC_MONITOR_SEEN_OPTION, '');
+    $latest_url = (string) $latest['url'];
 
-    if ($url === $last_seen || empty($url)) {
+    if ($latest_url === $last_seen) {
+        return;
+    }
+
+    // First run should initialize marker only to prevent noisy false positives.
+    if (empty($last_seen)) {
+        update_option(TOC_MONITOR_SEEN_OPTION, $latest_url, false);
+
+        return;
+    }
+
+    $new_posts = [];
+    foreach ($items as $item) {
+        $post_data = toc_monitor_prepare_item_data($item);
+        if (empty($post_data['url'])) {
+            continue;
+        }
+
+        if ($post_data['url'] === $last_seen) {
+            break;
+        }
+
+        $new_posts[] = $post_data;
+    }
+
+    if (empty($new_posts)) {
+        update_option(TOC_MONITOR_SEEN_OPTION, $latest_url, false);
+
         return;
     }
 
     // New post detected – store for display and update the seen marker.
     $pending   = toc_monitor_get_pending();
-    $pending[] = [
-        'url'   => $url,
-        'title' => $title,
-        'date'  => $date,
-    ];
+    $pending = array_merge($pending, array_reverse($new_posts));
 
     // Keep only the latest 10 unseen posts to avoid unbounded growth.
     $pending = array_slice($pending, -10);
 
-    update_option(TOC_MONITOR_SEEN_OPTION, $url, false);
+    update_option(TOC_MONITOR_SEEN_OPTION, $latest_url, false);
     update_option(TOC_MONITOR_PENDING_OPTION, $pending, false);
+
+    toc_monitor_send_email(array_reverse($new_posts));
 }
 
 // ---------------------------------------------------------------------------
@@ -107,6 +207,7 @@ function toc_monitor_admin_notice(): void
 
     $count = count($pending);
     $nonce = wp_create_nonce(TOC_MONITOR_DISMISS_NONCE);
+    $email_enabled = toc_monitor_email_enabled();
 
     echo '<div class="notice notice-info is-dismissible" id="toc-monitor-notice">';
     echo '<p>';
@@ -138,6 +239,9 @@ function toc_monitor_admin_notice(): void
         ),
         esc_html__('تمييز كمقروء', 'mazaq')
     );
+    echo '<p style="margin-top:0">';
+    echo esc_html($email_enabled ? 'تنبيه الإيميل: مفعّل' : 'تنبيه الإيميل: غير مفعّل');
+    echo '</p>';
     echo '</div>';
 }
 

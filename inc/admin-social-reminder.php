@@ -6,6 +6,27 @@ const MAZAQ_SOCIAL_REMINDER_EVENT = 'mazaq_daily_social_reminder';
 const MAZAQ_SOCIAL_REMINDER_OPTION = 'mazaq_social_reminder_state';
 const MAZAQ_SOCIAL_REMINDER_REGENERATE_ACTION = 'mazaq_social_reminder_regenerate';
 const MAZAQ_SOCIAL_REMINDER_REGENERATE_NONCE = 'mazaq_social_reminder_regenerate_nonce';
+const MAZAQ_SOCIAL_REMINDER_QUICK_SAVE_ACTION = 'mazaq_social_reminder_quick_save';
+const MAZAQ_SOCIAL_REMINDER_QUICK_SAVE_NONCE = 'mazaq_social_reminder_quick_save_nonce';
+
+function mazaq_social_reminder_get_config(): array
+{
+    $default = [
+        'enabled' => true,
+        'batch_size' => 3,
+    ];
+
+    if (!function_exists('mazaq_content_rotation_get_settings')) {
+        return $default;
+    }
+
+    $settings = mazaq_content_rotation_get_settings();
+
+    return [
+        'enabled' => !empty($settings['social_enabled']),
+        'batch_size' => max(1, min(10, (int) $settings['social_count'])),
+    ];
+}
 
 function mazaq_social_reminder_default_state(): array
 {
@@ -122,10 +143,11 @@ function mazaq_social_reminder_prune_state(array $state, array $published_ids): 
     return $state;
 }
 
-function mazaq_social_reminder_generate_batch(array $published_ids, array $used_ids): array
+function mazaq_social_reminder_generate_batch(array $published_ids, array $used_ids, int $batch_size): array
 {
     $published_ids = array_values(array_unique(array_filter(array_map('intval', $published_ids))));
     $used_ids = array_values(array_unique(array_intersect($published_ids, array_map('intval', $used_ids))));
+    $batch_size = max(1, $batch_size);
 
     if (empty($published_ids)) {
         return [
@@ -134,10 +156,12 @@ function mazaq_social_reminder_generate_batch(array $published_ids, array $used_
         ];
     }
 
+    $batch_size = min($batch_size, count($published_ids));
+
     $available_ids = array_values(array_diff($published_ids, $used_ids));
 
-    if (count($available_ids) >= 3) {
-        $batch_post_ids = mazaq_social_reminder_pick_random_ids($available_ids, 3);
+    if (count($available_ids) >= $batch_size) {
+        $batch_post_ids = mazaq_social_reminder_pick_random_ids($available_ids, $batch_size);
 
         return [
             'batch_post_ids' => $batch_post_ids,
@@ -145,38 +169,21 @@ function mazaq_social_reminder_generate_batch(array $published_ids, array $used_
         ];
     }
 
-    if (count($available_ids) === 2) {
-        $new_cycle_pool = array_values(array_diff($published_ids, $available_ids));
-        $extra_pick = mazaq_social_reminder_pick_random_ids($new_cycle_pool, 1);
-        $batch_post_ids = array_values(array_unique(array_merge($available_ids, $extra_pick)));
+    $batch_post_ids = $available_ids;
 
-        return [
-            'batch_post_ids' => $batch_post_ids,
-            'used_post_ids'  => $batch_post_ids,
-        ];
+    if (count($batch_post_ids) < $batch_size) {
+        $needed = $batch_size - count($batch_post_ids);
+        $new_cycle_pool = array_values(array_diff($published_ids, $batch_post_ids));
+        $extra_picks = mazaq_social_reminder_pick_random_ids($new_cycle_pool, $needed);
+        $batch_post_ids = array_values(array_unique(array_merge($batch_post_ids, $extra_picks)));
     }
 
-    if (count($available_ids) === 1) {
-        $leftover_id = (int) $available_ids[0];
-
-        if (count($published_ids) === 1) {
-            return [
-                'batch_post_ids' => [$leftover_id],
-                'used_post_ids' => [$leftover_id],
-            ];
-        }
-
-        $new_cycle_pool = array_values(array_diff($published_ids, [$leftover_id]));
-        $extra_picks = mazaq_social_reminder_pick_random_ids($new_cycle_pool, 2);
-        $batch_post_ids = array_values(array_unique(array_merge([$leftover_id], $extra_picks)));
-
-        return [
-            'batch_post_ids' => $batch_post_ids,
-            'used_post_ids' => $batch_post_ids,
-        ];
+    if (count($batch_post_ids) < $batch_size) {
+        $needed = $batch_size - count($batch_post_ids);
+        $remaining_pool = array_values(array_diff($published_ids, $batch_post_ids));
+        $final_picks = mazaq_social_reminder_pick_random_ids($remaining_pool, $needed);
+        $batch_post_ids = array_values(array_unique(array_merge($batch_post_ids, $final_picks)));
     }
-
-    $batch_post_ids = mazaq_social_reminder_pick_random_ids($published_ids, min(3, count($published_ids)));
 
     return [
         'batch_post_ids' => $batch_post_ids,
@@ -241,8 +248,14 @@ function mazaq_social_reminder_send_email(array $state): array
 
 function mazaq_social_reminder_prepare_today_batch(bool $send_email = true, bool $force_regenerate = false): array
 {
+    $config = mazaq_social_reminder_get_config();
     $today = mazaq_social_reminder_today();
     $state = mazaq_social_reminder_get_state();
+
+    if (!$config['enabled']) {
+        return $state;
+    }
+
     $original_batch_ids = $state['batch_post_ids'];
     $published_ids = mazaq_social_reminder_get_published_post_ids();
     $has_invalid_batch_posts = !empty(array_diff($original_batch_ids, $published_ids));
@@ -252,7 +265,7 @@ function mazaq_social_reminder_prepare_today_batch(bool $send_email = true, bool
     $should_generate_new_batch = $force_regenerate || $state['batch_date'] !== $today || $has_invalid_batch_posts;
 
     if ($should_generate_new_batch) {
-        $batch = mazaq_social_reminder_generate_batch($published_ids, $state['used_post_ids']);
+        $batch = mazaq_social_reminder_generate_batch($published_ids, $state['used_post_ids'], (int) $config['batch_size']);
         $state['batch_date'] = $today;
         $state['batch_post_ids'] = $batch['batch_post_ids'];
         $state['used_post_ids'] = $batch['used_post_ids'];
@@ -270,9 +283,23 @@ function mazaq_social_reminder_prepare_today_batch(bool $send_email = true, bool
 function mazaq_social_reminder_schedule_event(): void
 {
     mazaq_social_reminder_ensure_option_exists();
+    $config = mazaq_social_reminder_get_config();
+
+    if (!$config['enabled']) {
+        mazaq_social_reminder_clear_event();
+
+        return;
+    }
+
+    $hour = function_exists('mazaq_content_rotation_get_daily_hour')
+        ? mazaq_content_rotation_get_daily_hour()
+        : 8;
+    $first_run_timestamp = function_exists('mazaq_content_rotation_get_next_daily_timestamp')
+        ? mazaq_content_rotation_get_next_daily_timestamp($hour)
+        : (time() + MINUTE_IN_SECONDS);
 
     if (!wp_next_scheduled(MAZAQ_SOCIAL_REMINDER_EVENT)) {
-        wp_schedule_event(time() + MINUTE_IN_SECONDS, 'daily', MAZAQ_SOCIAL_REMINDER_EVENT);
+        wp_schedule_event($first_run_timestamp, 'daily', MAZAQ_SOCIAL_REMINDER_EVENT);
     }
 }
 
@@ -311,55 +338,102 @@ function mazaq_social_reminder_admin_fallback(): void
         return;
     }
 
+    $config = mazaq_social_reminder_get_config();
+    if (!$config['enabled']) {
+        return;
+    }
+
     mazaq_social_reminder_prepare_today_batch(true);
 }
 add_action('admin_init', 'mazaq_social_reminder_admin_fallback');
 
-function mazaq_social_reminder_render_notice(): void
+function mazaq_social_reminder_render_widget(): void
 {
-    if (!is_admin() || !current_user_can('manage_options')) {
+    if (!current_user_can('manage_options')) {
         return;
     }
 
-    $state = mazaq_social_reminder_get_state();
-    if ($state['batch_date'] !== mazaq_social_reminder_today() || empty($state['batch_post_ids'])) {
-        return;
+    $config = mazaq_social_reminder_get_config();
+    $state = mazaq_social_reminder_prepare_today_batch(false);
+    $count_label = (int) $config['batch_size'];
+
+    echo '<div dir="rtl" style="text-align:right">';
+
+    if (!empty($_GET['mazaq_social_saved'])) {
+        echo '<p><span class="dashicons dashicons-yes-alt" style="color:#46b450"></span> ' . esc_html__('تم حفظ إعدادات السوشيال.', 'mazaq') . '</p>';
     }
 
-    $posts = mazaq_social_reminder_get_batch_posts($state['batch_post_ids']);
-    if (empty($posts)) {
-        return;
+    if (!$config['enabled']) {
+        echo '<p>' . esc_html__('اقتراحات السوشيال اليومية معطلة حالياً.', 'mazaq') . '</p>';
     }
 
-    echo '<div class="notice notice-info" dir="rtl" style="text-align:right">';
-    echo '<p><strong>' . esc_html__('اقتراحات اليوم للنشر على السوشيال ميديا', 'mazaq') . '</strong></p>';
-    echo '<ul style="margin-right:1.5em;margin-left:0;list-style:disc">';
+    if ($config['enabled'] && ($state['batch_date'] !== mazaq_social_reminder_today() || empty($state['batch_post_ids']))) {
+        echo '<p>' . esc_html__('لا يوجد اقتراحات متاحة حالياً.', 'mazaq') . '</p>';
+    }
 
-    foreach ($posts as $post) {
-        $view_link = get_permalink($post);
-        $edit_link = get_edit_post_link($post->ID, '');
+    if ($config['enabled'] && !empty($state['batch_post_ids'])) {
+        $posts = mazaq_social_reminder_get_batch_posts($state['batch_post_ids']);
 
-        echo '<li>';
-        echo '<strong>' . esc_html(get_the_title($post)) . '</strong><br />';
-        echo '<a href="' . esc_url($view_link) . '" target="_blank" rel="noopener noreferrer">' . esc_html__('عرض المقال', 'mazaq') . '</a>';
+        if (!empty($posts)) {
+            echo '<ul style="margin-right:1.2em;margin-left:0;list-style:disc">';
 
-        if (!empty($edit_link)) {
-            echo ' | <a href="' . esc_url($edit_link) . '">' . esc_html__('تعديل المقال', 'mazaq') . '</a>';
+            foreach ($posts as $post) {
+                $view_link = get_permalink($post);
+                $edit_link = get_edit_post_link($post->ID, '');
+
+                echo '<li>';
+                echo '<strong>' . esc_html(get_the_title($post)) . '</strong><br />';
+                echo '<a href="' . esc_url($view_link) . '" target="_blank" rel="noopener noreferrer">' . esc_html__('عرض المقال', 'mazaq') . '</a>';
+
+                if (!empty($edit_link)) {
+                    echo ' | <a href="' . esc_url($edit_link) . '">' . esc_html__('تعديل المقال', 'mazaq') . '</a>';
+                }
+
+                echo '</li>';
+            }
+
+            echo '</ul>';
         }
-
-        echo '</li>';
     }
+
+    $settings_url = function_exists('mazaq_content_rotation_settings_url')
+        ? mazaq_content_rotation_settings_url()
+        : admin_url('options-general.php');
 
     $regenerate_url = wp_nonce_url(
         admin_url('admin-post.php?action=' . MAZAQ_SOCIAL_REMINDER_REGENERATE_ACTION),
         MAZAQ_SOCIAL_REMINDER_REGENERATE_NONCE
     );
 
-    echo '</ul>';
-    echo '<p><a href="' . esc_url($regenerate_url) . '" class="button button-secondary">' . esc_html__('🔄 اقتراح 3 جداد', 'mazaq') . '</a></p>';
+    echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '" style="margin-top:12px">';
+    wp_nonce_field(MAZAQ_SOCIAL_REMINDER_QUICK_SAVE_NONCE);
+    echo '<input type="hidden" name="action" value="' . esc_attr(MAZAQ_SOCIAL_REMINDER_QUICK_SAVE_ACTION) . '" />';
+    echo '<p><label><input type="checkbox" name="social_enabled" value="1" ' . checked($config['enabled'], true, false) . ' /> ' . esc_html__('تفعيل صندوق السوشيال', 'mazaq') . '</label></p>';
+    echo '<p><label for="mazaq-social-count">' . esc_html__('عدد الاقتراحات', 'mazaq') . '</label> ';
+    echo '<input id="mazaq-social-count" type="number" min="1" max="10" name="social_count" value="' . esc_attr((string) $count_label) . '" class="small-text" /></p>';
+    submit_button(__('حفظ سريع', 'mazaq'), 'secondary', 'submit', false);
+    echo '</form>';
+
+    echo '<p style="margin-top:10px">';
+    echo '<a href="' . esc_url($regenerate_url) . '" class="button button-secondary">' . esc_html(sprintf(__('🔄 اقتراح %d جديد', 'mazaq'), $count_label)) . '</a> ';
+    echo '<a href="' . esc_url($settings_url) . '" class="button button-link">' . esc_html__('الإعدادات المتقدمة', 'mazaq') . '</a>';
+    echo '</p>';
     echo '</div>';
 }
-add_action('admin_notices', 'mazaq_social_reminder_render_notice');
+
+function mazaq_social_reminder_register_dashboard_widget(): void
+{
+    if (!current_user_can('manage_options')) {
+        return;
+    }
+
+    wp_add_dashboard_widget(
+        'mazaq-social-reminder-widget',
+        __('اقتراحات اليوم للنشر على السوشيال ميديا', 'mazaq'),
+        'mazaq_social_reminder_render_widget'
+    );
+}
+add_action('wp_dashboard_setup', 'mazaq_social_reminder_register_dashboard_widget');
 
 function mazaq_social_reminder_handle_regenerate(): void
 {
@@ -372,7 +446,34 @@ function mazaq_social_reminder_handle_regenerate(): void
 
     mazaq_social_reminder_prepare_today_batch(false, true);
 
-    wp_safe_redirect(admin_url());
+    wp_safe_redirect(admin_url('index.php'));
     exit;
 }
 add_action('admin_post_' . MAZAQ_SOCIAL_REMINDER_REGENERATE_ACTION, 'mazaq_social_reminder_handle_regenerate');
+
+function mazaq_social_reminder_handle_quick_save(): void
+{
+    if (
+        !current_user_can('manage_options') ||
+        !check_admin_referer(MAZAQ_SOCIAL_REMINDER_QUICK_SAVE_NONCE)
+    ) {
+        wp_die(__('غير مصرح لك بهذا الإجراء.', 'mazaq'), 403);
+    }
+
+    if (!function_exists('mazaq_content_rotation_get_settings') || !function_exists('mazaq_content_rotation_update_settings')) {
+        wp_die(__('إعدادات التدوير غير متاحة حالياً.', 'mazaq'), 500);
+    }
+
+    $settings = mazaq_content_rotation_get_settings();
+    $settings['social_enabled'] = isset($_POST['social_enabled']) ? 1 : 0;
+
+    $posted_count = isset($_POST['social_count']) ? wp_unslash($_POST['social_count']) : $settings['social_count'];
+    $settings['social_count'] = max(1, min(10, absint($posted_count)));
+
+    mazaq_content_rotation_update_settings($settings);
+    mazaq_social_reminder_prepare_today_batch(false, true);
+
+    wp_safe_redirect(add_query_arg('mazaq_social_saved', '1', admin_url('index.php')));
+    exit;
+}
+add_action('admin_post_' . MAZAQ_SOCIAL_REMINDER_QUICK_SAVE_ACTION, 'mazaq_social_reminder_handle_quick_save');

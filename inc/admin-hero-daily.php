@@ -6,6 +6,27 @@ const MAZAQ_HERO_DAILY_EVENT = 'mazaq_hero_daily_rotation';
 const MAZAQ_HERO_DAILY_OPTION = 'mazaq_hero_daily_state';
 const MAZAQ_HERO_DAILY_REGENERATE_ACTION = 'mazaq_hero_daily_regenerate';
 const MAZAQ_HERO_DAILY_REGENERATE_NONCE = 'mazaq_hero_daily_regenerate_nonce';
+const MAZAQ_HERO_DAILY_QUICK_SAVE_ACTION = 'mazaq_hero_daily_quick_save';
+const MAZAQ_HERO_DAILY_QUICK_SAVE_NONCE = 'mazaq_hero_daily_quick_save_nonce';
+
+function mazaq_hero_daily_get_config(): array
+{
+    $default = [
+        'enabled' => true,
+        'batch_size' => 3,
+    ];
+
+    if (!function_exists('mazaq_content_rotation_get_settings')) {
+        return $default;
+    }
+
+    $settings = mazaq_content_rotation_get_settings();
+
+    return [
+        'enabled' => !empty($settings['hero_enabled']),
+        'batch_size' => max(1, min(3, (int) $settings['hero_count'])),
+    ];
+}
 
 /**
  * Default state structure for hero daily rotation
@@ -151,12 +172,13 @@ function mazaq_hero_daily_prune_state(array $state, array $published_ids): array
 }
 
 /**
- * Generate a batch of 2-3 random hero posts
+ * Generate a batch of random hero posts
  */
-function mazaq_hero_daily_generate_batch(array $published_ids, array $used_ids): array
+function mazaq_hero_daily_generate_batch(array $published_ids, array $used_ids, int $batch_size): array
 {
     $published_ids = array_values(array_unique(array_filter(array_map('intval', $published_ids))));
     $used_ids = array_values(array_unique(array_intersect($published_ids, array_map('intval', $used_ids))));
+    $batch_size = max(1, $batch_size);
 
     if (empty($published_ids)) {
         return [
@@ -165,12 +187,10 @@ function mazaq_hero_daily_generate_batch(array $published_ids, array $used_ids):
         ];
     }
 
-    // Determine batch size (2-3 posts)
-    $batch_size = count($published_ids) >= 3 ? 3 : (count($published_ids) >= 2 ? 2 : 1);
+    $batch_size = min($batch_size, count($published_ids));
 
     $available_ids = array_values(array_diff($published_ids, $used_ids));
 
-    // If we have enough unused posts, use them
     if (count($available_ids) >= $batch_size) {
         $hero_post_ids = mazaq_hero_daily_pick_random_ids($available_ids, $batch_size);
 
@@ -180,18 +200,21 @@ function mazaq_hero_daily_generate_batch(array $published_ids, array $used_ids):
         ];
     }
 
-    // If not enough unused posts, reset and start fresh cycle
-    if (count($available_ids) < $batch_size) {
-        $hero_post_ids = mazaq_hero_daily_pick_random_ids($published_ids, $batch_size);
+    $hero_post_ids = $available_ids;
 
-        return [
-            'hero_post_ids' => $hero_post_ids,
-            'used_post_ids' => $hero_post_ids,
-        ];
+    if (count($hero_post_ids) < $batch_size) {
+        $needed = $batch_size - count($hero_post_ids);
+        $new_cycle_pool = array_values(array_diff($published_ids, $hero_post_ids));
+        $extra_picks = mazaq_hero_daily_pick_random_ids($new_cycle_pool, $needed);
+        $hero_post_ids = array_values(array_unique(array_merge($hero_post_ids, $extra_picks)));
     }
 
-    // Fallback
-    $hero_post_ids = mazaq_hero_daily_pick_random_ids($published_ids, $batch_size);
+    if (count($hero_post_ids) < $batch_size) {
+        $needed = $batch_size - count($hero_post_ids);
+        $remaining_pool = array_values(array_diff($published_ids, $hero_post_ids));
+        $final_picks = mazaq_hero_daily_pick_random_ids($remaining_pool, $needed);
+        $hero_post_ids = array_values(array_unique(array_merge($hero_post_ids, $final_picks)));
+    }
 
     return [
         'hero_post_ids' => $hero_post_ids,
@@ -204,8 +227,14 @@ function mazaq_hero_daily_generate_batch(array $published_ids, array $used_ids):
  */
 function mazaq_hero_daily_prepare_today_batch(bool $force_regenerate = false): array
 {
+    $config = mazaq_hero_daily_get_config();
     $today = mazaq_hero_daily_today();
     $state = mazaq_hero_daily_get_state();
+
+    if (!$config['enabled']) {
+        return $state;
+    }
+
     $original_hero_ids = $state['hero_post_ids'];
     $published_ids = mazaq_hero_daily_get_published_post_ids();
     $has_invalid_hero_posts = !empty(array_diff($original_hero_ids, $published_ids));
@@ -215,7 +244,7 @@ function mazaq_hero_daily_prepare_today_batch(bool $force_regenerate = false): a
     $should_generate_new_batch = $force_regenerate || $state['rotation_date'] !== $today || $has_invalid_hero_posts;
 
     if ($should_generate_new_batch) {
-        $batch = mazaq_hero_daily_generate_batch($published_ids, $state['used_post_ids']);
+        $batch = mazaq_hero_daily_generate_batch($published_ids, $state['used_post_ids'], (int) $config['batch_size']);
         $state['rotation_date'] = $today;
         $state['hero_post_ids'] = $batch['hero_post_ids'];
         $state['used_post_ids'] = $batch['used_post_ids'];
@@ -232,10 +261,23 @@ function mazaq_hero_daily_prepare_today_batch(bool $force_regenerate = false): a
 function mazaq_hero_daily_schedule_event(): void
 {
     mazaq_hero_daily_ensure_option_exists();
+    $config = mazaq_hero_daily_get_config();
+
+    if (!$config['enabled']) {
+        mazaq_hero_daily_clear_event();
+
+        return;
+    }
+
+    $hour = function_exists('mazaq_content_rotation_get_daily_hour')
+        ? mazaq_content_rotation_get_daily_hour()
+        : 8;
+    $first_run_timestamp = function_exists('mazaq_content_rotation_get_next_daily_timestamp')
+        ? mazaq_content_rotation_get_next_daily_timestamp($hour)
+        : strtotime('tomorrow midnight');
 
     if (!wp_next_scheduled(MAZAQ_HERO_DAILY_EVENT)) {
-        // Schedule to run at midnight
-        wp_schedule_event(strtotime('tomorrow midnight'), 'daily', MAZAQ_HERO_DAILY_EVENT);
+        wp_schedule_event($first_run_timestamp, 'daily', MAZAQ_HERO_DAILY_EVENT);
     }
 }
 
@@ -281,58 +323,103 @@ function mazaq_hero_daily_cleanup_schedule(): void
 add_action('switch_theme', 'mazaq_hero_daily_cleanup_schedule');
 
 /**
- * Admin notice showing today's hero posts
+ * Dashboard widget showing today's hero posts
  */
-function mazaq_hero_daily_render_notice(): void
+function mazaq_hero_daily_render_widget(): void
 {
-    if (!is_admin() || !current_user_can('manage_options')) {
+    if (!current_user_can('manage_options')) {
         return;
     }
 
-    $state = mazaq_hero_daily_get_state();
-    if (empty($state['hero_post_ids'])) {
-        return;
+    $config = mazaq_hero_daily_get_config();
+    $state = mazaq_hero_daily_prepare_today_batch(false);
+    $count_label = (int) $config['batch_size'];
+
+    echo '<div dir="rtl" style="text-align:right">';
+
+    if (!empty($_GET['mazaq_hero_saved'])) {
+        echo '<p><span class="dashicons dashicons-yes-alt" style="color:#46b450"></span> ' . esc_html__('تم حفظ إعدادات Hero.', 'mazaq') . '</p>';
     }
 
-    echo '<div class="notice notice-info is-dismissible" dir="rtl" style="text-align:right">';
-    echo '<p><strong>' . esc_html__('مشاركات Hero لهذا اليوم', 'mazaq') . '</strong></p>';
+    if (!$config['enabled']) {
+        echo '<p>' . esc_html__('تدوير Hero اليومي معطل حالياً.', 'mazaq') . '</p>';
+    }
 
-    $posts = get_posts([
-        'post_type' => 'post',
-        'post__in' => $state['hero_post_ids'],
-        'posts_per_page' => -1,
-    ]);
+    if ($config['enabled'] && empty($state['hero_post_ids'])) {
+        echo '<p>' . esc_html__('لا توجد عناصر Hero متاحة حالياً.', 'mazaq') . '</p>';
+    }
 
-    if (!empty($posts)) {
-        echo '<ul style="margin-right:1.5em;margin-left:0;list-style:disc">';
+    if ($config['enabled'] && !empty($state['hero_post_ids'])) {
+        $posts = get_posts([
+            'post_type' => 'post',
+            'post__in' => $state['hero_post_ids'],
+            'posts_per_page' => count($state['hero_post_ids']),
+            'orderby' => 'post__in',
+            'no_found_rows' => true,
+            'update_post_meta_cache' => false,
+            'update_post_term_cache' => false,
+        ]);
 
-        foreach ($posts as $post) {
-            $view_link = get_permalink($post);
-            $edit_link = get_edit_post_link($post->ID, '');
+        if (!empty($posts)) {
+            echo '<ul style="margin-right:1.2em;margin-left:0;list-style:disc">';
 
-            echo '<li>';
-            echo esc_html(get_the_title($post));
-            echo ' - <a href="' . esc_url($view_link) . '" target="_blank" rel="noopener noreferrer">' . esc_html__('عرض', 'mazaq') . '</a>';
+            foreach ($posts as $post) {
+                $view_link = get_permalink($post);
+                $edit_link = get_edit_post_link($post->ID, '');
 
-            if (!empty($edit_link)) {
-                echo ' | <a href="' . esc_url($edit_link) . '">' . esc_html__('تعديل', 'mazaq') . '</a>';
+                echo '<li>';
+                echo esc_html(get_the_title($post));
+                echo ' - <a href="' . esc_url($view_link) . '" target="_blank" rel="noopener noreferrer">' . esc_html__('عرض', 'mazaq') . '</a>';
+
+                if (!empty($edit_link)) {
+                    echo ' | <a href="' . esc_url($edit_link) . '">' . esc_html__('تعديل', 'mazaq') . '</a>';
+                }
+
+                echo '</li>';
             }
 
-            echo '</li>';
+            echo '</ul>';
         }
-
-        echo '</ul>';
     }
+
+    $settings_url = function_exists('mazaq_content_rotation_settings_url')
+        ? mazaq_content_rotation_settings_url()
+        : admin_url('options-general.php');
 
     $regenerate_url = wp_nonce_url(
         admin_url('admin-post.php?action=' . MAZAQ_HERO_DAILY_REGENERATE_ACTION),
         MAZAQ_HERO_DAILY_REGENERATE_NONCE
     );
 
-    echo '<p><a href="' . esc_url($regenerate_url) . '" class="button button-secondary">' . esc_html__('🔄 تجديد مشاركات Hero', 'mazaq') . '</a></p>';
+    echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '" style="margin-top:12px">';
+    wp_nonce_field(MAZAQ_HERO_DAILY_QUICK_SAVE_NONCE);
+    echo '<input type="hidden" name="action" value="' . esc_attr(MAZAQ_HERO_DAILY_QUICK_SAVE_ACTION) . '" />';
+    echo '<p><label><input type="checkbox" name="hero_enabled" value="1" ' . checked($config['enabled'], true, false) . ' /> ' . esc_html__('تفعيل تدوير Hero', 'mazaq') . '</label></p>';
+    echo '<p><label for="mazaq-hero-count">' . esc_html__('عدد عناصر Hero', 'mazaq') . '</label> ';
+    echo '<input id="mazaq-hero-count" type="number" min="1" max="3" name="hero_count" value="' . esc_attr((string) $count_label) . '" class="small-text" /></p>';
+    submit_button(__('حفظ سريع', 'mazaq'), 'secondary', 'submit', false);
+    echo '</form>';
+
+    echo '<p style="margin-top:10px">';
+    echo '<a href="' . esc_url($regenerate_url) . '" class="button button-secondary">' . esc_html(sprintf(__('🔄 تجديد %d عناصر Hero', 'mazaq'), $count_label)) . '</a> ';
+    echo '<a href="' . esc_url($settings_url) . '" class="button button-link">' . esc_html__('الإعدادات المتقدمة', 'mazaq') . '</a>';
+    echo '</p>';
     echo '</div>';
 }
-add_action('admin_notices', 'mazaq_hero_daily_render_notice');
+
+function mazaq_hero_daily_register_dashboard_widget(): void
+{
+    if (!current_user_can('manage_options')) {
+        return;
+    }
+
+    wp_add_dashboard_widget(
+        'mazaq-hero-daily-widget',
+        __('مشاركات Hero لهذا اليوم', 'mazaq'),
+        'mazaq_hero_daily_render_widget'
+    );
+}
+add_action('wp_dashboard_setup', 'mazaq_hero_daily_register_dashboard_widget');
 
 /**
  * Handle manual regeneration action
@@ -348,7 +435,34 @@ function mazaq_hero_daily_handle_regenerate(): void
 
     mazaq_hero_daily_prepare_today_batch(true);
 
-    wp_safe_redirect(admin_url());
+    wp_safe_redirect(admin_url('index.php'));
     exit;
 }
 add_action('admin_post_' . MAZAQ_HERO_DAILY_REGENERATE_ACTION, 'mazaq_hero_daily_handle_regenerate');
+
+function mazaq_hero_daily_handle_quick_save(): void
+{
+    if (
+        !current_user_can('manage_options') ||
+        !check_admin_referer(MAZAQ_HERO_DAILY_QUICK_SAVE_NONCE)
+    ) {
+        wp_die(__('غير مصرح لك بهذا الإجراء.', 'mazaq'), 403);
+    }
+
+    if (!function_exists('mazaq_content_rotation_get_settings') || !function_exists('mazaq_content_rotation_update_settings')) {
+        wp_die(__('إعدادات التدوير غير متاحة حالياً.', 'mazaq'), 500);
+    }
+
+    $settings = mazaq_content_rotation_get_settings();
+    $settings['hero_enabled'] = isset($_POST['hero_enabled']) ? 1 : 0;
+
+    $posted_count = isset($_POST['hero_count']) ? wp_unslash($_POST['hero_count']) : $settings['hero_count'];
+    $settings['hero_count'] = max(1, min(3, absint($posted_count)));
+
+    mazaq_content_rotation_update_settings($settings);
+    mazaq_hero_daily_prepare_today_batch(true);
+
+    wp_safe_redirect(add_query_arg('mazaq_hero_saved', '1', admin_url('index.php')));
+    exit;
+}
+add_action('admin_post_' . MAZAQ_HERO_DAILY_QUICK_SAVE_ACTION, 'mazaq_hero_daily_handle_quick_save');
