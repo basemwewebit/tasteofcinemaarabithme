@@ -74,3 +74,33 @@ function mazaq_register_acf_fields(): void
     ]);
 }
 add_action('acf/init', 'mazaq_register_acf_fields');
+
+/**
+ * SCF 6.5 command scripts expect window.acf.data.wp_version to exist.
+ * On some environments this value is missing and causes localeCompare errors.
+ */
+function mazaq_scf_ensure_wp_version_for_commands(): void
+{
+    global $wp_version;
+
+    $resolved_version = is_string($wp_version) && '' !== $wp_version
+        ? $wp_version
+        : get_bloginfo('version');
+
+    $inline_script = sprintf(
+        "window.acf=window.acf||{};window.acf.data=window.acf.data||{};if(!window.acf.data.wp_version){window.acf.data.wp_version=%s;}",
+        wp_json_encode($resolved_version)
+    );
+
+    $handles = [
+        'scf-commands-admin',
+        'scf-commands-custom-post-types',
+    ];
+
+    foreach ($handles as $handle) {
+        if (wp_script_is($handle, 'registered') || wp_script_is($handle, 'enqueued')) {
+            wp_add_inline_script($handle, $inline_script, 'before');
+        }
+    }
+}
+add_action('admin_enqueue_scripts', 'mazaq_scf_ensure_wp_version_for_commands', 1000);

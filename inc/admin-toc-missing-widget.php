@@ -9,9 +9,15 @@ declare(strict_types=1);
 const MAZAQ_TOC_MISSING_WIDGET_ID = 'mazaq-toc-missing-widget';
 const MAZAQ_TOC_MISSING_WIDGET_OPTION = 'mazaq_toc_missing_widget_state';
 const MAZAQ_TOC_MISSING_FEED_TRANSIENT = 'mazaq_toc_missing_feed_items_v1';
+const MAZAQ_TOC_MISSING_REMOTE_POOL_TRANSIENT = 'mazaq_toc_missing_remote_pool_v1';
 const MAZAQ_TOC_MISSING_FEED_TRANSIENT_TTL = 15 * MINUTE_IN_SECONDS;
+const MAZAQ_TOC_MISSING_REMOTE_POOL_TTL = 15 * MINUTE_IN_SECONDS;
 const MAZAQ_TOC_MISSING_BATCH_SIZE = 5;
 const MAZAQ_TOC_MISSING_FEED_URL = 'https://www.tasteofcinema.com/feed/';
+const MAZAQ_TOC_MISSING_REST_URL = 'https://www.tasteofcinema.com/wp-json/wp/v2/posts';
+const MAZAQ_TOC_MISSING_REST_PER_PAGE = 100;
+const MAZAQ_TOC_MISSING_REST_RANDOM_PAGES = 8;
+const MAZAQ_TOC_MISSING_REST_MAX_PAGES = 300;
 const MAZAQ_TOC_MISSING_REFRESH_ACTION = 'mazaq_toc_missing_refresh';
 const MAZAQ_TOC_MISSING_REFRESH_NONCE = 'mazaq_toc_missing_refresh_nonce';
 
@@ -181,6 +187,166 @@ function mazaq_toc_missing_fetch_feed_items(bool $force_refresh = false): array
     return $prepared_items;
 }
 
+function mazaq_toc_missing_prepare_rest_item($item): array
+{
+    if (!is_array($item)) {
+        return [];
+    }
+
+    $url = esc_url_raw((string) ($item['link'] ?? ''));
+    $slug = sanitize_title((string) ($item['slug'] ?? ''));
+
+    if ('' === $slug && '' !== $url) {
+        $slug = mazaq_toc_missing_extract_slug_from_url($url);
+    }
+
+    if ('' === $url || '' === $slug) {
+        return [];
+    }
+
+    $raw_title = '';
+    if (isset($item['title']) && is_array($item['title'])) {
+        $raw_title = (string) ($item['title']['rendered'] ?? '');
+    } elseif (isset($item['title'])) {
+        $raw_title = (string) $item['title'];
+    }
+
+    $title = sanitize_text_field(
+        wp_strip_all_tags(
+            html_entity_decode($raw_title, ENT_QUOTES | ENT_HTML5, 'UTF-8')
+        )
+    );
+
+    if ('' === $title) {
+        $title = $url;
+    }
+
+    return [
+        'title' => $title,
+        'url' => $url,
+        'slug' => $slug,
+        'date' => sanitize_text_field((string) ($item['date'] ?? '')),
+    ];
+}
+
+function mazaq_toc_missing_fetch_rest_page(int $page): array
+{
+    if ($page < 1) {
+        return [];
+    }
+
+    $endpoint = add_query_arg(
+        [
+            'per_page' => MAZAQ_TOC_MISSING_REST_PER_PAGE,
+            'page' => $page,
+            '_fields' => 'link,slug,title.rendered,date',
+        ],
+        MAZAQ_TOC_MISSING_REST_URL
+    );
+
+    $response = wp_remote_get(
+        $endpoint,
+        [
+            'timeout' => 8,
+            'redirection' => 3,
+        ]
+    );
+
+    if (is_wp_error($response)) {
+        return [];
+    }
+
+    $status_code = (int) wp_remote_retrieve_response_code($response);
+    if ($status_code < 200 || $status_code >= 300) {
+        return [];
+    }
+
+    $payload = json_decode((string) wp_remote_retrieve_body($response), true);
+
+    return is_array($payload) ? $payload : [];
+}
+
+function mazaq_toc_missing_fetch_rest_items(): array
+{
+    $first_page_endpoint = add_query_arg(
+        [
+            'per_page' => MAZAQ_TOC_MISSING_REST_PER_PAGE,
+            'page' => 1,
+            '_fields' => 'link,slug,title.rendered,date',
+        ],
+        MAZAQ_TOC_MISSING_REST_URL
+    );
+
+    $first_response = wp_remote_get(
+        $first_page_endpoint,
+        [
+            'timeout' => 8,
+            'redirection' => 3,
+        ]
+    );
+
+    if (is_wp_error($first_response)) {
+        return [];
+    }
+
+    $first_status_code = (int) wp_remote_retrieve_response_code($first_response);
+    if ($first_status_code < 200 || $first_status_code >= 300) {
+        return [];
+    }
+
+    $raw_items = json_decode((string) wp_remote_retrieve_body($first_response), true);
+    $raw_items = is_array($raw_items) ? $raw_items : [];
+
+    $total_pages = absint((string) wp_remote_retrieve_header($first_response, 'x-wp-totalpages'));
+    $max_pages = max(1, min(MAZAQ_TOC_MISSING_REST_MAX_PAGES, $total_pages));
+
+    if ($max_pages > 1) {
+        $candidate_pages = range(2, $max_pages);
+        shuffle($candidate_pages);
+
+        $extra_pages = array_slice($candidate_pages, 0, MAZAQ_TOC_MISSING_REST_RANDOM_PAGES);
+
+        foreach ($extra_pages as $page) {
+            $raw_items = array_merge($raw_items, mazaq_toc_missing_fetch_rest_page((int) $page));
+        }
+    }
+
+    $prepared_items = [];
+
+    foreach ($raw_items as $raw_item) {
+        $prepared_item = mazaq_toc_missing_prepare_rest_item($raw_item);
+        if (!empty($prepared_item)) {
+            $prepared_items[] = $prepared_item;
+        }
+    }
+
+    return mazaq_toc_missing_normalize_items($prepared_items);
+}
+
+function mazaq_toc_missing_fetch_remote_pool(bool $force_refresh = false): array
+{
+    $cached_pool = get_transient(MAZAQ_TOC_MISSING_REMOTE_POOL_TRANSIENT);
+
+    if (!$force_refresh && is_array($cached_pool) && !empty($cached_pool)) {
+        return mazaq_toc_missing_normalize_items($cached_pool);
+    }
+
+    $feed_items = mazaq_toc_missing_fetch_feed_items($force_refresh);
+    $rest_items = mazaq_toc_missing_fetch_rest_items();
+
+    $pool = mazaq_toc_missing_normalize_items(array_merge($feed_items, $rest_items));
+
+    if (!empty($pool)) {
+        set_transient(
+            MAZAQ_TOC_MISSING_REMOTE_POOL_TRANSIENT,
+            $pool,
+            MAZAQ_TOC_MISSING_REMOTE_POOL_TTL
+        );
+    }
+
+    return $pool;
+}
+
 function mazaq_toc_missing_get_existing_post_slugs(array $slugs): array
 {
     global $wpdb;
@@ -258,15 +424,15 @@ function mazaq_toc_missing_prepare_batch(bool $force_refresh = false): array
 {
     $state = mazaq_toc_missing_get_state();
     $current_items = mazaq_toc_missing_filter_items((array) ($state['items'] ?? []));
-    $feed_items = mazaq_toc_missing_fetch_feed_items($force_refresh);
+    $remote_pool = mazaq_toc_missing_fetch_remote_pool($force_refresh);
 
     if ($force_refresh) {
         $current_slugs = array_column($current_items, 'slug');
-        $candidates = mazaq_toc_missing_filter_items($feed_items, $current_slugs);
+        $candidates = mazaq_toc_missing_filter_items($remote_pool, $current_slugs);
         $batch = mazaq_toc_missing_pick_random_items($candidates, MAZAQ_TOC_MISSING_BATCH_SIZE);
 
         if (count($batch) < MAZAQ_TOC_MISSING_BATCH_SIZE) {
-            $fallback_candidates = mazaq_toc_missing_filter_items($feed_items);
+            $fallback_candidates = mazaq_toc_missing_filter_items($remote_pool);
             $fallback_batch = mazaq_toc_missing_pick_random_items($fallback_candidates, MAZAQ_TOC_MISSING_BATCH_SIZE);
             if (count($fallback_batch) > count($batch)) {
                 $batch = $fallback_batch;
@@ -290,7 +456,7 @@ function mazaq_toc_missing_prepare_batch(bool $force_refresh = false): array
 
     $needed = MAZAQ_TOC_MISSING_BATCH_SIZE - count($current_items);
     $exclude_slugs = array_column($current_items, 'slug');
-    $candidates = mazaq_toc_missing_filter_items($feed_items, $exclude_slugs);
+    $candidates = mazaq_toc_missing_filter_items($remote_pool, $exclude_slugs);
     $new_items = mazaq_toc_missing_pick_random_items($candidates, $needed);
 
     $state['items'] = array_merge($current_items, $new_items);
@@ -329,7 +495,7 @@ function mazaq_toc_missing_render_widget(): void
     echo '<p>' . esc_html__('يعرض هذا الصندوق 5 روابط من المصدر الخارجي غير المنشورة لدينا (اعتماداً على slug).', 'mazaq') . '</p>';
 
     if (empty($items)) {
-        echo '<p><strong>' . esc_html__('لا توجد حالياً عناصر مرشحة من RSS أو أن كل العناصر موجودة محلياً.', 'mazaq') . '</strong></p>';
+        echo '<p><strong>' . esc_html__('لا توجد حالياً عناصر مرشحة من المصدر الخارجي أو أن كل العناصر موجودة محلياً.', 'mazaq') . '</strong></p>';
     } else {
         echo '<ul style="margin-right:1.2em;margin-left:0;list-style:disc">';
         foreach ($items as $item) {
