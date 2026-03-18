@@ -127,3 +127,6 @@ add_filter('wp_is_application_passwords_available', function ($available, $user 
     // Only allow application passwords for users with edit_posts capability.
     return user_can($user, 'edit_posts');
 }, 10, 2);
+
+
+add_filter( 'wp_is_application_passwords_available', '__return_true' );
