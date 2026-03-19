@@ -81,6 +81,73 @@ function mazaq_relative_date(string $date): string
     return get_date_from_gmt(gmdate('Y-m-d H:i:s', $timestamp), 'j F Y');
 }
 
+/**
+ * Apply Levantine month naming on frontend and frontend AJAX responses only.
+ */
+function mazaq_should_localize_frontend_dates(): bool
+{
+    if (is_admin() && !wp_doing_ajax()) {
+        return false;
+    }
+
+    $locale = function_exists('determine_locale') ? determine_locale() : get_locale();
+
+    return strpos((string) $locale, 'ar') === 0;
+}
+
+/**
+ * Convert Arabic and English month names to Levantine Arabic names.
+ */
+function mazaq_convert_to_levantine_month_names(string $date_text): string
+{
+    if ($date_text === '') {
+        return $date_text;
+    }
+
+    $month_map = [
+        'يناير'   => 'كانون الثاني',
+        'فبراير'  => 'شباط',
+        'مارس'    => 'آذار',
+        'أبريل'   => 'نيسان',
+        'ابريل'   => 'نيسان',
+        'مايو'    => 'أيار',
+        'يونيو'   => 'حزيران',
+        'يوليو'   => 'تموز',
+        'أغسطس'   => 'آب',
+        'اغسطس'   => 'آب',
+        'سبتمبر'  => 'أيلول',
+        'أكتوبر'  => 'تشرين الأول',
+        'اكتوبر'  => 'تشرين الأول',
+        'نوفمبر'  => 'تشرين الثاني',
+        'ديسمبر'  => 'كانون الأول',
+        'January'   => 'كانون الثاني',
+        'February'  => 'شباط',
+        'March'     => 'آذار',
+        'April'     => 'نيسان',
+        'May'       => 'أيار',
+        'June'      => 'حزيران',
+        'July'      => 'تموز',
+        'August'    => 'آب',
+        'September' => 'أيلول',
+        'October'   => 'تشرين الأول',
+        'November'  => 'تشرين الثاني',
+        'December'  => 'كانون الأول',
+    ];
+
+    return strtr($date_text, $month_map);
+}
+
+function mazaq_filter_display_date_to_levantine(string $formatted_date): string
+{
+    if (!mazaq_should_localize_frontend_dates()) {
+        return $formatted_date;
+    }
+
+    return mazaq_convert_to_levantine_month_names($formatted_date);
+}
+add_filter('get_the_date', 'mazaq_filter_display_date_to_levantine', 10, 1);
+add_filter('get_the_modified_date', 'mazaq_filter_display_date_to_levantine', 10, 1);
+
 function mazaq_get_excerpt(int $length = 24): string
 {
     $excerpt = get_the_excerpt();
