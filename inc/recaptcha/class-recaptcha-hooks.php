@@ -36,19 +36,20 @@ class TOC_Recaptcha_Hooks
         $should_load = false;
         $selectors = [];
 
+        // Define allowed CSS selectors for security
+        $login_selectors = ['#loginform', '#registerform', '#lostpasswordform'];
+        $contact_selector = 'form:has(button[name="mazaq_contact_submit"])';
+
         // US2: Login / Register / Lost Password pages
         if (in_array($GLOBALS['pagenow'], ['wp-login.php', 'wp-register.php'], true)) {
             $should_load = true;
-            $selectors[] = '#loginform';
-            $selectors[] = '#registerform';
-            $selectors[] = '#lostpasswordform';
+            $selectors = array_merge($selectors, $login_selectors);
         }
 
         // US1: Contact page
         if (is_page_template('page-contact.php')) {
             $should_load = true;
-            // Target the form that has the specific submit button inside
-            $selectors[] = 'form:has(button[name="mazaq_contact_submit"])';
+            $selectors[] = $contact_selector;
         }
 
         if ($should_load) {
@@ -68,9 +69,16 @@ class TOC_Recaptcha_Hooks
                 true
             );
 
+            // Sanitize selectors for JavaScript output
+            // wp_localize_script uses wp_json_encode() which handles proper JSON encoding
+            $safe_selectors = array_map(static function (string $selector): string {
+                // Remove any potentially harmful characters, keep safe CSS selector syntax
+                return preg_replace('/[^a-zA-Z0-9_\-\[\]\(\)\.\:\#\=\s\,>~+"\']/', '', $selector);
+            }, $selectors);
+
             wp_localize_script('toc-recaptcha-handler', 'tocRecaptchaConfig', [
                 'siteKey'   => $site_key,
-                'selectors' => $selectors,
+                'selectors' => $safe_selectors,
             ]);
         }
     }
