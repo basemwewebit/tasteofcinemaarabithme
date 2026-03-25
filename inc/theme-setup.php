@@ -19,6 +19,7 @@ function mazaq_theme_setup(): void
     ]);
 
     add_image_size('hero-image', 1600, 700, true);
+    add_image_size('hero-poster', 1800, 1100, true);
     add_image_size('card-thumbnail', 800, 500, true);
     add_image_size('card-wide-thumbnail', 800, 500, true);
     add_image_size('sidebar-thumbnail', 150, 150, true);

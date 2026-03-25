@@ -2,11 +2,15 @@
 
 <?php get_template_part('template-parts/content/hero'); ?>
 
-<div class="max-w-7xl mx-auto px-4">
-    <?php get_template_part('template-parts/ads/ad-responsive'); ?>
-</div>
+<section class="hero-transition">
+    <div class="hero-transition__band mx-auto max-w-7xl px-4">
+        <div class="hero-transition__ad-shell">
+            <?php get_template_part('template-parts/ads/ad-responsive'); ?>
+        </div>
+    </div>
+</section>
 
-<main class="max-w-7xl mx-auto px-4 py-8 mb-16">
+<main class="max-w-7xl mx-auto px-4 pb-8 mb-16">
 
 <?php
     $categories = get_categories([

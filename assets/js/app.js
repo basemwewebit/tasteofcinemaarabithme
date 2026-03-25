@@ -1157,39 +1157,136 @@ jQuery(function ($) {
 
 /**
  * Hero Carousel Controller
- * Implements cross-fade transitions for multiple sticky posts.
+ * Drives the cinematic front-page hero.
  */
 (function () {
-    const track = document.querySelector('.hero-carousel');
-    if (!track) {
+    const root = document.querySelector('.hero-carousel');
+    if (!root) {
         return;
     }
 
-    const slides = track.querySelectorAll('.hero-carousel__slide');
-    const dots = track.querySelectorAll('.hero-carousel__dot');
-    const totalSlides = parseInt(track.dataset.total, 10) || slides.length;
-    const intervalMs = parseInt(track.dataset.interval, 10) || 6000;
+    const slides = Array.from(root.querySelectorAll('.hero-carousel__slide'));
+    if (!slides.length) {
+        return;
+    }
+
+    const dots = Array.from(root.querySelectorAll('.hero-carousel__dot'));
+    const railItems = Array.from(root.querySelectorAll('.hero-rail__item'));
+    const prevButton = root.querySelector('[data-hero-prev]');
+    const nextButton = root.querySelector('[data-hero-next]');
+    const currentLabel = root.querySelector('[data-hero-current]');
+    const mobileProgressBar = root.querySelector('.hero-carousel__progress-bar');
+    const totalSlides = parseInt(root.dataset.total, 10) || slides.length;
+    const intervalMs = parseInt(root.dataset.interval, 10) || 6000;
+    const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const supportsReducedMotionListener = typeof reduceMotionQuery.addEventListener === 'function';
 
     let currentIndex = 0;
     let timer = null;
     let isPaused = false;
+    let isReady = false;
     let touchStartX = 0;
+    let rafId = null;
 
-    function goTo(n) {
-        // Remove active classes from current slide and dot
-        slides[currentIndex].classList.remove('opacity-100', 'z-10');
-        slides[currentIndex].classList.add('opacity-0', 'z-0');
-        dots[currentIndex].classList.remove('bg-white', 'w-6', 'active');
+    function stopTimer() {
+        if (timer) {
+            clearInterval(timer);
+            timer = null;
+        }
+    }
 
-        // Update index (with wrapping)
+    function resetBar(bar) {
+        if (!bar) {
+            return;
+        }
+
+        bar.style.transition = 'none';
+        bar.style.transform = 'scaleX(0)';
+    }
+
+    function animateBar(bar) {
+        if (!bar || totalSlides < 2 || reduceMotionQuery.matches || isPaused) {
+            return;
+        }
+
+        window.requestAnimationFrame(() => {
+            bar.style.transition = `transform ${intervalMs}ms linear`;
+            bar.style.transform = 'scaleX(1)';
+        });
+    }
+
+    function syncProgress() {
+        railItems.forEach((item, index) => {
+            const bar = item.querySelector('.hero-rail__progress-bar');
+            resetBar(bar);
+
+            if (index === currentIndex) {
+                animateBar(bar);
+            }
+        });
+
+        resetBar(mobileProgressBar);
+        animateBar(mobileProgressBar);
+    }
+
+    function syncSlides() {
+        slides.forEach((slide, index) => {
+            const isActive = index === currentIndex;
+            slide.classList.toggle('is-active', isActive);
+            slide.setAttribute('aria-hidden', isActive ? 'false' : 'true');
+        });
+
+        dots.forEach((dot, index) => {
+            const isActive = index === currentIndex;
+            dot.classList.toggle('is-active', isActive);
+            dot.setAttribute('aria-current', isActive ? 'true' : 'false');
+        });
+
+        railItems.forEach((item, index) => {
+            const isActive = index === currentIndex;
+            item.classList.toggle('is-active', isActive);
+            item.setAttribute('aria-current', isActive ? 'true' : 'false');
+        });
+
+        if (currentLabel) {
+            currentLabel.textContent = String(currentIndex + 1).padStart(2, '0');
+        }
+
+        if (isReady) {
+            syncProgress();
+        }
+    }
+
+    function startTimer() {
+        if (totalSlides < 2 || reduceMotionQuery.matches) {
+            stopTimer();
+            return;
+        }
+
+        stopTimer();
+        timer = window.setInterval(() => {
+            if (!isPaused) {
+                goTo(currentIndex + 1, { restartTimer: false });
+            }
+        }, intervalMs);
+    }
+
+    function resetTimer() {
+        startTimer();
+        syncProgress();
+    }
+
+    function goTo(n, options) {
+        const config = Object.assign({
+            restartTimer: true
+        }, options || {});
+
         currentIndex = (n + totalSlides) % totalSlides;
+        syncSlides();
 
-        // Add active classes to new current slide and dot
-        slides[currentIndex].classList.remove('opacity-0', 'z-0');
-        slides[currentIndex].classList.add('opacity-100', 'z-10');
-        dots[currentIndex].classList.add('bg-white', 'w-6', 'active');
-
-        resetTimer();
+        if (config.restartTimer) {
+            resetTimer();
+        }
     }
 
     function next() {
@@ -1200,43 +1297,85 @@ jQuery(function ($) {
         goTo(currentIndex - 1);
     }
 
-    function startTimer() {
-        if (timer) {
-            clearInterval(timer);
-        }
-        timer = setInterval(() => {
-            if (!isPaused) {
-                next();
-            }
-        }, intervalMs);
+    function onPointerEnter() {
+        isPaused = true;
+        stopTimer();
+        syncProgress();
     }
 
-    function resetTimer() {
+    function onPointerLeave() {
+        isPaused = false;
         startTimer();
+        syncProgress();
     }
 
-    // Dot Click Events
-    dots.forEach(dot => {
+    function handleScroll() {
+        if (reduceMotionQuery.matches) {
+            root.style.setProperty('--hero-scroll', '0');
+            return;
+        }
+
+        if (rafId) {
+            return;
+        }
+
+        rafId = window.requestAnimationFrame(() => {
+            const rect = root.getBoundingClientRect();
+            const progress = Math.min(Math.max((window.innerHeight - rect.top) / (window.innerHeight + rect.height), 0), 1);
+            root.style.setProperty('--hero-scroll', progress.toFixed(4));
+            rafId = null;
+        });
+    }
+
+    dots.forEach((dot) => {
         dot.addEventListener('click', () => {
             goTo(parseInt(dot.dataset.index, 10));
         });
     });
 
-    // Hover Pause
-    track.addEventListener('mouseenter', () => {
-        isPaused = true;
-    });
-    track.addEventListener('mouseleave', () => {
-        isPaused = false;
+    railItems.forEach((item) => {
+        item.addEventListener('click', () => {
+            goTo(parseInt(item.dataset.index, 10));
+        });
     });
 
-    // Touch Swipe
-    track.addEventListener('touchstart', e => {
-        touchStartX = e.changedTouches[0].clientX;
+    if (prevButton) {
+        prevButton.addEventListener('click', prev);
+    }
+
+    if (nextButton) {
+        nextButton.addEventListener('click', next);
+    }
+
+    root.addEventListener('mouseenter', onPointerEnter);
+    root.addEventListener('mouseleave', onPointerLeave);
+    root.addEventListener('focusin', onPointerEnter);
+    root.addEventListener('focusout', () => {
+        window.setTimeout(() => {
+            if (!root.contains(document.activeElement)) {
+                onPointerLeave();
+            }
+        }, 0);
+    });
+
+    root.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowLeft') {
+            event.preventDefault();
+            prev();
+        }
+
+        if (event.key === 'ArrowRight') {
+            event.preventDefault();
+            next();
+        }
+    });
+
+    root.addEventListener('touchstart', (event) => {
+        touchStartX = event.changedTouches[0].clientX;
     }, { passive: true });
 
-    track.addEventListener('touchend', e => {
-        const delta = e.changedTouches[0].clientX - touchStartX;
+    root.addEventListener('touchend', (event) => {
+        const delta = event.changedTouches[0].clientX - touchStartX;
         if (delta > 50) {
             prev();
         } else if (delta < -50) {
@@ -1244,6 +1383,36 @@ jQuery(function ($) {
         }
     }, { passive: true });
 
-    // Initialize Auto-advance
-    startTimer();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', handleScroll);
+
+    const handleReducedMotionChange = () => {
+        if (reduceMotionQuery.matches) {
+            stopTimer();
+        } else if (!isPaused) {
+            startTimer();
+        }
+
+        syncProgress();
+        handleScroll();
+    };
+
+    if (supportsReducedMotionListener) {
+        reduceMotionQuery.addEventListener('change', handleReducedMotionChange);
+    } else if (typeof reduceMotionQuery.addListener === 'function') {
+        reduceMotionQuery.addListener(handleReducedMotionChange);
+    }
+
+    syncSlides();
+    handleScroll();
+
+    window.requestAnimationFrame(() => {
+        isReady = true;
+        root.classList.add('is-ready');
+        syncProgress();
+    });
+
+    if (!reduceMotionQuery.matches) {
+        startTimer();
+    }
 }());
