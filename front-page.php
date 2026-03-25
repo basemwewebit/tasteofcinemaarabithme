@@ -43,11 +43,31 @@
 
     <div class="flex flex-col lg:flex-row gap-12">
         <div class="w-full lg:w-2/3">
-            <div class="flex items-center justify-between mb-8 pb-4 border-b border-slate-200 dark:border-slate-800">
-                <h2 class="text-3xl font-bold text-slate-900 dark:text-white flex items-center gap-3"><span class="w-2 h-8 bg-primary rounded"></span>أحدث المقالات المضافة</h2>
+            <div class="relative mb-10 pb-6 border-b border-slate-200/50 dark:border-slate-800/50 overflow-hidden">
+                <div class="flex items-center justify-between relative">
+                    <div class="flex items-center gap-4">
+                        <!-- Animated accent bar -->
+                        <div class="relative">
+                            <span class="w-1.5 h-12 bg-gradient-to-b from-primary via-amber-400 to-primary rounded-full shadow-[0_0_20px_rgba(212,175,55,0.4)]"></span>
+                            <span class="absolute inset-0 w-1.5 h-12 bg-primary rounded-full blur-md animate-pulse"></span>
+                        </div>
+                        <div>
+                            <h2 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white tracking-tight">أحدث المقالات المضافة</h2>
+                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">اكتشف أحدث المحتوى السينمائي</p>
+                        </div>
+                    </div>
+
+                    <!-- Post count badge -->
+                    <div class="flex items-center gap-3">
+                        <span class="hidden sm:inline-flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 rounded-full text-sm font-medium text-slate-600 dark:text-slate-400">
+                            <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                            <span id="post-count">24</span> مقال
+                        </span>
+                    </div>
+                </div>
             </div>
 
-            <div id="infinite-scroll-container" class="grid grid-cols-1 md:grid-cols-2 gap-8" data-page="2">
+            <div id="infinite-scroll-container" class="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8" data-page="2">
                 <?php
                 $query = new WP_Query([
                     'post_type' => 'post',
@@ -86,11 +106,13 @@
                 ?>
             </div>
 
-            <div id="loading-indicator" class="hidden mt-12 flex justify-center items-center py-4">
-                <svg class="animate-spin h-8 w-8 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                </svg>
+            <div id="loading-indicator" class="hidden mt-12 flex flex-col items-center justify-center py-8 gap-4">
+                <div class="relative">
+                    <div class="w-12 h-12 border-4 border-slate-200 dark:border-slate-700 rounded-full"></div>
+                    <div class="absolute inset-0 w-12 h-12 border-4 border-primary rounded-full border-t-transparent animate-spin"></div>
+                    <div class="absolute inset-2 w-8 h-8 bg-primary/20 rounded-full animate-ping"></div>
+                </div>
+                <span class="text-sm text-slate-500 dark:text-slate-400 font-medium">جاري تحميل المزيد...</span>
             </div>
         </div>
 
