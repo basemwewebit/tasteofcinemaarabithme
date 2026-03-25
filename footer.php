@@ -112,6 +112,12 @@ $social_website = function_exists('get_field') ? (string) get_field('social_webs
     });
 </script>
 
+<button id="back-to-top" class="back-to-top" aria-label="العودة إلى أعلى الصفحة">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+    </svg>
+</button>
+
 <?php wp_footer(); ?>
 </body>
 </html>

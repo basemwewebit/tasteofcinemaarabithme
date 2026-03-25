@@ -702,6 +702,27 @@ jQuery(function ($) {
         });
     }
 
+    // Back to top button
+    const backToTopBtn = $('#back-to-top');
+    if (backToTopBtn.length) {
+        const showThreshold = 300;
+
+        $(window).on('scroll', function () {
+            if ($(this).scrollTop() > showThreshold) {
+                backToTopBtn.addClass('visible');
+            } else {
+                backToTopBtn.removeClass('visible');
+            }
+        });
+
+        backToTopBtn.on('click', function (e) {
+            e.preventDefault();
+            $('html, body').animate({
+                scrollTop: 0
+            }, 600);
+        });
+    }
+
     // Font size controls — use event delegation so they always work
     var fontStorageKey = 'mazaq-article-font-size';
     var fontMin = 14;
