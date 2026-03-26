@@ -2,7 +2,8 @@
 
 <?php get_template_part('template-parts/content/hero'); ?>
 
-<section class="hero-transition">
+
+<section class="hero-transition ">
     <div class="hero-transition__band mx-auto max-w-7xl px-4">
         <div class="hero-transition__ad-shell">
             <?php get_template_part('template-parts/ads/ad-responsive'); ?>
