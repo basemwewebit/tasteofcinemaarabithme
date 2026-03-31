@@ -1,4 +1,10 @@
-<?php get_header(); ?>
+<?php
+// Add noindex to 404 pages to prevent indexing
+add_action('wp_head', function() {
+    echo '<meta name="robots" content="noindex, follow">' . "\n";
+}, 1);
+
+get_header();
 
 <main class="min-h-[80vh] flex items-center justify-center relative overflow-hidden">
     <div class="absolute inset-0 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900"></div>

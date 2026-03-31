@@ -26,6 +26,28 @@ if (!$og_image) {
     <meta property="og:url" content="<?php echo esc_url($og_url); ?>">
     <meta property="og:type" content="<?php echo esc_attr($og_type); ?>">
     <meta property="og:locale" content="ar_AR">
+    <?php
+    // Canonical URL for SEO - prevent duplicate content issues
+    $canonical_url = '';
+    if (is_singular()) {
+        $canonical_url = get_permalink();
+    } elseif (is_category() || is_tag() || is_tax()) {
+        $canonical_url = get_term_link(get_queried_object());
+    } elseif (is_home() || is_front_page()) {
+        $canonical_url = home_url('/');
+    } elseif (is_author()) {
+        $canonical_url = get_author_posts_url(get_query_var('author'));
+    }
+
+    // For paginated content, point to first page to avoid duplicate content
+    if ($canonical_url && get_query_var('paged') > 1) {
+        $canonical_url = preg_replace('/page\/\d+\/?$/', '', $canonical_url);
+        $canonical_url = untrailingslashit($canonical_url);
+    }
+
+    if ($canonical_url) : ?>
+    <link rel="canonical" href="<?php echo esc_url($canonical_url); ?>">
+    <?php endif; ?>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <script>

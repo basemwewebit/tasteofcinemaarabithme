@@ -7,6 +7,7 @@ if (file_exists(get_template_directory() . '/vendor/autoload.php')) {
 }
 
 $mazaq_includes = [
+    'inc/structured-data.php',
     'inc/theme-setup.php',
     'inc/enqueue.php',
     'inc/scf-fields.php',
