@@ -1,7 +1,6 @@
 <?php get_header(); ?>
 <?php
 <<<<<<< HEAD
-<<<<<<< HEAD
 // Add noindex to author pages to prevent indexing of redirect pages
 add_action('wp_head', function() {
     echo '<meta name="robots" content="noindex, follow">' . "\n";
@@ -11,8 +10,6 @@ add_action('wp_head', function() {
 wp_redirect(home_url());
 exit;
 =======
-=======
->>>>>>> parent of 490209b (remove-author)
 $author = get_queried_object();
 $author_id = (int) $author->ID;
 $role_title = function_exists('get_field') ? (string) get_field('author_role_title', 'user_' . $author_id) : '';
@@ -66,7 +63,4 @@ $website_url = function_exists('get_field') ? (string) get_field('website_url', 
 </main>
 
 <?php get_footer(); ?>
-<<<<<<< HEAD
->>>>>>> parent of 490209b (remove-author)
-=======
 >>>>>>> parent of 490209b (remove-author)
