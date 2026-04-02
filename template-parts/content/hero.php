@@ -38,6 +38,8 @@ $render_hero_media = static function (int $post_id, bool $is_priority, string $l
 
 $render_hero_content = static function (int $post_id, string $title_tag = 'h2'): void {
     $categories = get_the_category($post_id);
+    $author_id = (int) get_post_field('post_author', $post_id);
+    $author_name = get_the_author_meta('display_name', $author_id);
     $title = get_the_title($post_id);
     $excerpt = wp_trim_words(wp_strip_all_tags((string) get_the_excerpt($post_id)), 20, '...');
     $reading_time = function_exists('mazaq_reading_time') ? mazaq_reading_time($post_id) : '';
@@ -55,6 +57,8 @@ $render_hero_content = static function (int $post_id, string $title_tag = 'h2'):
                 <p class="hero-excerpt"><?php echo esc_html($excerpt); ?></p>
             <?php endif; ?>
             <div class="hero-meta" aria-label="<?php esc_attr_e('Post information', 'mazaq'); ?>">
+                <span><?php echo esc_html($author_name); ?></span>
+                <span class="hero-meta__separator" aria-hidden="true"></span>
                 <span><?php echo esc_html(get_the_date('j F Y', $post_id)); ?></span>
                 <?php if ($reading_time !== '') : ?>
                     <span class="hero-meta__separator" aria-hidden="true"></span>
