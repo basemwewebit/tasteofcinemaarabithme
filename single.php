@@ -14,6 +14,12 @@
 
                     <div class="flex flex-wrap items-center gap-6 text-sm text-slate-500 dark:text-slate-400 font-medium font-mono pb-6 border-b border-slate-200 dark:border-slate-800">
                         <div class="flex items-center gap-2">
+                            <?php echo get_avatar(get_the_author_meta('ID'), 40, '', '', ['class' => 'w-10 h-10 rounded-full']); ?>
+                            <div>
+                                <span class="block text-slate-900 dark:text-white font-bold font-sans text-base hover:text-primary transition-colors">بواسطة: <?php the_author_posts_link(); ?></span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                             <span><?php echo esc_html(get_the_date('j F Y')); ?></span>
                         </div>
