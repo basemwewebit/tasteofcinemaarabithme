@@ -2,14 +2,30 @@
 
 declare(strict_types=1);
 
-// Note: Open Graph meta tags (og:title, og:description, og:image, og:url, og:type, og:locale)
-// are output by Yoast SEO Premium via wp_head(). Do NOT add duplicate og: tags here.
+$og_title = wp_get_document_title();
+$og_description = is_singular() ? wp_strip_all_tags((string) get_the_excerpt()) : get_bloginfo('description');
+$og_url = is_singular() ? get_permalink() : home_url('/');
+$og_type = is_singular('post') ? 'article' : 'website';
+$og_image = '';
+if (is_singular() && has_post_thumbnail()) {
+    $og_image_data = wp_get_attachment_image_src((int) get_post_thumbnail_id(), 'full');
+    $og_image = $og_image_data ? $og_image_data[0] : '';
+}
+if (!$og_image) {
+    $og_image = get_template_directory_uri() . '/assets/images/og-cover.jpg';
+}
 ?>
 <!doctype html>
 <html <?php language_attributes(); ?> dir="rtl" class="scroll-smooth">
 <head>
     <meta charset="<?php bloginfo('charset'); ?>">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta property="og:title" content="<?php echo esc_attr($og_title); ?>">
+    <meta property="og:description" content="<?php echo esc_attr($og_description); ?>">
+    <meta property="og:image" content="<?php echo esc_url($og_image); ?>">
+    <meta property="og:url" content="<?php echo esc_url($og_url); ?>">
+    <meta property="og:type" content="<?php echo esc_attr($og_type); ?>">
+    <meta property="og:locale" content="ar_AR">
     <?php
     // Canonical URL for SEO - prevent duplicate content issues
     $canonical_url = '';
