@@ -1,10 +1,4 @@
-<?php
-// Add noindex to search results pages to prevent indexing
-add_action('wp_head', function() {
-    echo '<meta name="robots" content="noindex, follow">' . "\n";
-}, 1);
-
-get_header();
+<?php get_header(); ?>
 
 <div class="bg-slate-900 text-white py-16 md:py-24 mb-12 relative overflow-hidden flex justify-center items-center text-center">
     <div class="max-w-4xl mx-auto px-4 relative z-10 w-full">

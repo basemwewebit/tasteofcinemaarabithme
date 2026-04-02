@@ -7,12 +7,7 @@
       "Read(//opt/homebrew/var/log/php-fpm/**)",
       "Read(//var/log/php/**)",
       "Read(//opt/**)",
-      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://tasteofcinemaarabi.test/)",
-      "Bash(grep -E \"^[^d].*\\\\.php$\")",
-      "Read(//home/basem/sites/tasteofcinemaarabi/**)"
-    ],
-    "additionalDirectories": [
-      "/home/basem/sites/tasteofcinemaarabi"
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://tasteofcinemaarabi.test/)"
     ]
   }
 }

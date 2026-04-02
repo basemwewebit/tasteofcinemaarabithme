@@ -148,7 +148,7 @@ function mazaq_filter_display_date_to_levantine(string $formatted_date): string
 add_filter('get_the_date', 'mazaq_filter_display_date_to_levantine', 10, 1);
 add_filter('get_the_modified_date', 'mazaq_filter_display_date_to_levantine', 10, 1);
 
-function mazaq_get_excerpt(int $length = 60): string
+function mazaq_get_excerpt(int $length = 24): string
 {
     $excerpt = get_the_excerpt();
     return wp_trim_words(wp_strip_all_tags((string) $excerpt), $length, '...');
