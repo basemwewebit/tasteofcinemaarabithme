@@ -30,10 +30,6 @@
 
         <!-- Enhanced footer with reading time -->
         <div class="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-medium border-t border-slate-100 dark:border-slate-700/50 pt-4 mb-4">
-            <div class="flex items-center gap-2">
-                <?php echo get_avatar(get_the_author_meta('ID'), 24, '', '', ['class' => 'w-6 h-6 rounded-full ring-2 ring-slate-100 dark:ring-slate-700']); ?>
-                <span><?php echo esc_html(get_the_author()); ?></span>
-            </div>
             <span><?php echo esc_html(get_the_date('j F Y')); ?></span>
         </div>
 

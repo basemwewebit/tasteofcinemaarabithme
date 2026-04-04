@@ -29,12 +29,6 @@
         <!-- Enhanced footer with reading time -->
         <div class="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-medium border-t border-slate-100 dark:border-slate-700/50 pt-4">
             <div class="flex items-center gap-3">
-                <div class="flex items-center gap-2">
-                    <?php echo get_avatar(get_the_author_meta('ID'), 24, '', '', ['class' => 'w-6 h-6 rounded-full ring-2 ring-slate-100 dark:ring-slate-700']); ?>
-                    <span><?php echo esc_html(get_the_author()); ?></span>
-                </div>
-            </div>
-            <div class="flex items-center gap-3">
                 <span class="flex items-center gap-1.5 text-slate-400">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
