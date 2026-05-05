@@ -57,6 +57,8 @@
                     </div>
                 <?php endif; ?>
 
+                <?php get_template_part('template-parts/content/author-box'); ?>
+
                 <div class="my-12"><?php mazaq_render_ad('ad_slot_bottom_article', 'horizontal'); ?></div>
 
            

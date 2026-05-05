@@ -131,12 +131,3 @@ add_filter('wp_is_application_passwords_available', function ($available, $user 
 
 add_filter( 'wp_is_application_passwords_available', '__return_true' );
 
-/**
- * Redirect author archive pages to home.
- */
-add_action('template_redirect', function() {
-    if (is_author()) {
-        wp_redirect(home_url(), 301);
-        exit;
-    }
-});
