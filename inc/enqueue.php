@@ -44,7 +44,10 @@ function mazaq_enqueue_assets(): void
 {
     $theme = wp_get_theme();
     $version = $theme->get('Version') ?: '1.0.0';
+    $template_dir = get_template_directory();
+    $template_uri = get_template_directory_uri();
 
+    // Async-load Google Fonts to avoid render-blocking
     wp_enqueue_style(
         'mazaq-google-fonts',
         'https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap',
@@ -54,18 +57,79 @@ function mazaq_enqueue_assets(): void
 
     wp_enqueue_style(
         'mazaq-style',
-        get_template_directory_uri() . '/assets/css/style.css',
-        ['mazaq-google-fonts'],
-        file_exists(get_template_directory() . '/assets/css/style.css') ? (string) filemtime(get_template_directory() . '/assets/css/style.css') : $version
+        $template_uri . '/assets/css/style.css',
+        [],
+        file_exists($template_dir . '/assets/css/style.css') ? (string) filemtime($template_dir . '/assets/css/style.css') : $version
     );
 
+    // Core app: always loaded (theme, menu, search, lazy images, back-to-top)
     wp_enqueue_script(
-        'mazaq-app',
-        get_template_directory_uri() . '/assets/js/app.js',
-        ['jquery'],
-        file_exists(get_template_directory() . '/assets/js/app.js') ? (string) filemtime(get_template_directory() . '/assets/js/app.js') : $version,
+        'mazaq-focus-trap',
+        $template_uri . '/assets/js/lib/focus-trap.js',
+        [],
+        file_exists($template_dir . '/assets/js/lib/focus-trap.js') ? (string) filemtime($template_dir . '/assets/js/lib/focus-trap.js') : $version,
         true
     );
+
+    // Core app: theme, menu, search, lazy images, back-to-top
+    wp_enqueue_script(
+        'mazaq-app',
+        $template_uri . '/assets/js/app.js',
+        ['mazaq-focus-trap'],
+        file_exists($template_dir . '/assets/js/app.js') ? (string) filemtime($template_dir . '/assets/js/app.js') : $version,
+        true
+    );
+
+    // Adblock detection: loads conditionally (self-guards if no ad containers)
+    wp_enqueue_script(
+        'mazaq-app-adblock',
+        $template_uri . '/assets/js/app-adblock.js',
+        ['mazaq-focus-trap'],
+        file_exists($template_dir . '/assets/js/app-adblock.js') ? (string) filemtime($template_dir . '/assets/js/app-adblock.js') : $version,
+        true
+    );
+
+    // Notifications: loads conditionally (self-guards if no notification root)
+    wp_enqueue_script(
+        'mazaq-app-notifications',
+        $template_uri . '/assets/js/app-notifications.js',
+        [],
+        file_exists($template_dir . '/assets/js/app-notifications.js') ? (string) filemtime($template_dir . '/assets/js/app-notifications.js') : $version,
+        true
+    );
+
+    // Hero carousel: front page only
+    if (is_front_page()) {
+        wp_enqueue_script(
+            'mazaq-app-hero',
+            $template_uri . '/assets/js/app-hero.js',
+            [],
+            file_exists($template_dir . '/assets/js/app-hero.js') ? (string) filemtime($template_dir . '/assets/js/app-hero.js') : $version,
+            true
+        );
+    }
+
+    // Archive features: infinite scroll + random film (front page only)
+    if (is_front_page()) {
+        wp_enqueue_script(
+            'mazaq-app-archive',
+            $template_uri . '/assets/js/app-archive.js',
+            ['mazaq-app'],
+            file_exists($template_dir . '/assets/js/app-archive.js') ? (string) filemtime($template_dir . '/assets/js/app-archive.js') : $version,
+            true
+        );
+    }
+
+    // Single post features: reading progress + font controls
+    if (is_singular('post')) {
+        wp_enqueue_script(
+            'mazaq-app-single',
+            $template_uri . '/assets/js/app-single.js',
+            [],
+            file_exists($template_dir . '/assets/js/app-single.js') ? (string) filemtime($template_dir . '/assets/js/app-single.js') : $version,
+            true
+        );
+    }
 
     $ad_support_url = mazaq_get_ad_support_url();
 
@@ -94,3 +158,15 @@ function mazaq_enqueue_assets(): void
     ]);
 }
 add_action('wp_enqueue_scripts', 'mazaq_enqueue_assets');
+
+/**
+ * Load Google Fonts asynchronously to avoid render-blocking.
+ */
+add_filter('style_loader_tag', function (string $tag, string $handle): string {
+    if ($handle !== 'mazaq-google-fonts') {
+        return $tag;
+    }
+    $url = 'https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap';
+    return '<link rel="preload" href="' . esc_url($url) . '" as="style" onload="this.onload=null;this.rel=\'stylesheet\'">' .
+           '<noscript><link rel="stylesheet" href="' . esc_url($url) . '"></noscript>';
+}, 10, 2);

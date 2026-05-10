@@ -1,17 +1,19 @@
 <?php get_header(); ?>
 
-<div class="bg-slate-900 text-white py-16 md:py-24 mb-12 relative overflow-hidden flex justify-center items-center text-center">
-    <div class="max-w-4xl mx-auto px-4 relative z-10 w-full">
-        <h1 class="text-3xl font-medium mb-4 text-slate-400">نتائج البحث عن:</h1>
-        <h2 class="text-5xl font-bold mb-10 text-primary"><?php echo esc_html(get_search_query()); ?></h2>
-        <div class="max-w-2xl mx-auto"><?php get_search_form(); ?></div>
-        <p class="mt-6 text-slate-400 font-mono text-sm">تم العثور على <?php echo esc_html((string) $wp_query->found_posts); ?> نتيجة</p>
+<div class="relative bg-slate-900 text-white pt-20 pb-16 md:pt-28 md:pb-20 mb-12 overflow-hidden">
+    <div class="max-w-7xl mx-auto px-4 relative z-10">
+        <div class="max-w-3xl">
+            <h1 class="text-title font-medium mb-4 text-slate-400">نتائج البحث عن:</h1>
+            <h2 class="text-display mb-8 text-primary break-words"><?php echo esc_html(get_search_query()); ?></h2>
+            <div class="max-w-xl"><?php get_search_form(); ?></div>
+            <p class="mt-6 text-slate-400 text-label">تم العثور على <?php echo esc_html((string) $wp_query->found_posts); ?> نتيجة</p>
+        </div>
     </div>
 </div>
 
-<main class="max-w-7xl mx-auto px-4 mb-20">
+<main id="main-content" class="max-w-7xl mx-auto px-4 pb-20">
     <?php if (have_posts()) : ?>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10">
             <?php while (have_posts()) : the_post(); get_template_part('template-parts/content/card-search'); endwhile; ?>
         </div>
     <?php else : ?>

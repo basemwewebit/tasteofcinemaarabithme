@@ -66,20 +66,20 @@ function toc_breadcrumbs(): void
  */
 function toc_estimated_reading_time($content = '') {
     if (empty($content)) {
-        global $post;
-        $content = $post->post_content ?? '';
+        $post = get_post();
+        $content = $post && isset($post->post_content) ? $post->post_content : '';
     }
-    
+
     // Use preg_split with utf8 mode to correctly count Arabic words
-    $words = preg_split('/\s+/u', trim(strip_tags($content)), -1, PREG_SPLIT_NO_EMPTY);
-    $word_count = count($words);
-    
+    $words = preg_split('/\s+/u', trim(strip_tags((string) $content)), -1, PREG_SPLIT_NO_EMPTY);
+    $word_count = is_array($words) ? count($words) : 0;
+
     $reading_speed = 200; // Average reading speed
-    $minutes = ceil($word_count / $reading_speed);
-    
+    $minutes = (int) ceil($word_count / $reading_speed);
+
     // Ensure minimum 1 minute
     $minutes = max(1, $minutes);
-    
+
     return sprintf(_n('%d دقيقة', '%d دقائق', $minutes, 'mazaq'), $minutes);
 }
 

@@ -21,7 +21,7 @@ $prompt_body = (string) ($settings['prompt_body'] ?? __('سنرسل لك مقا�
 >
     <section
         id="mazaq-notification-prompt"
-        class="pointer-events-auto hidden w-full max-w-sm overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white/95 p-5 text-right shadow-2xl backdrop-blur dark:border-slate-700 dark:bg-slate-900/95"
+        class="pointer-events-auto hidden w-full max-w-sm overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white/95 p-5 text-right shadow-2xl dark:border-slate-700 dark:bg-slate-900/95"
         aria-live="polite"
     >
         <div class="mb-4 flex items-start justify-between gap-4">
@@ -32,7 +32,7 @@ $prompt_body = (string) ($settings['prompt_body'] ?? __('سنرسل لك مقا�
             <button
                 id="mazaq-notification-prompt-close"
                 type="button"
-                class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-500 dark:hover:text-white"
+                class="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-500 dark:hover:text-white"
                 aria-label="<?php esc_attr_e('إغلاق طلب الاشتراك', 'mazaq'); ?>"
             >
                 <span aria-hidden="true">&times;</span>
@@ -60,7 +60,7 @@ $prompt_body = (string) ($settings['prompt_body'] ?? __('سنرسل لك مقا�
 
     <section
         id="mazaq-notification-toast"
-        class="pointer-events-auto hidden w-full max-w-sm overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white/95 p-5 text-right shadow-2xl backdrop-blur dark:border-slate-700 dark:bg-slate-900/95"
+        class="pointer-events-auto hidden w-full max-w-sm overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white/95 p-5 text-right shadow-2xl dark:border-slate-700 dark:bg-slate-900/95"
         aria-live="polite"
     >
         <div class="mb-4 flex items-start justify-between gap-4">
@@ -71,7 +71,7 @@ $prompt_body = (string) ($settings['prompt_body'] ?? __('سنرسل لك مقا�
             <button
                 id="mazaq-notification-toast-close"
                 type="button"
-                class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-500 dark:hover:text-white"
+                class="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-500 dark:hover:text-white"
                 aria-label="<?php esc_attr_e('إغلاق التنبيه', 'mazaq'); ?>"
             >
                 <span aria-hidden="true">&times;</span>

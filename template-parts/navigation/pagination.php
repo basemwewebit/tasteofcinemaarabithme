@@ -12,7 +12,7 @@ $links = paginate_links([
 if (!empty($links)) :
 ?>
 <div class="mt-16 flex justify-center border-t border-slate-200 dark:border-slate-800 pt-8">
-    <nav class="flex items-center gap-2 font-mono">
+    <nav class="flex items-center gap-2 text-label" aria-label="<?php esc_attr_e('التنقل بين الصفحات', 'mazaq'); ?>">
         <?php foreach ($links as $link) : ?>
             <?php
             $is_current = str_contains($link, 'current');

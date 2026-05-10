@@ -6,7 +6,7 @@ if (is_home() || is_front_page()) {
 
 get_header();
 ?>
-<main class="max-w-7xl mx-auto px-4 py-12">
+<main id="main-content" class="max-w-7xl mx-auto px-4 py-12">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         <?php if (have_posts()) : 
             $post_index = 0;

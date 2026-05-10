@@ -45,11 +45,15 @@ if (!$og_image) {
             }
         })();
     </script>
+    <noscript>
+        <style>html.toc-loader-seen #toc-site-loader, #toc-site-loader { display: none !important; }</style>
+    </noscript>
     <meta name="google-adsense-account" content="ca-pub-8042646813554704">
     <?php wp_head(); ?>
 </head>
 <body <?php body_class('bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 transition-colors duration-300 antialiased font-sans'); ?>>
 <?php wp_body_open(); ?>
+<a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:right-4 focus:z-[200] focus:bg-primary focus:text-nocturnal-slate focus:px-4 focus:py-2 focus:rounded-lg focus:text-sm focus:font-bold focus:shadow-lg"><?php esc_html_e('تخطى إلى المحتوى', 'mazaq'); ?></a>
 
 <!-- T003: Brand-Aligned Site Loader -->
 <div id="toc-site-loader" class="toc-site-loader fixed inset-0 z-[100] flex items-center justify-center" role="status" aria-live="polite" aria-label="<?php echo esc_attr__('Loading site', 'mazaq'); ?>">
@@ -61,13 +65,13 @@ if (!$og_image) {
     </div>
 </div>
 
-<header class="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors">
+<header class="sticky top-0 z-40 bg-slate-50/85 dark:bg-slate-900/85 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors">
     <div class="container mx-auto px-4 h-20 flex items-center justify-between">
-        <button id="mobile-menu-toggle" aria-label="Toggle Mobile Menu" class="lg:hidden p-2 text-slate-600 dark:text-slate-300 hover:text-primary transition-colors focus:outline-none">
-            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        <button id="mobile-menu-toggle" aria-label="<?php esc_attr_e('فتح القائمة', 'mazaq'); ?>" aria-expanded="false" class="lg:hidden p-2.5 text-slate-600 dark:text-slate-300 hover:text-primary transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 rounded-sm">
+            <svg class="w-7 h-7" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
         </button>
 
-        <nav class="hidden lg:flex items-center gap-6 text-sm font-semibold">
+        <nav aria-label="<?php esc_attr_e('القائمة الرئيسية', 'mazaq'); ?>" class="hidden lg:flex items-center gap-6 text-sm font-semibold">
             <?php
             wp_nav_menu([
                 'theme_location' => 'primary-menu',
@@ -78,15 +82,15 @@ if (!$og_image) {
             ?>
         </nav>
 
-        <a href="<?php echo esc_url(home_url('/')); ?>" class="block">
-            <img src="<?php echo esc_url(get_template_directory_uri() . '/assets/images/logo.webp'); ?>" alt="<?php bloginfo('name'); ?>" class="h-12 w-auto dark:brightness-125 transition-all">
+        <a href="<?php echo esc_url(home_url('/')); ?>" class="block focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 rounded-sm">
+            <img src="<?php echo esc_url(get_template_directory_uri() . '/assets/images/logo.webp'); ?>" alt="<?php bloginfo('name'); ?>" class="h-12 w-auto dark:brightness-125 transition-all" fetchpriority="high">
         </a>
 
         <div class="flex items-center gap-4">
-            <button id="search-toggle" aria-label="Toggle Search" class="p-2 text-slate-600 dark:text-slate-300 hover:text-primary transition-colors focus:outline-none">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            <button id="search-toggle" aria-label="<?php esc_attr_e('فتح البحث', 'mazaq'); ?>" class="p-2.5 text-slate-600 dark:text-slate-300 hover:text-primary transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 rounded-sm">
+                <svg class="w-6 h-6" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
             </button>
-            <button id="theme-toggle" aria-label="Toggle Dark Mode" class="p-2 text-slate-600 dark:text-slate-300 hover:text-primary transition-colors focus:outline-none"></button>
+            <button id="theme-toggle" aria-label="<?php esc_attr_e('تبديل الوضع الليلي', 'mazaq'); ?>" aria-pressed="false" class="p-2.5 text-slate-600 dark:text-slate-300 hover:text-primary transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 rounded-sm"></button>
         </div>
     </div>
 </header>

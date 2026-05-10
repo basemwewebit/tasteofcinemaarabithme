@@ -27,7 +27,7 @@ if (empty($author_bio)) {
     <div class="flex flex-col md:flex-row items-center md:items-start gap-6 text-center md:text-right">
         <div class="shrink-0">
             <a href="<?php echo esc_url($author_link); ?>">
-                <?php echo get_avatar($author_id, 96, '', '', ['class' => 'w-24 h-24 object-cover rounded-full shadow-md hover:scale-105 transition-transform duration-300']); ?>
+                <?php echo get_avatar($author_id, 96, '', '', ['class' => 'w-24 h-24 object-cover rounded-full shadow-md hover:scale-105 transition-transform duration-300', 'loading' => 'lazy']); ?>
             </a>
         </div>
         <div class="flex-1">
