@@ -10,7 +10,7 @@ $social_website = function_exists('get_field') ? (string) get_field('social_webs
         <div class="grid grid-cols-1 md:grid-cols-4 gap-8 gap-y-12">
             <div class="md:col-span-2">
                 <a href="<?php echo esc_url(home_url('/')); ?>" class="block mb-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 rounded-sm">
-                    <img src="<?php echo esc_url(get_template_directory_uri() . '/assets/images/logo.webp'); ?>" alt="<?php bloginfo('name'); ?>" class="h-16 w-auto dark:brightness-125 transition-all" loading="lazy" decoding="async">
+                    <img src="<?php echo esc_url(get_template_directory_uri() . '/assets/images/logo.webp'); ?>" alt="<?php bloginfo('name'); ?>" class="h-16 w-auto dark:brightness-125 transition-all" loading="lazy" decoding="async" width="474" height="460" data-no-lazy="1">
                 </a>
                 <p class="text-slate-600 dark:text-slate-400 max-w-sm leading-relaxed mb-6">مجلة رقمية تهتم بشؤون الفن السابع. مراجعات، قوائم، تحليلات وأخبار السينما العالمية نقربها للمشاهد العربي بأسلوب عصري وحيوي.</p>
                 <div class="flex items-center gap-4">

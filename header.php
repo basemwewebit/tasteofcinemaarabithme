@@ -61,7 +61,7 @@ if (!$og_image) {
         <span class="toc-loader-glow"></span>
         <span class="toc-loader-ring toc-loader-ring--outer"></span>
         <span class="toc-loader-ring toc-loader-ring--inner"></span>
-        <img src="<?php echo esc_url(get_template_directory_uri() . '/assets/images/logo.webp'); ?>" alt="" class="toc-loader-logo dark:brightness-125" fetchpriority="high" decoding="async">
+        <img src="<?php echo esc_url(get_template_directory_uri() . '/assets/images/logo.webp'); ?>" alt="" class="toc-loader-logo dark:brightness-125" decoding="async" width="474" height="460" data-no-lazy="1">
     </div>
 </div>
 
@@ -83,7 +83,7 @@ if (!$og_image) {
         </nav>
 
         <a href="<?php echo esc_url(home_url('/')); ?>" class="block focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 rounded-sm">
-            <img src="<?php echo esc_url(get_template_directory_uri() . '/assets/images/logo.webp'); ?>" alt="<?php bloginfo('name'); ?>" class="h-12 w-auto dark:brightness-125 transition-all" fetchpriority="high">
+            <img src="<?php echo esc_url(get_template_directory_uri() . '/assets/images/logo.webp'); ?>" alt="<?php bloginfo('name'); ?>" class="h-12 w-auto dark:brightness-125 transition-all" width="474" height="460" data-no-lazy="1">
         </a>
 
         <div class="flex items-center gap-4">

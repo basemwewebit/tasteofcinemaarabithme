@@ -13,16 +13,22 @@ $has_multiple_slides = $hero_total > 1;
 
 $render_hero_media = static function (int $post_id, bool $is_priority, string $logo_url): void {
     if (has_post_thumbnail($post_id)) {
+        $image_attributes = [
+            'class' => 'hero-media__image',
+            'sizes' => '100vw',
+            'loading' => $is_priority ? 'eager' : 'lazy',
+            'fetchpriority' => $is_priority ? 'high' : 'auto',
+            'decoding' => 'async',
+        ];
+
+        if ($is_priority) {
+            $image_attributes['data-no-lazy'] = '1';
+        }
+
         echo get_the_post_thumbnail(
             $post_id,
             'hero-poster',
-            [
-                'class' => 'hero-media__image',
-                'sizes' => '100vw',
-                'loading' => $is_priority ? 'eager' : 'lazy',
-                'fetchpriority' => $is_priority ? 'high' : 'auto',
-                'decoding' => 'async',
-            ]
+            $image_attributes
         );
 
         return;
@@ -31,7 +37,7 @@ $render_hero_media = static function (int $post_id, bool $is_priority, string $l
     <div class="hero-media hero-media--fallback" aria-hidden="true">
         <span class="hero-media__fallback-glow"></span>
         <span class="hero-media__fallback-noise"></span>
-        <img src="<?php echo esc_url($logo_url); ?>" alt="" class="hero-media__fallback-logo" loading="lazy" decoding="async">
+        <img src="<?php echo esc_url($logo_url); ?>" alt="" class="hero-media__fallback-logo" width="474" height="460" loading="eager" fetchpriority="high" decoding="async" data-no-lazy="1">
     </div>
     <?php
 };
