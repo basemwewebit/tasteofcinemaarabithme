@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 function mazaq_breadcrumb(): void
 {
-    echo '<nav class="mb-6 max-w-full text-sm font-medium text-slate-500" aria-label="breadcrumb"><ol class="flex flex-wrap items-center gap-x-2 gap-y-1">';
+    echo '<nav class="mb-6 max-w-full text-sm font-medium text-slate-600 dark:text-slate-300" aria-label="breadcrumb"><ol class="flex flex-wrap items-center gap-x-2 gap-y-1">';
     echo '<li class="shrink-0"><a href="' . esc_url(home_url('/')) . '" class="transition-colors hover:text-primary">' . esc_html__('الرئيسية', 'mazaq') . '</a></li>';
 
     if (is_single()) {

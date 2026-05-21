@@ -36,11 +36,11 @@ function mazaq_render_ad(string $slot_name, string $format = 'responsive', strin
 
             echo '<div class="flex items-center justify-center w-full ' . esc_attr($height_class) . ' bg-slate-100 dark:bg-midnight border-2 border-dashed border-slate-300 dark:border-primary/30 rounded-xl relative group transition-colors hover:bg-slate-200 dark:hover:bg-midnight/80">';
             echo '<span class="text-slate-400 dark:text-primary/80 font-bold text-lg md:text-xl text-center px-4 group-hover:dark:text-primary transition-colors">' . esc_html($text) . '</span>';
-            echo '<span class="absolute top-2 right-2 bg-slate-300 dark:bg-primary/20 text-slate-700 dark:text-primary text-[10px] font-bold px-2 py-0.5 rounded tracking-widest uppercase">Ad</span>';
+            echo '<span class="absolute top-2 end-2 bg-slate-300 dark:bg-primary/20 text-slate-700 dark:text-primary text-[10px] font-bold px-2 py-0.5 rounded">Ad</span>';
             echo '</div>';
         } else {
             // Default empty placeholder
-            echo '<div class="flex items-center justify-center w-full h-full bg-slate-50 dark:bg-midnight border-2 border-dashed border-slate-200 dark:border-white/10 rounded-xl text-slate-400 dark:text-slate-500 font-medium tracking-wide min-h-[100px]">مساحة إعلانية</div>';
+            echo '<div class="flex items-center justify-center w-full h-full bg-slate-50 dark:bg-midnight border-2 border-dashed border-slate-200 dark:border-white/10 rounded-xl text-slate-600 dark:text-slate-300 font-medium min-h-[100px]">مساحة إعلانية</div>';
         }
     }
 

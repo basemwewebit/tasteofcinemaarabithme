@@ -2,7 +2,7 @@
     <div class="sticky top-28 flex flex-col gap-10">
         <?php get_template_part('template-parts/widgets/sidebar-search'); ?>
         <?php get_template_part('template-parts/ads/ad-vertical'); ?>
-        <div class="bg-slate-100 dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700">
+        <div class="bg-slate-100 dark:bg-slate-800 rounded-lg p-6 border border-slate-200 dark:border-slate-700">
             <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-6 pb-3 inline-block">مقالات ذات صلة</h3>
             <div class="flex flex-col gap-5">
                 <?php

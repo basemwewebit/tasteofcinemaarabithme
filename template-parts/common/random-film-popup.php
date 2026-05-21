@@ -38,7 +38,7 @@ if (isset($args['categories']) && is_array($args['categories'])) {
 
 <div id="random-film-result" class="random-film-result" aria-live="polite">
     <div class="random-film-result__inner">
-        <div class="random-film-card-glow rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 overflow-hidden mb-6">
+        <div class="random-film-card-glow rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 overflow-hidden mb-6">
             <div id="random-film-loading" class="hidden items-center justify-center py-16" role="status">
                 <div class="text-center">
                     <svg class="animate-spin h-8 w-8 text-primary mx-auto" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -58,7 +58,7 @@ if (isset($args['categories']) && is_array($args['categories'])) {
                 <div class="relative min-h-[200px] md:min-h-[320px] bg-slate-200 dark:bg-slate-800">
                     <img id="random-film-image" src="" alt="" class="w-full h-full object-cover" loading="lazy" decoding="async">
                     <div class="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent"></div>
-                    <span id="random-film-category" class="absolute bottom-4 right-4 inline-flex items-center rounded-full bg-white/90 dark:bg-slate-900/85 px-3 py-1 text-xs font-bold text-slate-800 dark:text-slate-100"></span>
+                    <span id="random-film-category" class="absolute bottom-4 end-4 inline-flex items-center rounded-full bg-white/90 dark:bg-slate-900/85 px-3 py-1 text-xs font-bold text-slate-800 dark:text-slate-100"></span>
                 </div>
 
                 <div class="p-6 md:p-8 flex flex-col">

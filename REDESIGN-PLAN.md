@@ -596,29 +596,29 @@ Tailwind 3.3+ supports all logical utilities. This single refactor removes all `
 
 ### Critical (must fix)
 
-- [ ] **Fix nested `<a>` in `card.php`** (lines 3 & 21) — invalid HTML
-- [ ] **Color contrast**: replace `text-slate-500` body text with `text-slate-600` (light) / `text-slate-300` (dark) — passes AA
-- [ ] **Replace raw `#D4AF37` with `#C9A227`** in primary text/link usage on light backgrounds
-- [ ] **Hero carousel pause button** (WCAG 2.2.2) — or kill the carousel (recommended)
-- [ ] **`aria-current="page"`** on active nav items
-- [ ] **Focus indicators** — `outline: 3px solid var(--color-gold-soft); outline-offset: 2px;`
-- [ ] **Sticky header + focus** (WCAG 2.2 SC 2.4.11): `scroll-margin-top: 6rem` on all `:focus-visible` targets
-- [ ] **Skip link**: verify `#main-content` exists on every template
+- [x] **Fix nested `<a>` in `card.php`** (lines 3 & 21) — invalid HTML
+- [x] **Color contrast**: replace `text-slate-500` body text with `text-slate-600` (light) / `text-slate-300` (dark) — passes AA
+- [x] **Replace raw `#D4AF37` with `#C9A227`** in primary text/link usage on light backgrounds
+- [x] **Hero carousel pause button** (WCAG 2.2.2) — or kill the carousel (recommended)
+- [x] **`aria-current="page"`** on active nav items
+- [x] **Focus indicators** — `outline: 3px solid var(--color-gold-soft); outline-offset: 2px;`
+- [x] **Sticky header + focus** (WCAG 2.2 SC 2.4.11): `scroll-margin-top: 6rem` on all `:focus-visible` targets
+- [x] **Skip link**: verify `#main-content` exists on every template
 
 ### Should fix soon
 
-- [ ] **Carousel keyboard nav**: Left/Right arrows + Space to pause; `aria-live="polite"` slide announcements
-- [ ] **`prefers-reduced-motion`**: extend to back-to-top entrance, reading-progress
-- [ ] **Touch targets**: bump hero mobile dots to 44px hit area
-- [ ] **Form labels**: visible or `aria-labelledby` on search form
-- [ ] **Image alt text**: ensure `the_post_thumbnail` callers pass meaningful alt from media library
-- [ ] **Adblock + back-to-top collision in RTL**: move back-to-top to `bottom: 5rem` when adblock visible
+- [x] **Carousel keyboard nav**: Left/Right arrows + Space to pause; `aria-live="polite"` slide announcements
+- [x] **`prefers-reduced-motion`**: extend to back-to-top entrance, reading-progress
+- [x] **Touch targets**: bump hero mobile dots to 44px hit area
+- [x] **Form labels**: visible or `aria-labelledby` on search form
+- [x] **Image alt text**: ensure `the_post_thumbnail` callers pass meaningful alt from media library
+- [x] **Adblock + back-to-top collision in RTL**: move back-to-top to `bottom: 5rem` when adblock visible
 
 ### WCAG 2.2 specific
 
-- [ ] **SC 2.4.11 Focus Not Obscured**: sticky header 80px — ensure focused elements scroll above it
-- [ ] **SC 2.5.7 Dragging**: hero swipe must have button alternatives (currently `hidden md:flex` — verify mobile)
-- [ ] **SC 3.3.8 Accessible Auth**: reCAPTCHA — ensure non-cognitive alternative path for contact form
+- [x] **SC 2.4.11 Focus Not Obscured**: sticky header 80px — ensure focused elements scroll above it
+- [x] **SC 2.5.7 Dragging**: hero swipe must have button alternatives (currently `hidden md:flex` — verify mobile)
+- [x] **SC 3.3.8 Accessible Auth**: reCAPTCHA — ensure non-cognitive alternative path for contact form
 
 ---
 
@@ -637,17 +637,17 @@ Tailwind 3.3+ supports all logical utilities. This single refactor removes all `
 ```html
 <!-- header.php, before wp_head() -->
 <link rel="preload"
-      href="<?php echo esc_url(get_template_directory_uri()); ?>/assets/fonts/tajawal-800.woff2"
+      href="<?php echo esc_url(get_template_directory_uri()); ?>/assets/fonts/tajawal-arabic-800-normal.woff2"
       as="font" type="font/woff2" crossorigin>
 <link rel="preload"
-      href="<?php echo esc_url(get_template_directory_uri()); ?>/assets/fonts/ibm-plex-sans-arabic-400.woff2"
+      href="<?php echo esc_url(get_template_directory_uri()); ?>/assets/fonts/ibm-plex-sans-arabic-arabic-400-normal.woff2"
       as="font" type="font/woff2" crossorigin>
 ```
 
 ```css
 @font-face {
   font-family: 'IBM Plex Sans Arabic';
-  src: url('../fonts/ibm-plex-sans-arabic-400.woff2') format('woff2');
+  src: url('../fonts/ibm-plex-sans-arabic-arabic-400-normal.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -698,17 +698,17 @@ A full redesign is **~12 weeks of work** for 1-2 people. Ship in phases — user
 
 **Goal**: Fix the worst accessibility + Arabic typography issues. Zero-risk wins, no visual change.
 
-- [ ] Fix all `letter-spacing` on Arabic-containing text (gate behind `:lang(en)`)
-- [ ] Replace `text-slate-500` body usage with `text-slate-600` / `text-slate-300`
-- [ ] Replace primary `#D4AF37` with `#C9A227` in semantic tokens
-- [ ] Add `aria-current="page"` via `nav_menu_link_attributes` filter
-- [ ] Add `scroll-margin-top: 6rem` to all focusable elements
-- [ ] Add hero carousel pause button + `prefers-reduced-motion` respect (disable autoplay)
-- [ ] Replace `letter-spacing` and `text-transform: uppercase` on `.delight-404__label`, `.delight-finale__subtitle` with sentence-case Arabic
-- [ ] Fix `back-to-top` RTL collision with adblock-prompt
-- [ ] Update `--line-height-body` from `2` to `1.85`
-- [ ] Drop unused font weights (300, possibly 500)
-- [ ] Fix nested `<a>` in `card.php`
+- [x] Fix all `letter-spacing` on Arabic-containing text (gate behind `:lang(en)`)
+- [x] Replace `text-slate-500` body usage with `text-slate-600` / `text-slate-300`
+- [x] Replace primary `#D4AF37` with `#C9A227` in semantic tokens
+- [x] Add `aria-current="page"` via `nav_menu_link_attributes` filter
+- [x] Add `scroll-margin-top: 6rem` to all focusable elements
+- [x] Add hero carousel pause button + `prefers-reduced-motion` respect (disable autoplay)
+- [x] Replace `letter-spacing` and `text-transform: uppercase` on `.delight-404__label`, `.delight-finale__subtitle` with sentence-case Arabic
+- [x] Fix `back-to-top` RTL collision with adblock-prompt
+- [x] Update `--line-height-body` from `2` to `1.85`
+- [x] Drop unused font weights (300, possibly 500)
+- [x] Fix nested `<a>` in `card.php`
 
 **Deliverable**: Same look, much better accessibility and Arabic reading comfort. No design risk.
 
@@ -716,15 +716,15 @@ A full redesign is **~12 weeks of work** for 1-2 people. Ship in phases — user
 
 **Goal**: Restructure pages without changing visual identity.
 
-- [ ] Refactor 5 card templates into 1 polymorphic `ArticleCard` with `$layout` arg
-- [ ] Kill home category mosaic — replace with single "تصفّح حسب التصنيف" row
-- [ ] Replace hero carousel with single feature + 3 editor's picks overlap row
-- [ ] Add "Popular this week" horizontal scroll section to home
-- [ ] Kill `sidebar-single.php` — put related posts inline at 60% scroll + at end
-- [ ] Add `ListicleTOC` component for list-style articles
-- [ ] Improve search overlay with live suggestions
-- [ ] Refactor pagination to "Previous / Page 3 of 12 / Next" + numbered SEO
-- [ ] Convert directional Tailwind utilities to logical (`mr-` → `me-`) site-wide
+- [x] Refactor 5 card templates into 1 polymorphic `ArticleCard` with `$layout` arg
+- [x] Kill home category mosaic — replace with single "تصفّح حسب التصنيف" row
+- [x] Replace hero carousel with single feature + 3 editor's picks overlap row
+- [x] Add "Popular this week" horizontal scroll section to home
+- [x] Kill `sidebar-single.php` — put related posts inline at 60% scroll + at end
+- [x] Add `ListicleTOC` component for list-style articles
+- [x] Improve search overlay with live suggestions
+- [x] Refactor pagination to "Previous / Page 3 of 12 / Next" + numbered SEO
+- [x] Convert directional Tailwind utilities to logical (`mr-` → `me-`) site-wide
 
 **Deliverable**: Cleaner IA, better article flow, fewer maintenance hot-spots. Identity still recognizable as Mazaq.
 
@@ -732,30 +732,30 @@ A full redesign is **~12 weeks of work** for 1-2 people. Ship in phases — user
 
 **Goal**: Apply The Streaming Platform identity.
 
-- [ ] Implement new color tokens (replace `--color-primary` etc.)
-- [ ] Implement new font stack — self-host Tajawal, Amiri, IBM Plex Sans Arabic, IBM Plex Mono
-- [ ] Rebuild hero: full-bleed editorial feature, no carousel, large display title, single CTA
-- [ ] Apply new radius system: 4/8/12px instead of `1rem` everywhere
-- [ ] Card redesign: tighter, poster-feel, new tokens
-- [ ] Article body: Amiri for H2/H3, IBM Plex Sans Arabic for body, drop-caps, larger title
-- [ ] Add subtle film-grain texture overlay site-wide at 2% opacity (extract from 404)
-- [ ] Subtle category color tinting (borders + eyebrow only, not backgrounds)
-- [ ] Refine dark mode with new ink/cream tokens
-- [ ] Reading progress + back-to-top restyle with new accents
+- [x] Implement new color tokens (replace `--color-primary` etc.)
+- [x] Implement new font stack — self-host Tajawal, Amiri, IBM Plex Sans Arabic, IBM Plex Mono
+- [x] Rebuild hero: full-bleed editorial feature, no carousel, large display title, single CTA
+- [x] Apply new radius system: 4/8/12px instead of `1rem` everywhere
+- [x] Card redesign: tighter, poster-feel, new tokens
+- [x] Article body: Amiri for H2/H3, IBM Plex Sans Arabic for body, drop-caps, larger title
+- [x] Add subtle film-grain texture overlay site-wide at 2% opacity (extract from 404)
+- [x] Subtle category color tinting (borders + eyebrow only, not backgrounds)
+- [x] Refine dark mode with new ink/cream tokens
+- [x] Reading progress + back-to-top restyle with new accents
 
 **Deliverable**: New visual identity. Distinctly cinematic. Recognizably Mazaq.
 
 ### Phase 4 — Polish & Editorial Features (Week 10–12)
 
-- [ ] `<FilmInfobox />` for review articles
-- [ ] `<SeriesNav />` for multi-part articles
-- [ ] `<Newsletter />` real subscription form
-- [ ] Author page: collections/series + better stats grid
-- [ ] Tag pages: visual differentiation from category
-- [ ] Film index page (if taxonomy added)
-- [ ] `/about` page: editorial mission, masthead, contact
-- [ ] Performance pass: prefetch on hover, font subsetting, image audit
-- [ ] Animation polish: page-load reveals, view transitions API
+- [x] `<FilmInfobox />` for review articles
+- [x] `<SeriesNav />` for multi-part articles
+- [x] `<Newsletter />` real subscription form
+- [x] Author page: collections/series + better stats grid
+- [x] Tag pages: visual differentiation from category
+- [x] Film index page (if taxonomy added)
+- [x] `/about` page: editorial mission, masthead, contact
+- [x] Performance pass: prefetch on hover, font subsetting, image audit
+- [x] Animation polish: page-load reveals, view transitions API
 
 ---
 

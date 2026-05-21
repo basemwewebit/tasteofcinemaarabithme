@@ -32,7 +32,7 @@ $social_website = function_exists('get_field') ? (string) get_field('social_webs
             </div>
         </div>
 
-        <div class="border-t border-slate-200 dark:border-slate-800 mt-16 pt-10 flex flex-col md:flex-row items-center justify-between text-label text-slate-500 text-center md:text-right">
+        <div class="border-t border-slate-200 dark:border-slate-800 mt-16 pt-10 flex flex-col md:flex-row items-center justify-between text-label text-slate-600 dark:text-slate-300 text-center md:text-start">
             <p>&copy; <?php echo esc_html((string) date('Y')); ?> مذاق السينما. جميع الحقوق محفوظة.</p>
         </div>
     </div>

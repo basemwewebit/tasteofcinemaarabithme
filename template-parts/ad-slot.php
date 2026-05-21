@@ -18,7 +18,7 @@ $wrapper_classes = ['ad-slot-wrapper', "ad-slot-{$context}"];
 ?>
 <div class="<?php echo esc_attr(implode(' ', $wrapper_classes)); ?>" data-ad-slot="true" data-ad-container="true" data-expects-network-ad="0">
     <div class="ad-slot-content h-[250px] bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 text-sm border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden relative w-full">
-        <span class="absolute top-2 right-2 text-[10px] uppercase tracking-wider text-slate-300">إعلان</span>
+        <span class="absolute top-2 end-2 text-[10px] text-slate-300">إعلان</span>
         <!-- Ad Script Here -->
         <span class="ad-placeholder-text">Ad Space (250px min-height)</span>
     </div>

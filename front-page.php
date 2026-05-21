@@ -2,8 +2,7 @@
 
 <?php get_template_part('template-parts/content/hero'); ?>
 
-
-<section class="hero-transition ">
+<section class="hero-transition">
     <div class="hero-transition__band mx-auto max-w-7xl px-4">
         <div class="hero-transition__ad-shell">
             <?php get_template_part('template-parts/ads/ad-responsive'); ?>
@@ -14,10 +13,10 @@
 <main id="main-content" class="max-w-7xl mx-auto px-4 pb-8 section-gap">
     <h1 class="sr-only"><?php bloginfo('name'); ?></h1>
 
-<?php
+    <?php
     $categories = get_categories([
         'orderby' => 'count',
-        'order'   => 'DESC',
+        'order' => 'DESC',
         'hide_empty' => true,
     ]);
 
@@ -31,101 +30,119 @@
     get_template_part('template-parts/common/random-film-popup', null, [
         'categories' => $categories,
     ]);
-?>
-    <div class="w-full section-gap">
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-12 gap-4 md:gap-5">
-            <?php foreach ($categories as $index => $category) :
-                $is_first = $index === 0;
-                $is_second = $index === 1;
-                $span_class = $is_first ? 'col-span-2 md:col-span-3 lg:col-span-6 lg:row-span-2' : ($is_second ? 'col-span-1 lg:col-span-3' : 'col-span-1 lg:col-span-3');
-                $pad_class = $is_first ? 'p-8 md:p-10' : 'p-5 md:p-6';
-                $title_size = $is_first ? 'text-2xl md:text-3xl' : 'text-lg md:text-xl';
-            ?>
-                <a href="<?php echo esc_url(get_category_link($category->term_id)); ?>" class="group <?php echo esc_attr($span_class); ?> bg-slate-100 dark:bg-slate-800 rounded-2xl <?php echo esc_attr($pad_class); ?> text-right border border-slate-200 dark:border-slate-700 hover:border-primary/40 dark:hover:border-primary/40 transition-colors duration-300 flex flex-col justify-end relative overflow-hidden min-w-0">
-                    <div class="absolute inset-0 bg-gradient-to-tl from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    <h3 class="<?php echo esc_attr($title_size); ?> font-bold text-slate-900 dark:text-white mb-2 group-hover:text-primary transition-colors relative z-10 break-words"><?php echo esc_html($category->name); ?></h3>
-                    <span class="text-sm text-slate-500 dark:text-slate-400 relative z-10"><?php echo sprintf(esc_html__('%d مقال', 'mazaq'), $category->count); ?></span>
-                </a>
-            <?php endforeach; ?>
-        </div>
-    </div>
+    ?>
 
-
-
-    <div class="flex flex-col md:flex-row lg:flex-row gap-10 md:gap-12 lg:gap-16">
-        <div class="w-full md:w-2/3 lg:w-2/3">
-            <div class="mb-12 lg:mb-14">
-                <div class="flex items-end justify-between gap-4">
-                    <div>
-                        <h2 class="text-headline text-slate-900 dark:text-white">أحدث المقالات المضافة</h2>
-                        <p class="text-label text-slate-500 dark:text-slate-400 mt-3">اكتشف أحدث المحتوى السينمائي</p>
-                    </div>
-
-                    <div class="flex items-center gap-3">
-                        <span class="hidden sm:inline-flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 rounded-full text-sm font-medium text-slate-600 dark:text-slate-400">
-                            <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse" aria-hidden="true"></span>
-                            <span id="post-count"><?php echo esc_html((string) wp_count_posts('post')->publish); ?></span> <?php esc_html_e('مقال', 'mazaq'); ?>
-                        </span>
-                    </div>
-                </div>
+    <section class="home-section" aria-labelledby="latest-posts-title">
+        <div class="home-section__head">
+            <div>
+                <p class="home-section__kicker"><?php esc_html_e('الأحدث', 'mazaq'); ?></p>
+                <h2 id="latest-posts-title" class="home-section__title"><?php esc_html_e('أحدث المقالات المضافة', 'mazaq'); ?></h2>
+                <p class="home-section__summary"><?php esc_html_e('اكتشف أحدث المحتوى السينمائي من مراجعات وقوائم وتحليلات.', 'mazaq'); ?></p>
             </div>
 
-            <div id="infinite-scroll-container" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-10" data-page="2" aria-live="polite" aria-relevant="additions">
-                <?php
-                $query = new WP_Query([
-                    'post_type' => 'post',
-                    'post_status' => 'publish',
-                    'posts_per_page' => 6,
-                    'paged' => 1,
-                    'post__not_in' => mazaq_get_hero_post_ids(),
-                ]);
+            <span class="home-section__count">
+                <span class="home-section__count-dot" aria-hidden="true"></span>
+                <span class="num" id="post-count"><?php echo esc_html((string) wp_count_posts('post')->publish); ?></span>
+                <?php esc_html_e('مقال', 'mazaq'); ?>
+            </span>
+        </div>
 
-                if ($query->have_posts()) :
-                    $index = 1;
-                    $paged = get_query_var('paged') ? get_query_var('paged') : 1;
-                    while ($query->have_posts()) :
-                        $query->the_post();
+        <div id="infinite-scroll-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10" data-page="2" aria-live="polite" aria-relevant="additions">
+            <?php
+            $query = new WP_Query([
+                'post_type' => 'post',
+                'post_status' => 'publish',
+                'posts_per_page' => 6,
+                'paged' => 1,
+                'post__not_in' => mazaq_get_hero_post_ids(),
+            ]);
 
-                        $global_index = (($paged - 1) * 6) + $index;
-
-                        // Inject Ad when global index is a multiple of 8
-                        if ($global_index > 1 && ($global_index - 1) % 8 === 0) {
-                            get_template_part('template-parts/ads/ad-grid');
-                        }
-
-                        if ($index % 3 === 0) {
-                            get_template_part('template-parts/content/card-wide');
-                        } else {
-                            get_template_part('template-parts/content/card');
-                        }
-
-                        $index++;
-                    endwhile;
-                    wp_reset_postdata();
-                else :
-                    ?>
-                    <div class="col-span-full text-center py-16">
-                        <p class="text-slate-500 dark:text-slate-400 text-lg mb-4">لا توجد مقالات حالياً.</p>
-                        <a href="<?php echo esc_url(home_url('/')); ?>" class="inline-flex items-center gap-2 text-primary font-medium hover:underline">
-                            <span>العودة إلى الصفحة الرئيسية</span>
-                        </a>
-                    </div>
-                    <?php
-                endif;
+            if ($query->have_posts()) :
+                while ($query->have_posts()) :
+                    $query->the_post();
+                    get_template_part('template-parts/content/card');
+                endwhile;
+                wp_reset_postdata();
+            else :
                 ?>
-            </div>
-
-            <div id="loading-indicator" class="hidden mt-12 flex flex-col items-center justify-center py-8 gap-4" role="status" aria-live="polite">
-                <div class="relative" aria-hidden="true">
-                    <div class="w-12 h-12 border-4 border-slate-200 dark:border-slate-700 rounded-full"></div>
-                    <div class="absolute inset-0 w-12 h-12 border-4 border-primary rounded-full border-t-transparent animate-spin"></div>
+                <div class="col-span-full text-center py-16">
+                    <p class="text-slate-600 dark:text-slate-300 text-lg mb-4"><?php esc_html_e('لا توجد مقالات حالياً.', 'mazaq'); ?></p>
+                    <a href="<?php echo esc_url(home_url('/')); ?>" class="inline-flex items-center gap-2 text-primary font-medium hover:underline">
+                        <span><?php esc_html_e('العودة إلى الصفحة الرئيسية', 'mazaq'); ?></span>
+                    </a>
                 </div>
-                <span class="text-sm text-slate-500 dark:text-slate-400 font-medium"><?php esc_html_e('جاري تحميل المزيد...', 'mazaq'); ?></span>
-            </div>
+                <?php
+            endif;
+            ?>
         </div>
 
-        <?php get_sidebar(); ?>
-    </div>
+        <div id="loading-indicator" class="hidden mt-12 flex flex-col items-center justify-center py-8 gap-4" role="status" aria-live="polite">
+            <div class="relative" aria-hidden="true">
+                <div class="w-12 h-12 border-4 border-slate-200 dark:border-slate-700 rounded-full"></div>
+                <div class="absolute inset-0 w-12 h-12 border-4 border-primary rounded-full border-t-transparent animate-spin"></div>
+            </div>
+            <span class="text-sm text-slate-600 dark:text-slate-300 font-medium"><?php esc_html_e('جاري تحميل المزيد...', 'mazaq'); ?></span>
+        </div>
+    </section>
+
+    <?php
+    $popular = mazaq_get_most_read_posts(5);
+    if (!$popular->have_posts()) {
+        wp_reset_postdata();
+        $popular = new WP_Query([
+            'post_type' => 'post',
+            'post_status' => 'publish',
+            'posts_per_page' => 5,
+            'post__not_in' => mazaq_get_hero_post_ids(),
+            'ignore_sticky_posts' => true,
+        ]);
+    }
+    ?>
+    <?php if ($popular->have_posts()) : ?>
+        <section class="home-section home-section--popular" aria-labelledby="popular-posts-title">
+            <div class="home-section__head">
+                <div>
+                    <p class="home-section__kicker"><?php esc_html_e('رائج هذا الأسبوع', 'mazaq'); ?></p>
+                    <h2 id="popular-posts-title" class="home-section__title"><?php esc_html_e('الأكثر قراءة', 'mazaq'); ?></h2>
+                </div>
+            </div>
+
+            <div class="popular-strip" tabindex="0" aria-label="<?php esc_attr_e('قائمة المقالات الأكثر قراءة أفقياً', 'mazaq'); ?>">
+                <?php $rank = 1; ?>
+                <?php while ($popular->have_posts()) : $popular->the_post(); ?>
+                    <article class="popular-strip__item">
+                        <a href="<?php the_permalink(); ?>" class="popular-strip__link group">
+                            <span class="popular-strip__rank num"><?php echo esc_html(sprintf('%02d', $rank)); ?></span>
+                            <h3 class="popular-strip__title"><?php the_title(); ?></h3>
+                            <span class="popular-strip__meta num"><?php echo esc_html(number_format_i18n(mazaq_get_post_views(get_the_ID()))); ?> <?php esc_html_e('مشاهدة', 'mazaq'); ?></span>
+                        </a>
+                    </article>
+                    <?php $rank++; ?>
+                <?php endwhile; wp_reset_postdata(); ?>
+            </div>
+        </section>
+    <?php endif; ?>
+
+    <?php if (!empty($categories)) : ?>
+        <section class="home-section" aria-labelledby="browse-categories-title">
+            <div class="home-section__head">
+                <div>
+                    <p class="home-section__kicker"><?php esc_html_e('تصفّح', 'mazaq'); ?></p>
+                    <h2 id="browse-categories-title" class="home-section__title"><?php esc_html_e('حسب التصنيف', 'mazaq'); ?></h2>
+                </div>
+            </div>
+            <div class="category-row">
+                <?php foreach (array_slice($categories, 0, 6) as $category) : ?>
+                    <a href="<?php echo esc_url(get_category_link($category->term_id)); ?>" class="category-row__item">
+                        <span class="category-row__name"><?php echo esc_html($category->name); ?></span>
+                        <span class="category-row__count num"><?php echo sprintf(esc_html__('%d مقال', 'mazaq'), (int) $category->count); ?></span>
+                    </a>
+                <?php endforeach; ?>
+            </div>
+        </section>
+    <?php endif; ?>
+
+    <?php get_template_part('template-parts/common/newsletter', null, ['context' => 'home']); ?>
 </main>
 
 <?php get_footer(); ?>

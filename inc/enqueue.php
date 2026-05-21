@@ -47,14 +47,6 @@ function mazaq_enqueue_assets(): void
     $template_dir = get_template_directory();
     $template_uri = get_template_directory_uri();
 
-    // Async-load Google Fonts to avoid render-blocking
-    wp_enqueue_style(
-        'mazaq-google-fonts',
-        'https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap',
-        [],
-        null
-    );
-
     wp_enqueue_style(
         'mazaq-style',
         $template_uri . '/assets/css/style.css',
@@ -98,17 +90,6 @@ function mazaq_enqueue_assets(): void
         true
     );
 
-    // Hero carousel: front page only
-    if (is_front_page()) {
-        wp_enqueue_script(
-            'mazaq-app-hero',
-            $template_uri . '/assets/js/app-hero.js',
-            [],
-            file_exists($template_dir . '/assets/js/app-hero.js') ? (string) filemtime($template_dir . '/assets/js/app-hero.js') : $version,
-            true
-        );
-    }
-
     // Archive features: infinite scroll + random film (front page only)
     if (is_front_page()) {
         wp_enqueue_script(
@@ -138,6 +119,10 @@ function mazaq_enqueue_assets(): void
         'nonce' => wp_create_nonce('mazaq_load_more_nonce'),
         'random_film_nonce' => wp_create_nonce('mazaq_random_film_nonce'),
         'random_film_action' => 'mazaq_get_random_film',
+        'search_nonce' => wp_create_nonce('mazaq_search_suggestions_nonce'),
+        'search_suggestions_action' => 'mazaq_search_suggestions',
+        'newsletter_nonce' => wp_create_nonce('mazaq_newsletter_signup_nonce'),
+        'newsletter_action' => 'mazaq_newsletter_signup',
         'home_url' => home_url('/'),
         'notifications_bootstrap_url' => esc_url_raw(rest_url('mazaq/v1/notifications/bootstrap')),
         'notifications_subscription_url' => esc_url_raw(rest_url('mazaq/v1/notifications/subscription')),
@@ -158,15 +143,3 @@ function mazaq_enqueue_assets(): void
     ]);
 }
 add_action('wp_enqueue_scripts', 'mazaq_enqueue_assets');
-
-/**
- * Load Google Fonts asynchronously to avoid render-blocking.
- */
-add_filter('style_loader_tag', function (string $tag, string $handle): string {
-    if ($handle !== 'mazaq-google-fonts') {
-        return $tag;
-    }
-    $url = 'https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap';
-    return '<link rel="preload" href="' . esc_url($url) . '" as="style" onload="this.onload=null;this.rel=\'stylesheet\'">' .
-           '<noscript><link rel="stylesheet" href="' . esc_url($url) . '"></noscript>';
-}, 10, 2);

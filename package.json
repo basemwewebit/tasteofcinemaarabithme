@@ -8,6 +8,10 @@
     "build": "tailwindcss -i ./assets/css/src/style.css -o ./assets/css/style.css --minify"
   },
   "devDependencies": {
+    "@fontsource/amiri": "^5.2.8",
+    "@fontsource/ibm-plex-mono": "^5.2.7",
+    "@fontsource/ibm-plex-sans-arabic": "^5.2.9",
+    "@fontsource/tajawal": "^5.2.7",
     "autoprefixer": "^10.4.20",
     "cssnano": "^7.0.6",
     "postcss": "^8.4.49",

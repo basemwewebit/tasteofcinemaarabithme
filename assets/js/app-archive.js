@@ -158,7 +158,7 @@ document.addEventListener('DOMContentLoaded', function () {
             loadError = true;
             loadingIndicator.classList.add('hidden');
             const errorEl = document.createElement('div');
-            errorEl.className = 'text-center py-8 text-slate-500 dark:text-slate-400';
+            errorEl.className = 'text-center py-8 text-slate-600 dark:text-slate-300';
             errorEl.setAttribute('role', 'alert');
             const msg = document.createElement('p');
             msg.className = 'mb-2';

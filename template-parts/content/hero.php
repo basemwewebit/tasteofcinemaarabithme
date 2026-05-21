@@ -1,155 +1,117 @@
 <?php
 
-$hero_post_ids = mazaq_get_hero_post_ids();
+$hero_post_ids = array_values(array_filter(array_map('intval', mazaq_get_hero_post_ids())));
 
 if (empty($hero_post_ids)) {
     return;
 }
 
-$hero_post_ids = array_slice($hero_post_ids, 0, 3);
-$hero_logo_url = get_template_directory_uri() . '/assets/images/logo.webp';
-$hero_total = count($hero_post_ids);
-$has_multiple_slides = $hero_total > 1;
+$feature_post_id = $hero_post_ids[0];
+$editor_pick_ids = array_slice($hero_post_ids, 1, 3);
 
-$render_hero_media = static function (int $post_id, bool $is_priority, string $logo_url): void {
+if (count($editor_pick_ids) < 3) {
+    $fallback_picks = get_posts([
+        'post_type' => 'post',
+        'post_status' => 'publish',
+        'posts_per_page' => 3 - count($editor_pick_ids),
+        'fields' => 'ids',
+        'post__not_in' => array_values(array_unique(array_merge([$feature_post_id], $editor_pick_ids))),
+        'ignore_sticky_posts' => true,
+    ]);
+
+    $editor_pick_ids = array_values(array_unique(array_merge($editor_pick_ids, array_map('intval', $fallback_picks))));
+}
+
+$hero_logo_url = get_template_directory_uri() . '/assets/images/logo.webp';
+
+$get_primary_category = static function (int $post_id): string {
+    $categories = get_the_category($post_id);
+
+    return !empty($categories) ? $categories[0]->name : __('مقال مميز', 'mazaq');
+};
+
+$render_media = static function (int $post_id, string $size, bool $is_priority, string $fallback_logo_url, string $class_name): void {
     if (has_post_thumbnail($post_id)) {
-        $image_attributes = [
-            'class' => 'hero-media__image',
-            'sizes' => '100vw',
+        $attributes = [
+            'class' => $class_name,
             'loading' => $is_priority ? 'eager' : 'lazy',
-            'fetchpriority' => $is_priority ? 'high' : 'auto',
             'decoding' => 'async',
+            'alt' => mazaq_get_post_thumbnail_alt($post_id, get_the_title($post_id)),
         ];
 
         if ($is_priority) {
-            $image_attributes['data-no-lazy'] = '1';
+            $attributes['fetchpriority'] = 'high';
+            $attributes['data-no-lazy'] = '1';
         }
 
-        echo get_the_post_thumbnail(
-            $post_id,
-            'hero-poster',
-            $image_attributes
-        );
+        echo get_the_post_thumbnail($post_id, $size, $attributes);
 
         return;
     }
     ?>
-    <div class="hero-media hero-media--fallback" aria-hidden="true">
-        <span class="hero-media__fallback-glow"></span>
-        <span class="hero-media__fallback-noise"></span>
-        <img src="<?php echo esc_url($logo_url); ?>" alt="" class="hero-media__fallback-logo" width="474" height="460" loading="eager" fetchpriority="high" decoding="async" data-no-lazy="1">
-    </div>
-    <?php
-};
-
-$render_hero_content = static function (int $post_id, string $title_tag = 'h2'): void {
-    $categories = get_the_category($post_id);
-    $title = get_the_title($post_id);
-    $excerpt = wp_trim_words(wp_strip_all_tags((string) get_the_excerpt($post_id)), 20, '...');
-    $reading_time = function_exists('mazaq_reading_time') ? mazaq_reading_time($post_id) : '';
-    $category_name = !empty($categories) ? $categories[0]->name : __('مقال مميز', 'mazaq');
-    ?>
-    <div class="hero-shell__inner">
-        <div class="hero-copy">
-            <div class="hero-copy__eyebrow">
-                <span class="hero-site-label"><?php esc_html_e('مذاق السينما', 'mazaq'); ?></span>
-                <span class="hero-copy__divider" aria-hidden="true"></span>
-                <span class="hero-badge"><?php echo esc_html($category_name); ?></span>
-            </div>
-            <<?php echo tag_escape($title_tag); ?> class="hero-title"><?php echo esc_html($title); ?></<?php echo tag_escape($title_tag); ?>>
-            <?php if (!empty($excerpt)) : ?>
-                <p class="hero-excerpt"><?php echo esc_html($excerpt); ?></p>
-            <?php endif; ?>
-            <div class="hero-meta" aria-label="<?php esc_attr_e('Post information', 'mazaq'); ?>">
-                <span><?php echo esc_html(get_the_date('j F Y', $post_id)); ?></span>
-                <?php if ($reading_time !== '') : ?>
-                    <span class="hero-meta__separator" aria-hidden="true"></span>
-                    <span><?php echo esc_html($reading_time); ?></span>
-                <?php endif; ?>
-            </div>
-            <span class="hero-cta">
-                <span><?php esc_html_e('اقرأ المقال', 'mazaq'); ?></span>
-                <span class="hero-cta__icon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
-                        <path d="M19 12H5"></path>
-                        <path d="M11 6l-6 6 6 6"></path>
-                    </svg>
-                </span>
-            </span>
-        </div>
+    <div class="<?php echo esc_attr($class_name . ' feature-hero__fallback'); ?>" aria-hidden="true">
+        <img src="<?php echo esc_url($fallback_logo_url); ?>" alt="" width="474" height="460" loading="<?php echo $is_priority ? 'eager' : 'lazy'; ?>" decoding="async">
     </div>
     <?php
 };
 ?>
-<section class="hero-section" aria-label="<?php echo esc_attr($has_multiple_slides ? __('Featured articles', 'mazaq') : __('Featured article', 'mazaq')); ?>">
-    <div class="hero-carousel <?php echo $has_multiple_slides ? 'has-multiple' : 'has-single'; ?>" data-interval="6000" data-total="<?php echo esc_attr((string) $hero_total); ?>" tabindex="<?php echo $has_multiple_slides ? '0' : '-1'; ?>">
-        <div class="hero-carousel__viewport">
-            <div class="hero-carousel__track">
-                <?php foreach ($hero_post_ids as $slide_index => $slide_post_id) : ?>
-                    <?php
-                    $is_active_slide = $slide_index === 0;
-                    $title_tag = !$has_multiple_slides ? 'h1' : 'h2';
-                    ?>
-                    <article class="hero-carousel__slide <?php echo $is_active_slide ? 'is-active' : ''; ?>" data-slide-index="<?php echo esc_attr((string) $slide_index); ?>" aria-hidden="<?php echo $is_active_slide ? 'false' : 'true'; ?>">
-                        <a href="<?php echo esc_url(get_permalink($slide_post_id)); ?>" class="hero-shell group">
-                            <div class="hero-media">
-                                <?php $render_hero_media($slide_post_id, $slide_index === 0, $hero_logo_url); ?>
-                            </div>
-                            <div class="hero-overlay hero-overlay--shade" aria-hidden="true"></div>
-                            <div class="hero-overlay hero-overlay--glow" aria-hidden="true"></div>
-                            <div class="hero-overlay hero-overlay--mesh" aria-hidden="true"></div>
-                            <div class="hero-overlay hero-overlay--vignette" aria-hidden="true"></div>
-                            <?php $render_hero_content($slide_post_id, $title_tag); ?>
-                        </a>
-                    </article>
-                <?php endforeach; ?>
-            </div>
-        </div>
 
-        <?php if ($has_multiple_slides) : ?>
-            <div class="hero-carousel__controls hidden md:flex" aria-label="<?php esc_attr_e('Hero controls', 'mazaq'); ?>">
-                <button type="button" class="hero-carousel__button" data-hero-prev aria-label="<?php esc_attr_e('Previous featured article', 'mazaq'); ?>">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
-                        <path d="M15 5l-7 7 7 7"></path>
-                    </svg>
-                </button>
-                <button type="button" class="hero-carousel__button" data-hero-next aria-label="<?php esc_attr_e('Next featured article', 'mazaq'); ?>">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
-                        <path d="M9 5l7 7-7 7"></path>
-                    </svg>
-                </button>
+<section class="feature-hero-section" aria-labelledby="feature-hero-title">
+    <article class="feature-hero">
+        <a href="<?php echo esc_url(get_permalink($feature_post_id)); ?>" class="feature-hero__link group" aria-label="<?php echo esc_attr(sprintf(__('اقرأ المقال المميز: %s', 'mazaq'), get_the_title($feature_post_id))); ?>">
+            <div class="feature-hero__media" aria-hidden="true">
+                <?php $render_media($feature_post_id, 'hero-poster', true, $hero_logo_url, 'feature-hero__image'); ?>
             </div>
-
-            <div class="hero-carousel__rail hidden xl:flex" aria-label="<?php esc_attr_e('Featured article index', 'mazaq'); ?>">
-                <?php foreach ($hero_post_ids as $slide_index => $slide_post_id) : ?>
-                    <button type="button" class="hero-rail__item <?php echo $slide_index === 0 ? 'is-active' : ''; ?>" data-index="<?php echo esc_attr((string) $slide_index); ?>" aria-current="<?php echo $slide_index === 0 ? 'true' : 'false'; ?>" aria-label="<?php echo esc_attr(sprintf(__('Go to featured article %d', 'mazaq'), $slide_index + 1)); ?>">
-                        <span class="hero-rail__number"><?php echo esc_html(sprintf('%02d', $slide_index + 1)); ?></span>
-                        <span class="hero-rail__body">
-                            <span class="hero-rail__title"><?php echo esc_html(wp_trim_words(get_the_title($slide_post_id), 7, '...')); ?></span>
-                            <span class="hero-rail__progress" aria-hidden="true">
-                                <span class="hero-rail__progress-bar"></span>
-                            </span>
-                        </span>
-                    </button>
-                <?php endforeach; ?>
-            </div>
-
-            <div class="hero-carousel__mobile md:hidden">
-                <div class="hero-carousel__mobile-head">
-                    <span class="hero-carousel__count" data-hero-current><?php echo esc_html(sprintf('%02d', 1)); ?></span>
-                    <span class="hero-carousel__count-total">/ <?php echo esc_html(sprintf('%02d', $hero_total)); ?></span>
+            <span class="feature-hero__shade" aria-hidden="true"></span>
+            <span class="feature-hero__grain" aria-hidden="true"></span>
+            <div class="feature-hero__content">
+                <div class="feature-hero__eyebrow">
+                    <span><?php echo esc_html($get_primary_category($feature_post_id)); ?></span>
+                    <span aria-hidden="true">•</span>
+                    <span class="num"><?php echo esc_html(mazaq_reading_time($feature_post_id)); ?></span>
                 </div>
-                <div class="hero-carousel__dots">
-                    <?php foreach ($hero_post_ids as $slide_index => $slide_post_id) : ?>
-                        <button type="button" class="hero-carousel__dot <?php echo $slide_index === 0 ? 'is-active' : ''; ?>" data-index="<?php echo esc_attr((string) $slide_index); ?>" aria-current="<?php echo $slide_index === 0 ? 'true' : 'false'; ?>" aria-label="<?php echo esc_attr(sprintf(__('Go to featured article %d', 'mazaq'), $slide_index + 1)); ?>">
-                            <span class="screen-reader-text"><?php echo esc_html(get_the_title($slide_post_id)); ?></span>
-                        </button>
-                    <?php endforeach; ?>
+                <h2 id="feature-hero-title" class="feature-hero__title"><?php echo esc_html(get_the_title($feature_post_id)); ?></h2>
+                <?php $feature_excerpt = wp_trim_words(wp_strip_all_tags((string) get_the_excerpt($feature_post_id)), 26, '...'); ?>
+                <?php if ($feature_excerpt !== '') : ?>
+                    <p class="feature-hero__excerpt"><?php echo esc_html($feature_excerpt); ?></p>
+                <?php endif; ?>
+                <div class="feature-hero__meta">
+                    <time datetime="<?php echo esc_attr(get_the_date(DATE_W3C, $feature_post_id)); ?>"><?php echo esc_html(get_the_date('j F Y', $feature_post_id)); ?></time>
                 </div>
-                <span class="hero-carousel__progress" aria-hidden="true">
-                    <span class="hero-carousel__progress-bar"></span>
+                <span class="feature-hero__cta">
+                    <span><?php esc_html_e('اقرأ المقال', 'mazaq'); ?></span>
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m11 6-6 6 6 6"></path>
+                    </svg>
                 </span>
             </div>
-        <?php endif; ?>
-    </div>
+        </a>
+    </article>
 </section>
+
+<?php if (!empty($editor_pick_ids)) : ?>
+    <section class="editors-picks" aria-labelledby="editors-picks-title">
+        <div class="editors-picks__head">
+            <p class="editors-picks__kicker"><?php esc_html_e('اختيارات التحرير', 'mazaq'); ?></p>
+            <h2 id="editors-picks-title" class="editors-picks__title"><?php esc_html_e('ما يستحق القراءة الآن', 'mazaq'); ?></h2>
+        </div>
+        <div class="editors-picks__grid">
+            <?php foreach ($editor_pick_ids as $pick_index => $pick_id) : ?>
+                <article class="editors-pick-card <?php echo $pick_index === 0 ? 'editors-pick-card--large' : ''; ?>">
+                    <a href="<?php echo esc_url(get_permalink($pick_id)); ?>" class="editors-pick-card__link group">
+                        <div class="editors-pick-card__media">
+                            <?php $render_media($pick_id, $pick_index === 0 ? 'card-wide-thumbnail' : 'card-thumbnail', false, $hero_logo_url, 'editors-pick-card__image'); ?>
+                            <span class="editors-pick-card__rank num"><?php echo esc_html(sprintf('%02d', $pick_index + 1)); ?></span>
+                        </div>
+                        <div class="editors-pick-card__body">
+                            <span class="editors-pick-card__category"><?php echo esc_html($get_primary_category($pick_id)); ?></span>
+                            <h3 class="editors-pick-card__title"><?php echo esc_html(get_the_title($pick_id)); ?></h3>
+                            <time class="editors-pick-card__date num" datetime="<?php echo esc_attr(get_the_date(DATE_W3C, $pick_id)); ?>"><?php echo esc_html(get_the_date('j F Y', $pick_id)); ?></time>
+                        </div>
+                    </a>
+                </article>
+            <?php endforeach; ?>
+        </div>
+    </section>
+<?php endif; ?>

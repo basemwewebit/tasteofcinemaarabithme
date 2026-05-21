@@ -1,5 +1,6 @@
 <?php get_header(); ?>
 <?php
+global $wp_query;
 $term = get_queried_object();
 $bg_id = function_exists('get_field') ? (int) get_field('category_bg_image', 'category_' . $term->term_id) : 0;
 $bg_url = $bg_id ? wp_get_attachment_image_url($bg_id, 'full') : '';
@@ -49,7 +50,7 @@ $bg_url = $bg_id ? wp_get_attachment_image_url($bg_id, 'full') : '';
             endwhile;
         else : ?>
             <div class="col-span-full text-center py-16">
-                <p class="text-slate-500 dark:text-slate-400 text-lg mb-4">لا توجد مقالات في هذا التصنيف حالياً.</p>
+                <p class="text-slate-600 dark:text-slate-300 text-lg mb-4">لا توجد مقالات في هذا التصنيف حالياً.</p>
                 <a href="<?php echo esc_url(home_url('/')); ?>" class="inline-flex items-center gap-2 text-primary font-medium hover:underline">
                     <span>تصفح أحدث المقالات</span>
                 </a>

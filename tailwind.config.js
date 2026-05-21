@@ -5,22 +5,25 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['"IBM Plex Sans Arabic"', 'sans-serif']
+        sans: ['"IBM Plex Sans Arabic"', '"Noto Sans Arabic"', 'system-ui', 'sans-serif'],
+        display: ['Tajawal', '"Reem Kufi"', '"IBM Plex Sans Arabic"', 'system-ui', 'sans-serif'],
+        editorial: ['Amiri', '"Aref Ruqaa"', '"IBM Plex Serif"', 'Georgia', 'serif'],
+        numeric: ['"IBM Plex Mono"', '"JetBrains Mono"', 'ui-monospace', 'monospace']
       },
       colors: {
         white: '#FAFBFE',
         black: '#030712',
         primary: {
-          DEFAULT: '#D4AF37',
-          hover: '#C5A028',
-          tint: '#F8E4A1',
-          border: '#F5E5A7',
-          cream: '#FFF8E1',
+          DEFAULT: '#C9A227',
+          hover: '#B88F1E',
+          tint: '#E6CB6A',
+          border: '#D4C9A8',
+          cream: '#F7F4ED',
         },
-        secondary: '#E50914',
-        dark: '#0F172A',
-        nocturnal: '#0F172A',
-        midnight: '#1E293B',
+        secondary: '#8E2A2A',
+        dark: '#0B0B0E',
+        nocturnal: '#0B0B0E',
+        midnight: '#16161B',
         'deep-shadow': '#020617',
         'screen-light': '#F8FAFC',
         'warm-ash': '#F1F5F9',
@@ -29,11 +32,12 @@ module.exports = {
         charcoal: '#475569',
       },
       fontSize: {
-        display: ['clamp(2.1rem, 4.5vw, 4.25rem)', { lineHeight: '1.08', fontWeight: '700' }],
-        headline: ['clamp(1.5rem, 3vw, 2.25rem)', { lineHeight: '1.25', fontWeight: '700' }],
+        hero: ['clamp(2.75rem, 6vw, 5.5rem)', { lineHeight: '1.05', fontWeight: '800' }],
+        display: ['clamp(2.25rem, 4.5vw, 4rem)', { lineHeight: '1.12', fontWeight: '700' }],
+        headline: ['clamp(1.65rem, 2.6vw, 2.5rem)', { lineHeight: '1.25', fontWeight: '700' }],
         title: ['1.25rem', { lineHeight: '1.4', fontWeight: '700' }],
-        body: ['1.125rem', { lineHeight: '2', fontWeight: '400' }],
-        label: ['0.875rem', { lineHeight: '1.4', fontWeight: '600', letterSpacing: '0.08em' }],
+        body: ['1.125rem', { lineHeight: '1.85', fontWeight: '400' }],
+        label: ['0.875rem', { lineHeight: '1.4', fontWeight: '600', letterSpacing: '0' }],
         caption: ['0.75rem', { lineHeight: '1.4', fontWeight: '500' }]
       }
     }

@@ -191,12 +191,14 @@
         prompt.appendChild(actionsEl);
         function removePrompt() {
             prompt.remove();
+            document.body.classList.remove('has-adblock-prompt');
             if (adblockFocusTrap) { adblockFocusTrap.deactivate(); adblockFocusTrap = null; }
         }
         closeBtn.addEventListener('click', function () { mutePromptForDays(3); removePrompt(); pushMonetizationEvent('ad_prompt_closed'); });
         secondaryBtn.addEventListener('click', function () { mutePromptForDays(3); removePrompt(); pushMonetizationEvent('ad_prompt_continue'); });
         primaryLink.addEventListener('click', function () { mutePromptForDays(14); removePrompt(); pushMonetizationEvent('ad_prompt_support_click'); });
         document.body.appendChild(prompt);
+        document.body.classList.add('has-adblock-prompt');
         adblockFocusTrap = window.FocusTrap(prompt, {
             initialFocus: closeBtn,
             onEscape: function () { mutePromptForDays(3); removePrompt(); pushMonetizationEvent('ad_prompt_escape'); }

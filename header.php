@@ -16,7 +16,7 @@ if (!$og_image) {
 }
 ?>
 <!doctype html>
-<html <?php language_attributes(); ?> dir="rtl" class="scroll-smooth">
+<html <?php language_attributes(); ?> class="scroll-smooth">
 <head>
     <meta charset="<?php bloginfo('charset'); ?>">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -26,8 +26,8 @@ if (!$og_image) {
     <meta property="og:url" content="<?php echo esc_url($og_url); ?>">
     <meta property="og:type" content="<?php echo esc_attr($og_type); ?>">
     <meta property="og:locale" content="ar_AR">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" href="<?php echo esc_url(get_template_directory_uri()); ?>/assets/fonts/ibm-plex-sans-arabic-arabic-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="<?php echo esc_url(get_template_directory_uri()); ?>/assets/fonts/tajawal-arabic-800-normal.woff2" as="font" type="font/woff2" crossorigin>
     <script>
         (function(){
             var isDark = localStorage.getItem('color-theme') === 'dark' || (!localStorage.getItem('color-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
@@ -37,7 +37,11 @@ if (!$og_image) {
     <script>
         (function () {
             try {
-                if (sessionStorage.getItem('toc_loader_seen') === 'true') {
+                var connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+                if (
+                    sessionStorage.getItem('toc_loader_seen') === 'true' ||
+                    (connection && (connection.saveData || connection.effectiveType === '2g'))
+                ) {
                     document.documentElement.classList.add('toc-loader-seen');
                 }
             } catch (e) {
@@ -53,8 +57,13 @@ if (!$og_image) {
 </head>
 <body <?php body_class('bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 transition-colors duration-300 antialiased font-sans'); ?>>
 <?php wp_body_open(); ?>
-<a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:right-4 focus:z-[200] focus:bg-primary focus:text-nocturnal-slate focus:px-4 focus:py-2 focus:rounded-lg focus:text-sm focus:font-bold focus:shadow-lg"><?php esc_html_e('تخطى إلى المحتوى', 'mazaq'); ?></a>
+<a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:start-4 focus:z-[200] focus:bg-primary focus:text-nocturnal-slate focus:px-4 focus:py-2 focus:rounded-lg focus:text-sm focus:font-bold focus:shadow-lg"><?php esc_html_e('تخطى إلى المحتوى', 'mazaq'); ?></a>
+<style>
 
+body, html,#main-content {
+ overflow-x: hidden !important;
+}
+</style>
 <!-- T003: Brand-Aligned Site Loader -->
 <div id="toc-site-loader" class="toc-site-loader fixed inset-0 z-[100] flex items-center justify-center" role="status" aria-live="polite" aria-label="<?php echo esc_attr__('Loading site', 'mazaq'); ?>">
     <div class="toc-loader-core" aria-hidden="true">

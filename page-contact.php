@@ -20,7 +20,7 @@ $status = isset($_GET['contact_status']) ? sanitize_text_field((string) $_GET['c
     <?php if ($status === 'rate_limit') : ?><p class="mb-6 p-4 rounded bg-yellow-100 text-yellow-800">لقد تجاوزت الحد المسموح من المحاولات. يرجى المحاولة مرة أخرى بعد ساعة.</p><?php endif; ?>
 
     <div class="flex flex-col lg:flex-row gap-12">
-        <div class="w-full lg:w-2/3 bg-slate-100 dark:bg-slate-800 rounded-2xl p-8 border border-slate-200 dark:border-slate-700">
+        <div class="w-full lg:w-2/3 bg-slate-100 dark:bg-slate-800 rounded-lg p-8 border border-slate-200 dark:border-slate-700">
             <h2 class="text-headline text-slate-900 dark:text-white mb-8">أرسل رسالة</h2>
             <form method="post" class="flex flex-col gap-6">
                 <?php wp_nonce_field('mazaq_contact_form', 'mazaq_contact_nonce'); ?>
@@ -32,7 +32,7 @@ $status = isset($_GET['contact_status']) ? sanitize_text_field((string) $_GET['c
                     </div>
                     <div>
                         <label for="contact-email" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">البريد الإلكتروني</label>
-                        <input type="email" id="contact-email" name="email" placeholder="البريد الإلكتروني" required dir="ltr" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 outline-none focus:border-primary text-slate-800 dark:text-white text-left">
+                        <input type="email" id="contact-email" name="email" placeholder="البريد الإلكتروني" required dir="ltr" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 outline-none focus:border-primary text-slate-800 dark:text-white text-start">
                     </div>
                 </div>
                 <div>
@@ -48,12 +48,12 @@ $status = isset($_GET['contact_status']) ? sanitize_text_field((string) $_GET['c
         </div>
 
         <div class="w-full lg:w-1/3 flex flex-col gap-8">
-            <div class="bg-slate-100 dark:bg-slate-800 rounded-2xl p-8 border border-slate-200 dark:border-slate-700">
+            <div class="bg-slate-100 dark:bg-slate-800 rounded-lg p-8 border border-slate-200 dark:border-slate-700">
                 <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-6">معلومات التواصل</h3>
                 <p class="text-slate-600 dark:text-slate-400 mb-3" dir="ltr"><?php echo esc_html($contact_email); ?></p>
                 <p class="text-slate-600 dark:text-slate-400"><?php echo nl2br(esc_html($contact_address)); ?></p>
             </div>
-            <div class="bg-slate-100 dark:bg-slate-800 rounded-2xl p-8 border border-slate-200 dark:border-slate-700">
+            <div class="bg-slate-100 dark:bg-slate-800 rounded-lg p-8 border border-slate-200 dark:border-slate-700">
                 <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-6">تابعنا على</h3>
                 <div class="flex gap-4 flex-wrap">
                     <?php if (function_exists('have_rows') && have_rows('social_links', 'option')) : ?>
@@ -66,7 +66,7 @@ $status = isset($_GET['contact_status']) ? sanitize_text_field((string) $_GET['c
                             </a>
                         <?php endwhile; ?>
                     <?php else: ?>
-                        <p class="text-sm text-slate-500">لا توجد روابط مسجلة.</p>
+                        <p class="text-sm text-slate-600 dark:text-slate-300">لا توجد روابط مسجلة.</p>
                     <?php endif; ?>
                 </div>
             </div>

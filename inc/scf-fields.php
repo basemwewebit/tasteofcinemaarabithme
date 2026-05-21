@@ -72,6 +72,21 @@ function mazaq_register_acf_fields(): void
         ],
         'location' => [[['param' => 'taxonomy', 'operator' => '==', 'value' => 'category']]],
     ]);
+
+    acf_add_local_field_group([
+        'key' => 'group_mazaq_post_editorial_fields',
+        'title' => 'Editorial Metadata',
+        'fields' => [
+            ['key' => 'field_film_title', 'label' => 'Film Title', 'name' => 'film_title', 'type' => 'text'],
+            ['key' => 'field_film_year', 'label' => 'Film Year', 'name' => 'film_year', 'type' => 'text'],
+            ['key' => 'field_film_director', 'label' => 'Director', 'name' => 'film_director', 'type' => 'text'],
+            ['key' => 'field_film_rating', 'label' => 'Rating', 'name' => 'film_rating', 'type' => 'text'],
+            ['key' => 'field_series_label', 'label' => 'Series Label', 'name' => 'series_label', 'type' => 'text'],
+            ['key' => 'field_series_previous_post', 'label' => 'Previous Series Post', 'name' => 'series_previous_post', 'type' => 'post_object', 'post_type' => ['post'], 'return_format' => 'id'],
+            ['key' => 'field_series_next_post', 'label' => 'Next Series Post', 'name' => 'series_next_post', 'type' => 'post_object', 'post_type' => ['post'], 'return_format' => 'id'],
+        ],
+        'location' => [[['param' => 'post_type', 'operator' => '==', 'value' => 'post']]],
+    ]);
 }
 add_action('acf/init', 'mazaq_register_acf_fields');
 

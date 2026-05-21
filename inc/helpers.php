@@ -231,3 +231,177 @@ function mazaq_get_hero_post_id(): int
     return mazaq_get_hero_post_ids()[0] ?? 0;
 }
 
+function mazaq_nav_menu_link_attributes(array $atts, WP_Post $menu_item): array
+{
+    if (!empty($menu_item->current) || in_array('current-menu-item', (array) $menu_item->classes, true)) {
+        $atts['aria-current'] = 'page';
+    }
+
+    return $atts;
+}
+add_filter('nav_menu_link_attributes', 'mazaq_nav_menu_link_attributes', 10, 2);
+
+function mazaq_get_post_thumbnail_alt(int $post_id, string $fallback = ''): string
+{
+    $thumbnail_id = (int) get_post_thumbnail_id($post_id);
+    if ($thumbnail_id > 0) {
+        $alt = trim((string) get_post_meta($thumbnail_id, '_wp_attachment_image_alt', true));
+        if ($alt !== '') {
+            return $alt;
+        }
+    }
+
+    $fallback = trim(wp_strip_all_tags($fallback));
+    return $fallback !== '' ? $fallback : get_the_title($post_id);
+}
+
+function mazaq_get_category_tint(int $term_id): string
+{
+    $palette = ['#8E2A2A', '#C9A227', '#2A4A8E', '#4E4A40', '#D4C9A8', '#7C3AED'];
+    return $palette[abs($term_id) % count($palette)];
+}
+
+function mazaq_extract_article_headings(int $post_id): array
+{
+    $content = (string) get_post_field('post_content', $post_id);
+    if ($content === '') {
+        return [];
+    }
+
+    preg_match_all('/<h([23])\b([^>]*)>(.*?)<\/h\1>/isu', $content, $matches, PREG_SET_ORDER);
+    $headings = [];
+    $index = 0;
+
+    foreach ($matches as $match) {
+        $text = trim(html_entity_decode(wp_strip_all_tags((string) $match[3]), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+        if ($text === '') {
+            continue;
+        }
+
+        $index++;
+        $id = 'article-section-' . $index;
+        if (preg_match('/\sid=(["\'])(.*?)\1/isu', (string) $match[2], $id_match) && trim((string) $id_match[2]) !== '') {
+            $id = sanitize_html_class((string) $id_match[2]);
+        }
+
+        $headings[] = [
+            'id' => $id,
+            'level' => (int) $match[1],
+            'text' => $text,
+        ];
+    }
+
+    return $headings;
+}
+
+function mazaq_add_article_heading_ids(string $content): string
+{
+    if (is_admin() || !is_singular('post') || !in_the_loop() || !is_main_query()) {
+        return $content;
+    }
+
+    $index = 0;
+    return (string) preg_replace_callback(
+        '/<h([23])\b([^>]*)>(.*?)<\/h\1>/isu',
+        static function (array $matches) use (&$index): string {
+            $attributes = (string) $matches[2];
+            if (preg_match('/\sid=(["\'])(.*?)\1/isu', $attributes)) {
+                return (string) $matches[0];
+            }
+
+            $index++;
+            return '<h' . $matches[1] . $attributes . ' id="article-section-' . $index . '">' . $matches[3] . '</h' . $matches[1] . '>';
+        },
+        $content
+    );
+}
+add_filter('the_content', 'mazaq_add_article_heading_ids', 8);
+
+function mazaq_ajax_search_suggestions(): void
+{
+    check_ajax_referer('mazaq_search_suggestions_nonce', 'nonce');
+
+    $query_text = isset($_GET['query']) ? sanitize_text_field(wp_unslash((string) $_GET['query'])) : '';
+    $query_text = trim($query_text);
+    $query_length = function_exists('mb_strlen') ? mb_strlen($query_text) : strlen($query_text);
+    if ($query_length < 2) {
+        wp_send_json_success(['items' => []]);
+    }
+
+    $query = new WP_Query([
+        'post_type' => 'post',
+        'post_status' => 'publish',
+        'posts_per_page' => 5,
+        's' => $query_text,
+        'no_found_rows' => true,
+        'ignore_sticky_posts' => true,
+    ]);
+
+    $items = [];
+    while ($query->have_posts()) {
+        $query->the_post();
+        $post_id = get_the_ID();
+        $categories = get_the_category($post_id);
+        $items[] = [
+            'title' => get_the_title($post_id),
+            'url' => get_permalink($post_id),
+            'date' => get_the_date('j F Y', $post_id),
+            'category' => !empty($categories) ? $categories[0]->name : __('مقال', 'mazaq'),
+            'thumbnail' => get_the_post_thumbnail_url($post_id, 'sidebar-thumbnail') ?: '',
+            'alt' => mazaq_get_post_thumbnail_alt($post_id, get_the_title($post_id)),
+        ];
+    }
+    wp_reset_postdata();
+
+    wp_send_json_success(['items' => $items]);
+}
+add_action('wp_ajax_mazaq_search_suggestions', 'mazaq_ajax_search_suggestions');
+add_action('wp_ajax_nopriv_mazaq_search_suggestions', 'mazaq_ajax_search_suggestions');
+
+function mazaq_ajax_newsletter_signup(): void
+{
+    check_ajax_referer('mazaq_newsletter_signup_nonce', 'nonce');
+
+    $email = isset($_POST['email']) ? sanitize_email(wp_unslash((string) $_POST['email'])) : '';
+    if ($email === '' || !is_email($email)) {
+        wp_send_json_error(['message' => __('أدخل بريدًا إلكترونيًا صحيحًا.', 'mazaq')], 400);
+    }
+
+    $hash = hash('sha256', strtolower($email));
+    $existing = new WP_Query([
+        'post_type' => 'contact_message',
+        'post_status' => 'private',
+        'posts_per_page' => 1,
+        'fields' => 'ids',
+        'no_found_rows' => true,
+        'meta_query' => [
+            [
+                'key' => '_newsletter_email_hash',
+                'value' => $hash,
+            ],
+        ],
+    ]);
+
+    if ($existing->have_posts()) {
+        wp_send_json_success(['message' => __('أنت مشترك بالفعل. شكرًا لاهتمامك.', 'mazaq')]);
+    }
+
+    $post_id = wp_insert_post([
+        'post_type' => 'contact_message',
+        'post_status' => 'private',
+        'post_title' => sprintf(__('اشتراك نشرة: %s', 'mazaq'), $email),
+        'post_content' => __('طلب اشتراك في النشرة السينمائية.', 'mazaq'),
+    ], true);
+
+    if (is_wp_error($post_id)) {
+        wp_send_json_error(['message' => __('تعذر تسجيل الاشتراك الآن. حاول لاحقًا.', 'mazaq')], 500);
+    }
+
+    update_post_meta((int) $post_id, '_contact_email', $email);
+    update_post_meta((int) $post_id, '_contact_name', __('مشترك النشرة', 'mazaq'));
+    update_post_meta((int) $post_id, '_newsletter_email_hash', $hash);
+
+    wp_send_json_success(['message' => __('تم الاشتراك بنجاح. أهلاً بك في النشرة.', 'mazaq')]);
+}
+add_action('wp_ajax_mazaq_newsletter_signup', 'mazaq_ajax_newsletter_signup');
+add_action('wp_ajax_nopriv_mazaq_newsletter_signup', 'mazaq_ajax_newsletter_signup');

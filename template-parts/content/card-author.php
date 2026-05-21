@@ -1,1 +1,1 @@
-<?php get_template_part('template-parts/content/card-category'); ?>
+<?php get_template_part('template-parts/content/article-card', null, ['layout' => 'standard']); ?>

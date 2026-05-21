@@ -12,7 +12,15 @@ document.addEventListener('DOMContentLoaded', function () {
         syncThemeBtn(document.documentElement.classList.contains('dark'));
 
         themeBtn.addEventListener('click', function () {
-            var isDark = document.documentElement.classList.toggle('dark');
+            var isDark = !document.documentElement.classList.contains('dark');
+            var toggleThemeClass = function () {
+                document.documentElement.classList.toggle('dark', isDark);
+            };
+            if (document.startViewTransition && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.startViewTransition(toggleThemeClass);
+            } else {
+                toggleThemeClass();
+            }
             try {
                 localStorage.setItem('color-theme', isDark ? 'dark' : 'light');
             } catch (e) {}
@@ -54,7 +62,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var mobileMenuToggle = document.getElementById('mobile-menu-toggle');
     if (mobileMenuToggle) {
         mobileMenuToggle.addEventListener('click', function () {
-            if (mobileMenu) mobileMenu.classList.remove('translate-x-full');
+            if (mobileMenu) mobileMenu.classList.add('mobile-menu--open');
             if (menuOverlay) {
                 menuOverlay.classList.remove('hidden');
                 menuOverlay.setAttribute('aria-hidden', 'false');
@@ -65,7 +73,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 menuFocusTrap = window.FocusTrap(mobileMenu, {
                     initialFocus: document.getElementById('close-menu'),
                     onEscape: function () {
-                        if (mobileMenu) mobileMenu.classList.add('translate-x-full');
+                        if (mobileMenu) mobileMenu.classList.remove('mobile-menu--open');
                         if (menuOverlay) {
                             menuOverlay.classList.add('hidden');
                             menuOverlay.setAttribute('aria-hidden', 'true');
@@ -80,7 +88,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function closeMobileMenu() {
-        if (mobileMenu) mobileMenu.classList.add('translate-x-full');
+        if (mobileMenu) mobileMenu.classList.remove('mobile-menu--open');
         if (menuOverlay) {
             menuOverlay.classList.add('hidden');
             menuOverlay.setAttribute('aria-hidden', 'true');
@@ -145,6 +153,197 @@ document.addEventListener('DOMContentLoaded', function () {
     var searchClose = document.getElementById('search-close');
     if (searchClose) searchClose.addEventListener('click', closeSearchOverlay);
 
+    (function initLiveSearch() {
+        if (!searchOverlay) return;
+
+        var form = searchOverlay.querySelector('[data-live-search-form]');
+        var input = searchOverlay.querySelector('input[type="search"]');
+        var suggestions = document.getElementById('search-suggestions-list');
+        var status = document.getElementById('search-suggestions-status');
+        var recentGroup = searchOverlay.querySelector('[data-recent-searches]');
+        var recentList = searchOverlay.querySelector('[data-recent-searches-list]');
+        var settings = window.mazaq_ajax || {};
+        var recentKey = 'mazaq_recent_searches';
+        var debounceTimer = null;
+        var latestRequest = 0;
+
+        if (!form || !input || !suggestions || !settings.ajax_url || !settings.search_nonce) return;
+
+        function getRecentSearches() {
+            try {
+                var parsed = JSON.parse(localStorage.getItem(recentKey) || '[]');
+                return Array.isArray(parsed) ? parsed.filter(Boolean).slice(0, 5) : [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function setRecentSearches(items) {
+            try {
+                localStorage.setItem(recentKey, JSON.stringify(items.slice(0, 5)));
+            } catch (e) {}
+        }
+
+        function addRecentSearch(term) {
+            term = term.trim();
+            if (term.length < 2) return;
+            var items = getRecentSearches().filter(function (item) { return item !== term; });
+            items.unshift(term);
+            setRecentSearches(items);
+            renderRecentSearches();
+        }
+
+        function submitTerm(term) {
+            input.value = term;
+            addRecentSearch(term);
+            form.submit();
+        }
+
+        function renderRecentSearches() {
+            if (!recentGroup || !recentList) return;
+            var items = getRecentSearches();
+            recentList.innerHTML = '';
+            recentGroup.hidden = items.length === 0;
+            items.forEach(function (item) {
+                var chip = document.createElement('button');
+                chip.type = 'button';
+                chip.className = 'delight-search__chip';
+                chip.textContent = item;
+                chip.addEventListener('click', function () { submitTerm(item); });
+                recentList.appendChild(chip);
+            });
+        }
+
+        function clearSuggestions(message) {
+            suggestions.innerHTML = '';
+            if (status) status.textContent = message || '';
+        }
+
+        function renderSuggestions(items, term) {
+            suggestions.innerHTML = '';
+            if (!items.length) {
+                clearSuggestions(term.length >= 2 ? 'لا توجد اقتراحات مطابقة.' : '');
+                return;
+            }
+
+            if (status) status.textContent = 'اقتراحات بحث جاهزة.';
+            items.forEach(function (item) {
+                var link = document.createElement('a');
+                link.href = item.url;
+                link.className = 'delight-search__suggestion';
+                link.setAttribute('role', 'listitem');
+
+                var media = document.createElement('span');
+                media.className = 'delight-search__suggestion-media';
+                if (item.thumbnail) {
+                    var image = document.createElement('img');
+                    image.src = item.thumbnail;
+                    image.alt = item.alt || '';
+                    image.loading = 'lazy';
+                    media.appendChild(image);
+                }
+
+                var body = document.createElement('span');
+                body.className = 'delight-search__suggestion-body';
+                var title = document.createElement('strong');
+                title.textContent = item.title;
+                var meta = document.createElement('span');
+                meta.textContent = [item.category, item.date].filter(Boolean).join(' • ');
+                body.appendChild(title);
+                body.appendChild(meta);
+                link.appendChild(media);
+                link.appendChild(body);
+                suggestions.appendChild(link);
+            });
+        }
+
+        function requestSuggestions(term) {
+            var requestId = ++latestRequest;
+            if (term.length < 2) {
+                clearSuggestions('');
+                return;
+            }
+            if (status) status.textContent = 'جاري تحميل الاقتراحات...';
+
+            var url = settings.ajax_url + '?action=' + encodeURIComponent(settings.search_suggestions_action || 'mazaq_search_suggestions') +
+                '&nonce=' + encodeURIComponent(settings.search_nonce) +
+                '&query=' + encodeURIComponent(term);
+
+            fetch(url, { credentials: 'same-origin' })
+                .then(function (response) {
+                    if (!response.ok) throw new Error('Search suggestions failed');
+                    return response.json();
+                })
+                .then(function (payload) {
+                    if (requestId !== latestRequest) return;
+                    renderSuggestions((payload && payload.success && payload.data && payload.data.items) ? payload.data.items : [], term);
+                })
+                .catch(function () {
+                    if (requestId !== latestRequest) return;
+                    clearSuggestions('تعذر تحميل الاقتراحات الآن.');
+                });
+        }
+
+        input.addEventListener('input', function () {
+            var term = input.value.trim();
+            window.clearTimeout(debounceTimer);
+            debounceTimer = window.setTimeout(function () { requestSuggestions(term); }, 250);
+        });
+
+        form.addEventListener('submit', function () {
+            addRecentSearch(input.value);
+        });
+
+        searchOverlay.querySelectorAll('[data-search-term]').forEach(function (chip) {
+            chip.addEventListener('click', function () {
+                submitTerm(chip.getAttribute('data-search-term') || chip.textContent || '');
+            });
+        });
+
+        renderRecentSearches();
+    })();
+
+    (function initNewsletterForms() {
+        var forms = document.querySelectorAll('[data-newsletter-form]');
+        var settings = window.mazaq_ajax || {};
+        if (!forms.length || !settings.ajax_url || !settings.newsletter_nonce) return;
+
+        forms.forEach(function (form) {
+            var input = form.querySelector('input[type="email"]');
+            var status = form.querySelector('[data-newsletter-status]');
+            var button = form.querySelector('button[type="submit"]');
+            form.addEventListener('submit', function (event) {
+                event.preventDefault();
+                if (!input || !button) return;
+                var email = input.value.trim();
+                if (!email) return;
+                button.disabled = true;
+                if (status) status.textContent = 'جاري تسجيل الاشتراك...';
+                var body = new URLSearchParams();
+                body.set('action', settings.newsletter_action || 'mazaq_newsletter_signup');
+                body.set('nonce', settings.newsletter_nonce);
+                body.set('email', email);
+                fetch(settings.ajax_url, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+                    body: body.toString()
+                })
+                    .then(function (response) { return response.json(); })
+                    .then(function (payload) {
+                        if (status) status.textContent = payload && payload.data && payload.data.message ? payload.data.message : 'تم استلام طلبك.';
+                        if (payload && payload.success) input.value = '';
+                    })
+                    .catch(function () {
+                        if (status) status.textContent = 'تعذر تسجيل الاشتراك الآن. حاول لاحقًا.';
+                    })
+                    .finally(function () {
+                        button.disabled = false;
+                    });
+            });
+        });
+    })();
+
     var lazyImages = document.querySelectorAll('.lazy-image[data-src]');
     if ('IntersectionObserver' in window && lazyImages.length) {
         var lazyObserver = new IntersectionObserver(function (entries, observer) {
@@ -206,6 +405,19 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    var prefetchedUrls = new Set();
+    document.querySelectorAll('article a[href]').forEach(function (link) {
+        link.addEventListener('mouseenter', function () {
+            var href = link.href;
+            if (!href || prefetchedUrls.has(href) || href.indexOf(window.location.origin) !== 0) return;
+            prefetchedUrls.add(href);
+            var prefetch = document.createElement('link');
+            prefetch.rel = 'prefetch';
+            prefetch.href = href;
+            document.head.appendChild(prefetch);
+        }, { once: true });
+    });
+
     var filterBtns = document.querySelectorAll('.filter-btn');
     if (filterBtns.length) {
         filterBtns.forEach(function (btn) {
@@ -233,7 +445,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 (function () {
     if (typeof console === 'undefined' || !console.log) return;
-    var styles = ['color: #D4AF37', 'font-weight: 700', 'font-size: 13px', 'font-family: monospace', 'padding: 2px 0'].join(';');
+    var styles = ['color: #C9A227', 'font-weight: 700', 'font-size: 13px', 'font-family: monospace', 'padding: 2px 0'].join(';');
     console.log('%cمذاق السينما', styles);
     console.log('%cكل إطار يحكي قصة. شكراً لاهتمامك بالتفاصيل.', 'color: #94a3b8; font-size: 11px;');
     console.log('%cTaste of Cinema — every frame tells a story.', 'color: #94a3b8; font-size: 11px;');

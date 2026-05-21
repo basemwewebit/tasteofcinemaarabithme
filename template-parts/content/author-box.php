@@ -23,8 +23,8 @@ if (empty($author_bio)) {
 }
 ?>
 
-<div class="author-box mt-12 p-6 md:p-8 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700/50 transition-colors">
-    <div class="flex flex-col md:flex-row items-center md:items-start gap-6 text-center md:text-right">
+<div class="author-box mt-12 p-6 md:p-8 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700/50 transition-colors">
+    <div class="flex flex-col md:flex-row items-center md:items-start gap-6 text-center md:text-start">
         <div class="shrink-0">
             <a href="<?php echo esc_url($author_link); ?>">
                 <?php echo get_avatar($author_id, 96, '', '', ['class' => 'w-24 h-24 object-cover rounded-full shadow-md hover:scale-105 transition-transform duration-300', 'loading' => 'lazy']); ?>
@@ -41,7 +41,7 @@ if (empty($author_bio)) {
             </p>
             <a href="<?php echo esc_url($author_link); ?>" class="inline-flex items-center gap-2 text-sm font-bold text-primary hover:text-slate-900 dark:hover:text-white transition-colors">
                 <span><?php esc_html_e('عرض جميع مقالات الكاتب', 'mazaq'); ?></span>
-                <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5m6-6-6 6 6 6"></path></svg>
             </a>
         </div>
     </div>

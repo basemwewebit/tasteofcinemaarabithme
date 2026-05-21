@@ -31,11 +31,7 @@ function mazaq_ajax_load_more_posts(): void
                 get_template_part('template-parts/ads/ad-grid');
             }
 
-            if ($index % 3 === 0) {
-                get_template_part('template-parts/content/card-wide');
-            } else {
-                get_template_part('template-parts/content/card');
-            }
+            get_template_part('template-parts/content/card');
             $index++;
         }
     }

@@ -40,7 +40,7 @@
     </div>
     <?php else : ?>
     <div class="text-center py-20">
-        <p class="text-slate-500 dark:text-slate-400 text-lg mb-4">لا توجد مقالات في هذا الأرشيف حالياً.</p>
+        <p class="text-slate-600 dark:text-slate-300 text-lg mb-4">لا توجد مقالات في هذا الأرشيف حالياً.</p>
         <a href="<?php echo esc_url(home_url('/')); ?>" class="inline-flex items-center gap-2 text-primary font-medium hover:underline">
             <span>تصفح أحدث المقالات</span>
         </a>

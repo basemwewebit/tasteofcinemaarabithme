@@ -24,6 +24,7 @@ function mazaq_theme_setup(): void
     add_image_size('card-wide-thumbnail', 800, 500, true);
     add_image_size('sidebar-thumbnail', 150, 150, true);
     add_image_size('search-poster', 400, 533, true);
+    add_image_size('poster-card', 600, 800, true);
 
     $GLOBALS['content_width'] = 800;
 }

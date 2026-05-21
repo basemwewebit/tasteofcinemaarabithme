@@ -1,4 +1,5 @@
 <?php get_header(); ?>
+<?php global $wp_query; ?>
 
 <div class="relative bg-slate-900 text-white pt-20 pb-16 md:pt-28 md:pb-20 mb-12 overflow-hidden">
     <div class="max-w-7xl mx-auto px-4 relative z-10">
@@ -17,7 +18,7 @@
             <?php while (have_posts()) : the_post(); get_template_part('template-parts/content/card-search'); endwhile; ?>
         </div>
     <?php else : ?>
-        <p class="text-center text-slate-500">لم يتم العثور على نتائج</p>
+        <p class="text-center text-slate-600 dark:text-slate-300">لم يتم العثور على نتائج</p>
     <?php endif; ?>
 </main>
 
