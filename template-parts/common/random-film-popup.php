@@ -8,17 +8,17 @@ if (isset($args['categories']) && is_array($args['categories'])) {
 }
 ?>
 
-<section class="mb-10 rounded-3xl border border-slate-200/80 dark:border-slate-700 bg-gradient-to-br from-white via-slate-50 to-amber-50/70 dark:from-slate-800 dark:via-slate-800 dark:to-slate-900 p-5 md:p-7 shadow-sm">
+<section class="random-film-panel mb-10">
     <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
         <div>
-            <p class="text-sm font-semibold text-primary mb-2"><?php esc_html_e('قاعدة معرفة الأفلام', 'mazaq'); ?></p>
-            <h2 class="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white"><?php esc_html_e('محتار؟ دعنا نقترح عليك فيلماً', 'mazaq'); ?></h2>
-            <p class="text-sm md:text-base text-slate-600 dark:text-slate-300 mt-2"><?php esc_html_e('اضغط على الزر لتحصل على ترشيح عشوائي من مقالات الأفلام الموجودة لدينا.', 'mazaq'); ?></p>
+            <p class="random-film-panel__kicker"><?php esc_html_e('قاعدة معرفة الأفلام', 'mazaq'); ?></p>
+            <h2 class="random-film-panel__title"><?php esc_html_e('محتار؟ دعنا نقترح عليك فيلماً', 'mazaq'); ?></h2>
+            <p class="random-film-panel__summary"><?php esc_html_e('اضغط على الزر لتحصل على ترشيح عشوائي من مقالات الأفلام الموجودة لدينا.', 'mazaq'); ?></p>
         </div>
 
         <div class="flex flex-col sm:flex-row items-stretch sm:items-end gap-3 w-full md:w-auto">
             <label for="random-film-category-select" class="sr-only"><?php esc_html_e('اختر قائمة', 'mazaq'); ?></label>
-            <select id="random-film-category-select" class="h-12 min-w-[13rem] rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 px-4 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60">
+            <select id="random-film-category-select" class="random-film-panel__select">
                 <option value="0"><?php esc_html_e('كل القوائم', 'mazaq'); ?></option>
                 <?php foreach ($popup_categories as $popup_category) : ?>
                     <?php if (!isset($popup_category->count) || (int) $popup_category->count <= 0) { continue; } ?>
@@ -26,7 +26,7 @@ if (isset($args['categories']) && is_array($args['categories'])) {
                 <?php endforeach; ?>
             </select>
 
-            <button id="random-film-open" type="button" class="random-film-trigger h-12 inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold px-5 shadow-md hover:scale-[1.01] transition-transform">
+            <button id="random-film-open" type="button" class="random-film-trigger random-film-panel__button">
                 <span class="random-film-button-text"><?php esc_html_e('اقترح لي فيلم', 'mazaq'); ?></span>
                 <span class="random-film-arrow-wrap" aria-hidden="true">
                     <svg class="random-film-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
@@ -38,7 +38,7 @@ if (isset($args['categories']) && is_array($args['categories'])) {
 
 <div id="random-film-result" class="random-film-result" aria-live="polite">
     <div class="random-film-result__inner">
-        <div class="random-film-card-glow rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 overflow-hidden mb-6">
+        <div class="random-film-card-glow random-film-card mb-6">
             <div id="random-film-loading" class="hidden items-center justify-center py-16" role="status">
                 <div class="text-center">
                     <svg class="animate-spin h-8 w-8 text-primary mx-auto" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -50,25 +50,28 @@ if (isset($args['categories']) && is_array($args['categories'])) {
             </div>
 
             <div id="random-film-error" class="hidden p-8 text-center">
-                <p id="random-film-error-text" class="text-base text-red-600 dark:text-red-400 mb-4"><?php esc_html_e('تعذر تحميل الاقتراح حالياً.', 'mazaq'); ?></p>
-                <button id="random-film-retry" type="button" class="inline-flex items-center justify-center rounded-xl bg-primary text-slate-900 font-bold px-5 py-2.5 hover:brightness-95 transition"><?php esc_html_e('إعادة المحاولة', 'mazaq'); ?></button>
+                <p id="random-film-error-text" class="random-film-card__error mb-4"><?php esc_html_e('تعذر تحميل الاقتراح حالياً.', 'mazaq'); ?></p>
+                <button id="random-film-retry" type="button" class="random-film-card__primary-action"><?php esc_html_e('إعادة المحاولة', 'mazaq'); ?></button>
             </div>
 
             <div id="random-film-content" class="hidden grid md:grid-cols-[1.1fr_1fr]">
-                <div class="relative min-h-[200px] md:min-h-[320px] bg-slate-200 dark:bg-slate-800">
+                <div class="random-film-card__media">
                     <img id="random-film-image" src="" alt="" class="w-full h-full object-cover" loading="lazy" decoding="async">
+                    <div id="random-film-image-fallback" class="random-film-card__image-fallback hidden" aria-hidden="true">
+                        <span>م</span>
+                    </div>
                     <div class="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent"></div>
-                    <span id="random-film-category" class="absolute bottom-4 end-4 inline-flex items-center rounded-full bg-white/90 dark:bg-slate-900/85 px-3 py-1 text-xs font-bold text-slate-800 dark:text-slate-100"></span>
+                    <span id="random-film-category" class="random-film-card__category"></span>
                 </div>
 
                 <div class="p-6 md:p-8 flex flex-col">
-                    <p class="text-sm font-semibold text-primary mb-2"><?php esc_html_e('ترشيح عشوائي', 'mazaq'); ?></p>
-                    <h3 id="random-film-title" class="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white leading-relaxed mb-4"></h3>
-                    <p id="random-film-excerpt" class="text-slate-600 dark:text-slate-300 leading-8 mb-6 flex-1"></p>
+                    <p class="random-film-card__kicker"><?php esc_html_e('ترشيح عشوائي', 'mazaq'); ?></p>
+                    <h3 id="random-film-title" class="random-film-card__title"></h3>
+                    <p id="random-film-excerpt" class="random-film-card__excerpt"></p>
 
                     <div class="flex flex-wrap gap-3">
-                        <a id="random-film-read-link" href="#" class="inline-flex items-center justify-center rounded-xl bg-primary text-slate-900 font-bold px-5 py-3 hover:brightness-95 transition"><?php esc_html_e('قراءة المقال الكامل', 'mazaq'); ?></a>
-                        <button id="random-film-next" type="button" class="inline-flex items-center justify-center rounded-xl border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 font-semibold px-5 py-3 hover:bg-slate-100 dark:hover:bg-slate-800 transition"><?php esc_html_e('اقتراح آخر', 'mazaq'); ?></button>
+                        <a id="random-film-read-link" href="#" class="random-film-card__primary-action"><?php esc_html_e('قراءة المقال الكامل', 'mazaq'); ?></a>
+                        <button id="random-film-next" type="button" class="random-film-card__secondary-action"><?php esc_html_e('اقتراح آخر', 'mazaq'); ?></button>
                     </div>
                 </div>
             </div>

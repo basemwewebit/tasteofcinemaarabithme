@@ -1,5 +1,5 @@
 <div id="menu-overlay" class="fixed inset-0 bg-slate-900/80 z-50 hidden transition-opacity" aria-hidden="true"></div>
-<div id="mobile-menu" class="fixed top-0 start-0 h-full w-[85vw] max-w-80 bg-slate-50 dark:bg-slate-900 shadow-2xl z-50 border-e border-slate-200 dark:border-slate-800 flex flex-col" role="dialog" aria-modal="true" aria-label="<?php esc_attr_e('القائمة', 'mazaq'); ?>">
+<div id="mobile-menu" class="fixed top-0 start-0 h-full w-[85vw] max-w-80 bg-slate-50 dark:bg-slate-900 shadow-2xl z-50 border-e border-slate-200 dark:border-slate-800 flex flex-col" role="dialog" aria-modal="true" aria-hidden="true" inert aria-label="<?php esc_attr_e('القائمة', 'mazaq'); ?>">
     <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
         <a href="<?php echo esc_url(home_url('/')); ?>" class="block focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 rounded-sm">
             <img src="<?php echo esc_url(get_template_directory_uri() . '/assets/images/logo.webp'); ?>" alt="<?php bloginfo('name'); ?>" class="h-10 w-auto dark:brightness-125" width="474" height="460" data-no-lazy="1">

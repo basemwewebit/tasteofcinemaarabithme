@@ -1,34 +1,40 @@
 <?php get_header(); ?>
 <?php get_template_part('template-parts/common/reading-progress'); ?>
 
-<main id="main-content" class="max-w-5xl mx-auto px-4 pt-12 pb-8 section-gap">
+<main id="main-content" class="single-main max-w-6xl mx-auto px-4 pt-12 pb-8 section-gap">
     <?php if (have_posts()) : while (have_posts()) : the_post(); ?>
         <article class="single-article">
             <?php toc_breadcrumbs(); ?>
 
             <header class="single-article__header">
-                <?php $cats = get_the_category(); if (!empty($cats)) : ?>
+                <?php $cats = get_the_category(); ?>
+                <?php if (!empty($cats)) : ?>
                     <a href="<?php echo esc_url(get_category_link($cats[0]->term_id)); ?>" class="single-article__category"><?php echo esc_html($cats[0]->name); ?></a>
                 <?php endif; ?>
 
                 <h1 class="single-article__title"><?php the_title(); ?></h1>
 
-                <div class="single-article__meta" aria-label="<?php esc_attr_e('معلومات المقال', 'mazaq'); ?>">
-                    <span><?php echo esc_html(get_the_author()); ?></span>
-                    <span aria-hidden="true">•</span>
-                    <time class="num" datetime="<?php echo esc_attr(get_the_date(DATE_W3C)); ?>"><?php echo esc_html(get_the_date('j F Y')); ?></time>
-                    <span aria-hidden="true">•</span>
-                    <span class="num"><?php echo esc_html(toc_estimated_reading_time()); ?></span>
-                    <span aria-hidden="true">•</span>
-                    <span><?php esc_html_e('آخر تحديث:', 'mazaq'); ?> <time class="num" datetime="<?php echo esc_attr(get_the_modified_date(DATE_W3C)); ?>"><?php echo esc_html(get_the_modified_date('j F Y')); ?></time></span>
-                </div>
+                <?php $article_deck = has_excerpt() ? wp_trim_words(wp_strip_all_tags((string) get_the_excerpt()), 32, '...') : ''; ?>
+                <?php if ($article_deck !== '') : ?>
+                    <p class="single-article__deck"><?php echo esc_html($article_deck); ?></p>
+                <?php endif; ?>
+
+                <?php $show_modified_date = (int) get_the_modified_time('U') > ((int) get_the_time('U') + DAY_IN_SECONDS); ?>
+                <ul class="single-article__meta" aria-label="<?php esc_attr_e('معلومات المقال', 'mazaq'); ?>">
+                    <li><?php echo esc_html(get_the_author()); ?></li>
+                    <li><time class="num" datetime="<?php echo esc_attr(get_the_date(DATE_W3C)); ?>"><?php echo esc_html(get_the_date('j F Y')); ?></time></li>
+                    <li class="num"><?php echo esc_html(toc_estimated_reading_time()); ?></li>
+                    <?php if ($show_modified_date) : ?>
+                        <li><?php esc_html_e('آخر تحديث:', 'mazaq'); ?> <time class="num" datetime="<?php echo esc_attr(get_the_modified_date(DATE_W3C)); ?>"><?php echo esc_html(get_the_modified_date('j F Y')); ?></time></li>
+                    <?php endif; ?>
+                </ul>
             </header>
 
             <?php get_template_part('template-parts/common/font-controls'); ?>
 
             <?php if (has_post_thumbnail()) : ?>
                 <figure class="single-article__figure">
-                    <?php the_post_thumbnail('hero-image', ['class' => 'single-article__image', 'loading' => 'eager', 'fetchpriority' => 'high', 'alt' => mazaq_get_post_thumbnail_alt(get_the_ID(), get_the_title())]); ?>
+                    <?php the_post_thumbnail('hero-image', ['class' => 'single-article__image', 'loading' => 'eager', 'fetchpriority' => 'high', 'decoding' => 'async', 'sizes' => '(min-width: 1180px) 72rem, 100vw', 'alt' => mazaq_get_post_thumbnail_alt(get_the_ID(), get_the_title())]); ?>
                     <?php $caption = wp_get_attachment_caption((int) get_post_thumbnail_id()); if ($caption) : ?>
                         <figcaption><?php echo esc_html($caption); ?></figcaption>
                     <?php endif; ?>
@@ -54,11 +60,16 @@
                         <h2 id="inline-related-title" class="inline-related__title"><?php esc_html_e('من نفس العالم السينمائي', 'mazaq'); ?></h2>
                     </div>
                     <div class="inline-related__grid">
+                        <?php $related_index = 0; ?>
                         <?php foreach ($related_posts as $related_post) : ?>
                             <?php
                             $GLOBALS['post'] = $related_post;
                             setup_postdata($related_post);
-                            get_template_part('template-parts/content/card');
+                            get_template_part('template-parts/content/article-card', null, [
+                                'layout' => $related_index === 0 ? 'wide' : 'standard',
+                                'class' => $related_index === 0 ? 'inline-related__lead' : '',
+                            ]);
+                            $related_index++;
                             ?>
                         <?php endforeach; wp_reset_postdata(); ?>
                     </div>

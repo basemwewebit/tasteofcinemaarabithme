@@ -59,27 +59,33 @@ document.addEventListener('DOMContentLoaded', function () {
     var menuOverlay = document.getElementById('menu-overlay');
     var menuFocusTrap = null;
 
+    function setMobileMenuOpen(isOpen) {
+        if (mobileMenu) {
+            mobileMenu.classList.toggle('mobile-menu--open', isOpen);
+            mobileMenu.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+            if (isOpen) {
+                mobileMenu.removeAttribute('inert');
+            } else {
+                mobileMenu.setAttribute('inert', '');
+            }
+        }
+        if (menuOverlay) {
+            menuOverlay.classList.toggle('hidden', !isOpen);
+            menuOverlay.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+        }
+        if (mobileMenuToggle) mobileMenuToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        document.body.classList.toggle('overflow-hidden', isOpen);
+    }
+
     var mobileMenuToggle = document.getElementById('mobile-menu-toggle');
     if (mobileMenuToggle) {
         mobileMenuToggle.addEventListener('click', function () {
-            if (mobileMenu) mobileMenu.classList.add('mobile-menu--open');
-            if (menuOverlay) {
-                menuOverlay.classList.remove('hidden');
-                menuOverlay.setAttribute('aria-hidden', 'false');
-            }
-            mobileMenuToggle.setAttribute('aria-expanded', 'true');
-            document.body.classList.add('overflow-hidden');
+            setMobileMenuOpen(true);
             if (!menuFocusTrap && mobileMenu) {
                 menuFocusTrap = window.FocusTrap(mobileMenu, {
                     initialFocus: document.getElementById('close-menu'),
                     onEscape: function () {
-                        if (mobileMenu) mobileMenu.classList.remove('mobile-menu--open');
-                        if (menuOverlay) {
-                            menuOverlay.classList.add('hidden');
-                            menuOverlay.setAttribute('aria-hidden', 'true');
-                        }
-                        mobileMenuToggle.setAttribute('aria-expanded', 'false');
-                        document.body.classList.remove('overflow-hidden');
+                        setMobileMenuOpen(false);
                     }
                 });
             }
@@ -88,13 +94,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function closeMobileMenu() {
-        if (mobileMenu) mobileMenu.classList.remove('mobile-menu--open');
-        if (menuOverlay) {
-            menuOverlay.classList.add('hidden');
-            menuOverlay.setAttribute('aria-hidden', 'true');
-        }
-        if (mobileMenuToggle) mobileMenuToggle.setAttribute('aria-expanded', 'false');
-        document.body.classList.remove('overflow-hidden');
+        setMobileMenuOpen(false);
         if (menuFocusTrap) menuFocusTrap.deactivate();
     }
 
@@ -104,6 +104,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var searchOverlay = document.getElementById('search-overlay');
     var searchFocusTrap = null;
+
+    function getSearchOverlayInput() {
+        return searchOverlay ? searchOverlay.querySelector('input[type="search"]') : null;
+    }
 
     function fadeInSearch() {
         if (!searchOverlay) return;
@@ -122,7 +126,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.body.classList.add('overflow-hidden');
         if (!searchFocusTrap) {
             searchFocusTrap = window.FocusTrap(searchOverlay, {
-                initialFocus: document.getElementById('search-input'),
+                initialFocus: getSearchOverlayInput(),
                 onEscape: function () {
                     fadeOutSearch(function () { document.body.classList.remove('overflow-hidden'); });
                     if (searchFocusTrap) searchFocusTrap.deactivate();
@@ -131,7 +135,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         if (searchFocusTrap) searchFocusTrap.activate();
         window.setTimeout(function () {
-            var searchInput = document.getElementById('search-input');
+            var searchInput = getSearchOverlayInput();
             if (searchInput) searchInput.focus();
         }, 300);
     }
@@ -316,7 +320,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 event.preventDefault();
                 if (!input || !button) return;
                 var email = input.value.trim();
-                if (!email) return;
+                if (!email || (input.validity && !input.validity.valid)) {
+                    if (status) status.textContent = 'أدخل بريدًا إلكترونيًا صحيحًا.';
+                    if (typeof input.reportValidity === 'function') input.reportValidity();
+                    return;
+                }
                 button.disabled = true;
                 if (status) status.textContent = 'جاري تسجيل الاشتراك...';
                 var body = new URLSearchParams();

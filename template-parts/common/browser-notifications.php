@@ -26,7 +26,7 @@ $prompt_body = (string) ($settings['prompt_body'] ?? __('سنرسل لك مقا�
     >
         <div class="mb-4 flex items-start justify-between gap-4">
             <div>
-                <p class="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-primary"><?php esc_html_e('تنبيهات المتصفح', 'mazaq'); ?></p>
+                <p class="mb-2 text-xs font-bold text-primary"><?php esc_html_e('تنبيهات المتصفح', 'mazaq'); ?></p>
                 <h3 id="mazaq-notification-prompt-title" class="text-lg font-bold text-slate-900 dark:text-white"><?php echo esc_html($prompt_title); ?></h3>
             </div>
             <button
@@ -65,7 +65,7 @@ $prompt_body = (string) ($settings['prompt_body'] ?? __('سنرسل لك مقا�
     >
         <div class="mb-4 flex items-start justify-between gap-4">
             <div>
-                <p id="mazaq-notification-toast-kicker" class="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-primary"></p>
+                <p id="mazaq-notification-toast-kicker" class="mb-2 text-xs font-bold text-primary"></p>
                 <h3 id="mazaq-notification-toast-title" class="text-lg font-bold text-slate-900 dark:text-white"></h3>
             </div>
             <button

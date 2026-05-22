@@ -16,5 +16,8 @@
     "cssnano": "^7.0.6",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.17"
+  },
+  "dependencies": {
+    "impeccable": "^2.1.9"
   }
 }

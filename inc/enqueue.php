@@ -40,6 +40,40 @@ function mazaq_get_ad_support_url(): string
     return $cached_url;
 }
 
+function mazaq_should_enqueue_adblock_assets(): bool
+{
+    if (!function_exists('get_field') || !function_exists('mazaq_get_ad_slot')) {
+        return false;
+    }
+
+    $publisher = (string) get_field('adsense_publisher_id', 'option');
+    if ($publisher === '') {
+        return false;
+    }
+
+    $slot_names = ['ad_slot_mobile_menu'];
+    if (is_front_page()) {
+        $slot_names[] = 'ad_slot_hero_banner';
+    }
+    if (is_singular('post')) {
+        array_push($slot_names, 'ad_slot_in_article', 'ad_slot_bottom_article', 'ad_slot_sidebar_square', 'ad_slot_sidebar_vertical');
+    }
+    if (is_home() || is_archive() || is_search()) {
+        $slot_names[] = 'ad_slot_archive_banner';
+    }
+    if (is_404()) {
+        $slot_names[] = 'ad_slot_404_banner';
+    }
+
+    foreach (array_unique($slot_names) as $slot_name) {
+        if (mazaq_get_ad_slot($slot_name) !== '') {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 function mazaq_enqueue_assets(): void
 {
     $theme = wp_get_theme();
@@ -72,23 +106,25 @@ function mazaq_enqueue_assets(): void
         true
     );
 
-    // Adblock detection: loads conditionally (self-guards if no ad containers)
-    wp_enqueue_script(
-        'mazaq-app-adblock',
-        $template_uri . '/assets/js/app-adblock.js',
-        ['mazaq-focus-trap'],
-        file_exists($template_dir . '/assets/js/app-adblock.js') ? (string) filemtime($template_dir . '/assets/js/app-adblock.js') : $version,
-        true
-    );
+    if (mazaq_should_enqueue_adblock_assets()) {
+        wp_enqueue_script(
+            'mazaq-app-adblock',
+            $template_uri . '/assets/js/app-adblock.js',
+            ['mazaq-focus-trap'],
+            file_exists($template_dir . '/assets/js/app-adblock.js') ? (string) filemtime($template_dir . '/assets/js/app-adblock.js') : $version,
+            true
+        );
+    }
 
-    // Notifications: loads conditionally (self-guards if no notification root)
-    wp_enqueue_script(
-        'mazaq-app-notifications',
-        $template_uri . '/assets/js/app-notifications.js',
-        [],
-        file_exists($template_dir . '/assets/js/app-notifications.js') ? (string) filemtime($template_dir . '/assets/js/app-notifications.js') : $version,
-        true
-    );
+    if (function_exists('mazaq_browser_notifications_is_enabled') && mazaq_browser_notifications_is_enabled()) {
+        wp_enqueue_script(
+            'mazaq-app-notifications',
+            $template_uri . '/assets/js/app-notifications.js',
+            [],
+            file_exists($template_dir . '/assets/js/app-notifications.js') ? (string) filemtime($template_dir . '/assets/js/app-notifications.js') : $version,
+            true
+        );
+    }
 
     // Archive features: infinite scroll + random film (front page only)
     if (is_front_page()) {

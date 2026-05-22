@@ -53,9 +53,3 @@ Tags: rtl-language-support, blog, news, custom-logo
     /* Full width on mobile, span full columns on larger screens if using CSS grid (dependent on the container's grid-cols) */
     grid-column: 1 / -1;
 }
-
-
-
-body, html,#main-content {
- overflow-x: hidden !important;
-}

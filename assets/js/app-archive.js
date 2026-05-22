@@ -8,11 +8,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const randomFilmErrorText = document.getElementById('random-film-error-text');
     const randomFilmContent = document.getElementById('random-film-content');
     const randomFilmImage = document.getElementById('random-film-image');
-    if (randomFilmImage) {
-        randomFilmImage.addEventListener('error', function () {
-            randomFilmImage.style.display = 'none';
-        });
-    }
+    const randomFilmImageFallback = document.getElementById('random-film-image-fallback');
     const randomFilmCategory = document.getElementById('random-film-category');
     const randomFilmCategorySelect = document.getElementById('random-film-category-select');
     const randomFilmTitle = document.getElementById('random-film-title');
@@ -23,6 +19,26 @@ document.addEventListener('DOMContentLoaded', function () {
         const shownFilmIds = [];
         let isRandomFilmLoading = false;
         let isResultOpen = false;
+
+        function showRandomFilmImageFallback(title) {
+            if (!randomFilmImageFallback) return;
+            const fallbackText = randomFilmImageFallback.querySelector('span');
+            if (fallbackText) fallbackText.textContent = title ? title.trim().charAt(0) : 'م';
+            randomFilmImageFallback.classList.remove('hidden');
+        }
+
+        function hideRandomFilmImageFallback() {
+            if (randomFilmImageFallback) {
+                randomFilmImageFallback.classList.add('hidden');
+            }
+        }
+
+        if (randomFilmImage) {
+            randomFilmImage.addEventListener('error', function () {
+                randomFilmImage.style.display = 'none';
+                showRandomFilmImageFallback(randomFilmTitle ? randomFilmTitle.textContent : '');
+            });
+        }
 
         function setRandomFilmLoading(isLoading) {
             isRandomFilmLoading = isLoading;
@@ -51,10 +67,13 @@ document.addEventListener('DOMContentLoaded', function () {
             const imageAlt = film.title ? 'بوستر ' + film.title : 'بوستر الفيلم';
             randomFilmImage.setAttribute('alt', imageAlt);
             if (imageSrc) {
+                hideRandomFilmImageFallback();
                 randomFilmImage.setAttribute('src', imageSrc);
                 randomFilmImage.style.display = '';
             } else {
                 randomFilmImage.removeAttribute('src');
+                randomFilmImage.style.display = 'none';
+                showRandomFilmImageFallback(film.title || '');
             }
             randomFilmError.classList.add('hidden');
             randomFilmContent.classList.remove('hidden');
@@ -142,40 +161,79 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const container = document.getElementById('infinite-scroll-container');
     const loadingIndicator = document.getElementById('loading-indicator');
+    const loadMoreButton = document.getElementById('load-more-posts');
+    const infiniteScrollSentinel = document.getElementById('infinite-scroll-sentinel');
 
     if (container && loadingIndicator) {
         let currentPage = 2;
         let isLoading = false;
         let hasMore = true;
         let loadError = false;
+        let endOfContentRendered = false;
+        let infiniteScrollObserver = null;
 
-        loadingIndicator.classList.remove('hidden');
+        function setLoadingState(isActive) {
+            loadingIndicator.classList.toggle('hidden', !isActive);
+            container.setAttribute('aria-busy', isActive ? 'true' : 'false');
+            if (loadMoreButton) {
+                loadMoreButton.disabled = isActive;
+                loadMoreButton.textContent = isActive ? 'جاري التحميل...' : 'تحميل المزيد';
+            }
+        }
+
+        function showLoadMoreButton() {
+            if (loadMoreButton && hasMore && !loadError) {
+                loadMoreButton.classList.remove('hidden');
+            }
+        }
+
+        function hideLoadMoreButton() {
+            if (loadMoreButton) {
+                loadMoreButton.classList.add('hidden');
+            }
+        }
 
         function renderLoadError() {
             if (loadError) {
                 return;
             }
             loadError = true;
-            loadingIndicator.classList.add('hidden');
+            setLoadingState(false);
+            hideLoadMoreButton();
             const errorEl = document.createElement('div');
-            errorEl.className = 'text-center py-8 text-slate-600 dark:text-slate-300';
+            errorEl.className = 'infinite-scroll-message';
             errorEl.setAttribute('role', 'alert');
             const msg = document.createElement('p');
-            msg.className = 'mb-2';
+            msg.className = 'infinite-scroll-message__text';
             msg.textContent = 'تعذر تحميل المزيد من المقالات.';
             const retryBtn = document.createElement('button');
             retryBtn.type = 'button';
-            retryBtn.className = 'text-primary underline hover:no-underline font-medium';
-            retryBtn.textContent = 'أعد تحميل الصفحة';
-            retryBtn.addEventListener('click', function () { window.location.reload(); });
+            retryBtn.className = 'infinite-scroll-message__button';
+            retryBtn.textContent = 'حاول مرة أخرى';
+            retryBtn.addEventListener('click', function () {
+                errorEl.remove();
+                loadError = false;
+                showLoadMoreButton();
+                loadMorePosts();
+            });
             errorEl.appendChild(msg);
             errorEl.appendChild(retryBtn);
             container.insertAdjacentElement('afterend', errorEl);
         }
 
         function renderEndOfContent() {
-            infiniteScrollObserver.disconnect();
-            loadingIndicator.classList.add('hidden');
+            if (endOfContentRendered) {
+                return;
+            }
+            endOfContentRendered = true;
+            if (infiniteScrollObserver) {
+                infiniteScrollObserver.disconnect();
+            }
+            setLoadingState(false);
+            hideLoadMoreButton();
+            if (infiniteScrollSentinel) {
+                infiniteScrollSentinel.hidden = true;
+            }
             const finale = document.createElement('div');
             finale.className = 'delight-finale';
             finale.innerHTML = '<span class="delight-finale__line" aria-hidden="true"></span>' +
@@ -198,38 +256,59 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
 
-        const infiniteScrollObserver = new IntersectionObserver(function (entries) {
-            entries.forEach(function (entry) {
-                if (!entry.isIntersecting || isLoading || !hasMore || loadError) {
-                    return;
+        function loadMorePosts() {
+            if (isLoading || !hasMore || loadError) {
+                return;
+            }
+            isLoading = true;
+            setLoadingState(true);
+            postLoadMore().then(function (response) {
+                if (response.success && response.data.html) {
+                    const temp = document.createElement('div');
+                    temp.innerHTML = response.data.html;
+                    while (temp.firstChild) {
+                        container.appendChild(temp.firstChild);
+                    }
+                    hasMore = !!response.data.has_more;
+                    currentPage += 1;
+                } else {
+                    hasMore = false;
                 }
-                isLoading = true;
-                postLoadMore().then(function (response) {
-                    if (response.success && response.data.html) {
-                        const temp = document.createElement('div');
-                        temp.innerHTML = response.data.html;
-                        while (temp.firstChild) {
-                            container.appendChild(temp.firstChild);
-                        }
-                        hasMore = !!response.data.has_more;
-                        currentPage += 1;
-                    } else {
-                        hasMore = false;
-                    }
-                    if (!hasMore) {
-                        renderEndOfContent();
-                    }
-                }).catch(function () {
-                    renderLoadError();
-                }).finally(function () {
-                    isLoading = false;
-                });
+                if (!hasMore) {
+                    renderEndOfContent();
+                }
+            }).catch(function () {
+                renderLoadError();
+            }).finally(function () {
+                isLoading = false;
+                setLoadingState(false);
+                if (infiniteScrollObserver && hasMore && !loadError) {
+                    hideLoadMoreButton();
+                }
             });
-        }, {
-            rootMargin: '0px 0px 300px 0px',
-            threshold: 0
-        });
+        }
 
-        infiniteScrollObserver.observe(loadingIndicator);
+        if (loadMoreButton) {
+            loadMoreButton.addEventListener('click', loadMorePosts);
+        }
+
+        if ('IntersectionObserver' in window && infiniteScrollSentinel) {
+            hideLoadMoreButton();
+            infiniteScrollObserver = new IntersectionObserver(function (entries) {
+                entries.forEach(function (entry) {
+                    if (!entry.isIntersecting || isLoading || !hasMore || loadError) {
+                        return;
+                    }
+                    loadMorePosts();
+                });
+            }, {
+                rootMargin: '0px 0px 300px 0px',
+                threshold: 0
+            });
+
+            infiniteScrollObserver.observe(infiniteScrollSentinel);
+        } else {
+            showLoadMoreButton();
+        }
     }
 });

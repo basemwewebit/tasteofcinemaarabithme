@@ -30,6 +30,14 @@ if ($layout === 'wide') {
     $image_size = 'sidebar-thumbnail';
 }
 $excerpt_length = $layout === 'wide' ? 30 : 22;
+$image_sizes = '(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw';
+if ($layout === 'wide') {
+    $image_sizes = '(min-width: 1024px) 58vw, 100vw';
+} elseif ($layout === 'poster') {
+    $image_sizes = '(min-width: 1024px) 22vw, (min-width: 768px) 32vw, 70vw';
+} elseif (in_array($layout, ['compact', 'related'], true)) {
+    $image_sizes = '5rem';
+}
 $article_classes = trim(sprintf(
     'article-card article-card--%s %s %s',
     esc_attr($layout),
@@ -37,19 +45,20 @@ $article_classes = trim(sprintf(
     (string) $args['class']
 ));
 
-$render_media = static function (string $class_name = 'article-card__image') use ($post_id, $image_size, $title): void {
+$render_media = static function (string $class_name = 'article-card__image') use ($post_id, $image_size, $image_sizes, $title): void {
     if (has_post_thumbnail($post_id)) {
         echo get_the_post_thumbnail($post_id, $image_size, [
             'class' => $class_name,
             'loading' => 'lazy',
             'decoding' => 'async',
+            'sizes' => $image_sizes,
             'alt' => mazaq_get_post_thumbnail_alt($post_id, $title),
         ]);
         return;
     }
     ?>
     <span class="<?php echo esc_attr($class_name . ' article-card__image--fallback'); ?>" aria-hidden="true">
-        <span><?php echo esc_html(function_exists('mb_substr') ? mb_substr($title, 0, 1) : substr($title, 0, 1)); ?></span>
+        <span><?php echo esc_html(function_exists('mb_substr') ? mb_substr($title, 0, 1, 'UTF-8') : substr($title, 0, 1)); ?></span>
     </span>
     <?php
 };
