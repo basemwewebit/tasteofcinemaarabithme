@@ -3976,29 +3976,468 @@ html:not(.dark) .delight-search__close:hover {
     }
 }
 
-/* --- Mobile Menu Delight --- */
-#mobile-menu {
-    will-change: transform;
-    transform: translateX(-100%);
-    transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.4s ease;
+/* --- Mobile Menu: Cinematic Drawer --- */
+
+/*
+ * Contain the off-canvas drawer so it does NOT extend the page width
+ * when translated outside the viewport. overflow-x: clip does not create
+ * a scroll container and therefore preserves position: sticky behavior,
+ * unlike overflow-x: hidden (see note above near the back-to-top button).
+ */
+html,
+body {
+    overflow-x: clip;
 }
 
-:dir(rtl) #mobile-menu {
+.delight-menu-overlay {
+    background:
+        radial-gradient(circle at 80% 30%, rgba(201, 162, 39, 0.10) 0%, transparent 50%),
+        rgba(2, 6, 23, 0.78);
+    backdrop-filter: blur(3px);
+    transition: opacity 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.delight-menu-overlay.hidden {
+    opacity: 0;
+    display: block;
+    pointer-events: none;
+    visibility: hidden;
+}
+
+.delight-menu-overlay:not(.hidden) {
+    opacity: 1;
+}
+
+.delight-menu {
+    position: fixed;
+    inset-block: 0;
+    inset-inline-start: 0;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    width: min(86vw, 22rem);
+    color: rgba(248, 250, 252, 0.92);
+    background: linear-gradient(180deg, #0B0B0E 0%, #14141A 100%);
+    box-shadow: 0 30px 60px -10px rgba(0, 0, 0, 0.65);
+    border-inline-end: 1px solid rgba(212, 175, 55, 0.08);
+    overflow: hidden;
+    will-change: transform;
+    transform: translateX(-100%);
+    transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html:not(.dark) .delight-menu {
+    background: linear-gradient(180deg, #F7F4ED 0%, #ECE7DC 100%);
+    color: rgba(15, 14, 12, 0.92);
+    box-shadow: 0 30px 60px -10px rgba(15, 23, 42, 0.18);
+    border-inline-end-color: rgba(15, 14, 12, 0.06);
+}
+
+:dir(rtl) .delight-menu {
     transform: translateX(100%);
 }
 
-#mobile-menu.mobile-menu--open {
+.delight-menu.mobile-menu--open {
     transform: translateX(0);
 }
 
-#menu-overlay {
-    transition: opacity 0.35s ease;
-}
-
-#menu-overlay.hidden {
+.delight-menu__stage {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    background:
+        radial-gradient(circle at 100% 0%, rgba(201, 162, 39, 0.14) 0%, transparent 42%),
+        radial-gradient(circle at 0% 110%, rgba(142, 42, 42, 0.08) 0%, transparent 45%);
     opacity: 0;
+    transition: opacity 700ms cubic-bezier(0.22, 1, 0.36, 1) 120ms;
 }
 
-#menu-overlay:not(.hidden) {
+html:not(.dark) .delight-menu__stage {
+    background:
+        radial-gradient(circle at 100% 0%, rgba(201, 162, 39, 0.16) 0%, transparent 45%),
+        radial-gradient(circle at 0% 110%, rgba(142, 42, 42, 0.05) 0%, transparent 45%);
+}
+
+.delight-menu.mobile-menu--open .delight-menu__stage {
     opacity: 1;
+}
+
+.delight-menu__header {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.6rem 1.4rem 1.2rem;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.14);
+}
+
+html:not(.dark) .delight-menu__header {
+    border-bottom-color: rgba(15, 14, 12, 0.08);
+}
+
+.delight-menu__brand {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 4px;
+    transition: opacity 200ms ease;
+}
+
+.delight-menu__brand:hover {
+    opacity: 0.85;
+}
+
+.delight-menu__brand:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 4px;
+}
+
+.delight-menu__logo {
+    height: 2.5rem;
+    width: auto;
+}
+
+.delight-menu__close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 9999px;
+    border: 1px solid rgba(212, 175, 55, 0.22);
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(248, 250, 252, 0.85);
+    cursor: pointer;
+    transition: color 220ms ease, border-color 220ms ease, background-color 220ms ease, transform 220ms ease;
+}
+
+.delight-menu__close:hover {
+    color: var(--color-primary);
+    border-color: rgba(212, 175, 55, 0.5);
+    background: rgba(212, 175, 55, 0.08);
+    transform: rotate(90deg);
+}
+
+.delight-menu__close:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+html:not(.dark) .delight-menu__close {
+    background: rgba(255, 255, 255, 0.6);
+    border-color: rgba(15, 14, 12, 0.1);
+    color: rgba(15, 14, 12, 0.78);
+}
+
+html:not(.dark) .delight-menu__close:hover {
+    background: rgba(212, 175, 55, 0.14);
+    border-color: rgba(212, 175, 55, 0.45);
+    color: var(--color-nocturnal-slate);
+}
+
+.delight-menu__body {
+    position: relative;
+    z-index: 2;
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 1.6rem 1.4rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2.25rem;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(212, 175, 55, 0.25) transparent;
+}
+
+.delight-menu__body::-webkit-scrollbar {
+    width: 4px;
+}
+
+.delight-menu__body::-webkit-scrollbar-thumb {
+    background-color: rgba(212, 175, 55, 0.22);
+    border-radius: 999px;
+}
+
+.delight-menu__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin: 0 0 1rem;
+    font-family: "IBM Plex Sans Arabic", "Noto Sans Arabic", system-ui, sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    letter-spacing: 0;
+}
+
+.delight-menu__eyebrow::before {
+    content: "";
+    display: inline-block;
+    width: 1.5rem;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.5;
+}
+
+.delight-menu__nav-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.delight-menu__nav-list li {
+    margin: 0;
+    padding: 0;
+}
+
+.delight-menu__nav-list a {
+    position: relative;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    min-width: 0;
+    padding: 0.95rem 0;
+    font-family: Tajawal, "Reem Kufi", "IBM Plex Sans Arabic", system-ui, sans-serif;
+    font-size: clamp(1.2rem, 4.5vw, 1.45rem);
+    font-weight: 800;
+    line-height: 1.25;
+    color: rgba(248, 250, 252, 0.94);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    transition: color 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.delight-menu__nav-list li:last-child a {
+    border-bottom: 0;
+}
+
+html:not(.dark) .delight-menu__nav-list a {
+    color: rgba(15, 14, 12, 0.92);
+    border-bottom-color: rgba(15, 14, 12, 0.07);
+}
+
+.delight-menu__nav-list a::after {
+    content: "←";
+    flex: 0 0 auto;
+    color: var(--color-primary);
+    font-size: 1.1rem;
+    line-height: 1;
+    opacity: 0;
+    transform: translateX(8px);
+    transition: opacity 220ms ease, transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.delight-menu__nav-list a:hover,
+.delight-menu__nav-list a:focus-visible,
+.delight-menu__nav-list a[aria-current="page"] {
+    color: var(--color-primary);
+}
+
+.delight-menu__nav-list a:hover::after,
+.delight-menu__nav-list a:focus-visible::after,
+.delight-menu__nav-list a[aria-current="page"]::after {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.delight-menu__nav-list a:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 4px;
+    border-radius: 2px;
+}
+
+.delight-menu__picks-section {
+    margin: 0;
+}
+
+.delight-menu__picks {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.delight-menu__pick {
+    margin: 0;
+    padding: 0;
+}
+
+.delight-menu__pick + .delight-menu__pick .delight-menu__pick-link {
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+html:not(.dark) .delight-menu__pick + .delight-menu__pick .delight-menu__pick-link {
+    border-top-color: rgba(15, 14, 12, 0.07);
+}
+
+.delight-menu__pick-link {
+    display: grid;
+    grid-template-columns: 1.6rem 3.25rem minmax(0, 1fr);
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.9rem 0.25rem 0.9rem 0;
+    color: inherit;
+    transition: padding 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.delight-menu__pick-link:hover,
+.delight-menu__pick-link:focus-visible {
+    padding-inline-start: 0.4rem;
+}
+
+.delight-menu__pick-link:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+    border-radius: 6px;
+}
+
+.delight-menu__pick-index {
+    font-family: "IBM Plex Mono", "JetBrains Mono", ui-monospace, monospace;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: rgba(212, 175, 55, 0.7);
+    font-variant-numeric: tabular-nums;
+    direction: ltr;
+    text-align: end;
+    unicode-bidi: isolate;
+}
+
+.delight-menu__pick-media {
+    position: relative;
+    display: block;
+    width: 3.25rem;
+    height: 3.25rem;
+    border-radius: 8px;
+    overflow: hidden;
+    background: rgba(212, 175, 55, 0.1);
+    box-shadow: inset 0 0 0 1px rgba(212, 175, 55, 0.12);
+}
+
+.delight-menu__pick-image,
+.delight-menu__pick-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1), filter 320ms ease;
+    filter: saturate(0.92);
+}
+
+.delight-menu__pick-link:hover .delight-menu__pick-image,
+.delight-menu__pick-link:focus-visible .delight-menu__pick-image,
+.delight-menu__pick-link:hover .delight-menu__pick-media img,
+.delight-menu__pick-link:focus-visible .delight-menu__pick-media img {
+    transform: scale(1.06);
+    filter: saturate(1.05);
+}
+
+.delight-menu__pick-fallback {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
+    color: rgba(212, 175, 55, 0.55);
+}
+
+.delight-menu__pick-fallback svg {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+.delight-menu__pick-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.18rem;
+    min-width: 0;
+}
+
+.delight-menu__pick-cat {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: "IBM Plex Sans Arabic", "Noto Sans Arabic", system-ui, sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: rgba(212, 175, 55, 0.88);
+    letter-spacing: 0;
+}
+
+html:not(.dark) .delight-menu__pick-cat {
+    color: rgba(184, 143, 30, 0.95);
+}
+
+.delight-menu__pick-title {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-family: "IBM Plex Sans Arabic", "Noto Sans Arabic", system-ui, sans-serif;
+    font-size: 0.94rem;
+    font-weight: 700;
+    line-height: 1.4;
+    color: rgba(248, 250, 252, 0.95);
+    transition: color 220ms ease;
+}
+
+html:not(.dark) .delight-menu__pick-title {
+    color: rgba(15, 14, 12, 0.94);
+}
+
+.delight-menu__pick-link:hover .delight-menu__pick-title,
+.delight-menu__pick-link:focus-visible .delight-menu__pick-title {
+    color: var(--color-primary);
+}
+
+.delight-menu__footer {
+    position: relative;
+    z-index: 2;
+    padding: 1rem 1.4rem 1.4rem;
+    border-top: 1px solid rgba(212, 175, 55, 0.12);
+}
+
+html:not(.dark) .delight-menu__footer {
+    border-top-color: rgba(15, 14, 12, 0.07);
+}
+
+/* Staggered reveal of inner sections when the panel opens */
+.delight-menu .delight-menu__header,
+.delight-menu .delight-menu__body > *,
+.delight-menu .delight-menu__footer {
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 520ms cubic-bezier(0.22, 1, 0.36, 1), transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.delight-menu.mobile-menu--open .delight-menu__header { transition-delay: 90ms; opacity: 1; transform: translateY(0); }
+.delight-menu.mobile-menu--open .delight-menu__body > *:nth-child(1) { transition-delay: 160ms; opacity: 1; transform: translateY(0); }
+.delight-menu.mobile-menu--open .delight-menu__body > *:nth-child(2) { transition-delay: 230ms; opacity: 1; transform: translateY(0); }
+.delight-menu.mobile-menu--open .delight-menu__body > *:nth-child(3) { transition-delay: 300ms; opacity: 1; transform: translateY(0); }
+.delight-menu.mobile-menu--open .delight-menu__footer { transition-delay: 360ms; opacity: 1; transform: translateY(0); }
+
+@media (prefers-reduced-motion: reduce) {
+    .delight-menu,
+    .delight-menu__stage,
+    .delight-menu .delight-menu__header,
+    .delight-menu .delight-menu__body > *,
+    .delight-menu .delight-menu__footer,
+    .delight-menu__close,
+    .delight-menu__nav-list a,
+    .delight-menu__nav-list a::after,
+    .delight-menu__pick-link,
+    .delight-menu__pick-image,
+    .delight-menu__pick-media img {
+        transition: none !important;
+    }
+
+    .delight-menu .delight-menu__header,
+    .delight-menu .delight-menu__body > *,
+    .delight-menu .delight-menu__footer {
+        opacity: 1 !important;
+        transform: none !important;
+    }
 }
