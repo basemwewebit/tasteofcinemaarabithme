@@ -1,6 +1,35 @@
 <?php
 
-$hero_post_ids = array_values(array_filter(array_map('intval', mazaq_get_hero_post_ids())));
+/**
+ * Front-page feature hero: one marquee feature plus a three-up "bill" of editor picks.
+ *
+ * The hero IDs are curated in the admin, so this template hardens against a live
+ * site: IDs that now point at trashed or deleted posts, duplicates, an empty
+ * curation, and posts that have lost their title or thumbnail.
+ */
+
+$hero_is_published = static function (int $post_id): bool {
+    return $post_id > 0 && get_post_status($post_id) === 'publish';
+};
+
+$hero_post_ids = array_values(array_unique(array_filter(
+    array_map('intval', (array) mazaq_get_hero_post_ids()),
+    $hero_is_published
+)));
+
+// Backfill from the most recent posts so the homepage always opens on a valid feature plus a full bill.
+if (count($hero_post_ids) < 4) {
+    $recent_fill = get_posts([
+        'post_type' => 'post',
+        'post_status' => 'publish',
+        'posts_per_page' => 4 - count($hero_post_ids),
+        'fields' => 'ids',
+        'post__not_in' => $hero_post_ids ?: [0],
+        'ignore_sticky_posts' => true,
+    ]);
+
+    $hero_post_ids = array_values(array_unique(array_merge($hero_post_ids, array_map('intval', $recent_fill))));
+}
 
 if (empty($hero_post_ids)) {
     return;
@@ -9,21 +38,15 @@ if (empty($hero_post_ids)) {
 $feature_post_id = $hero_post_ids[0];
 $editor_pick_ids = array_slice($hero_post_ids, 1, 3);
 
-if (count($editor_pick_ids) < 3) {
-    $fallback_picks = get_posts([
-        'post_type' => 'post',
-        'post_status' => 'publish',
-        'posts_per_page' => 3 - count($editor_pick_ids),
-        'fields' => 'ids',
-        'post__not_in' => array_values(array_unique(array_merge([$feature_post_id], $editor_pick_ids))),
-        'ignore_sticky_posts' => true,
-    ]);
-
-    $editor_pick_ids = array_values(array_unique(array_merge($editor_pick_ids, array_map('intval', $fallback_picks))));
-}
-
 $hero_logo_url = get_template_directory_uri() . '/assets/images/logo.webp';
-$feature_title = get_the_title($feature_post_id);
+
+$get_title = static function (int $post_id): string {
+    $title = get_the_title($post_id);
+
+    return $title !== '' ? $title : __('مقال بلا عنوان', 'mazaq');
+};
+
+$feature_title = $get_title($feature_post_id);
 $feature_excerpt = wp_trim_words(wp_strip_all_tags((string) get_the_excerpt($feature_post_id)), 28, '...');
 
 $get_primary_category = static function (int $post_id): string {
@@ -34,15 +57,17 @@ $get_primary_category = static function (int $post_id): string {
 
 $render_media = static function (int $post_id, string $size, bool $is_priority, string $fallback_logo_url, string $class_name): void {
     if (has_post_thumbnail($post_id)) {
+        // The full-width marquee spans the page; the bill frames sit three-up (~28rem) and become an ~82vw filmstrip on phones.
         $sizes = $size === 'hero-poster'
-            ? '(min-width: 1280px) 64vw, (min-width: 768px) 72vw, 100vw'
-            : (($size === 'card-wide-thumbnail') ? '(min-width: 1024px) 22rem, (min-width: 768px) 30vw, 100vw' : '(min-width: 1024px) 8.5rem, (min-width: 768px) 30vw, 7rem');
+            ? '(min-width: 1440px) 88rem, (min-width: 1024px) 92vw, 100vw'
+            : '(min-width: 1024px) 28rem, (min-width: 768px) 30vw, 82vw';
+        $title = get_the_title($post_id);
         $attributes = [
             'class' => $class_name,
             'loading' => $is_priority ? 'eager' : 'lazy',
             'decoding' => 'async',
             'sizes' => $sizes,
-            'alt' => mazaq_get_post_thumbnail_alt($post_id, get_the_title($post_id)),
+            'alt' => mazaq_get_post_thumbnail_alt($post_id, $title !== '' ? $title : __('مقال', 'mazaq')),
         ];
 
         if ($is_priority) {
@@ -102,33 +127,35 @@ $render_media = static function (int $post_id, string $size, bool $is_priority, 
         </article>
 
         <?php if (!empty($editor_pick_ids)) : ?>
-            <aside class="feature-hero__queue" aria-labelledby="feature-hero-queue-title">
-                <div class="feature-hero__queue-head">
-                    <p class="feature-hero__queue-kicker"><?php esc_html_e('اختيارات التحرير', 'mazaq'); ?></p>
-                    <h2 id="feature-hero-queue-title" class="feature-hero__queue-title"><?php esc_html_e('ما يستحق القراءة بعده', 'mazaq'); ?></h2>
+            <aside class="feature-hero__bill" aria-labelledby="feature-hero-bill-title">
+                <div class="feature-hero__bill-head">
+                    <h2 id="feature-hero-bill-title" class="feature-hero__bill-title"><?php esc_html_e('ما يستحق القراءة بعده', 'mazaq'); ?></h2>
+                    <p class="feature-hero__bill-kicker"><?php esc_html_e('اختيارات التحرير', 'mazaq'); ?></p>
                 </div>
-                <div class="feature-hero__queue-list">
+                <ol class="feature-hero__bill-list" role="list" style="--bill-count: <?php echo (int) min(3, max(1, count($editor_pick_ids))); ?>;">
                     <?php foreach ($editor_pick_ids as $pick_index => $pick_id) : ?>
-                        <article class="hero-queue-card <?php echo $pick_index === 0 ? 'hero-queue-card--lead' : ''; ?>">
-                            <a href="<?php echo esc_url(get_permalink($pick_id)); ?>" class="hero-queue-card__link group" aria-label="<?php echo esc_attr(sprintf(__('اقرأ: %s', 'mazaq'), get_the_title($pick_id))); ?>">
-                                <div class="hero-queue-card__media">
-                                    <?php $render_media($pick_id, $pick_index === 0 ? 'card-wide-thumbnail' : 'card-thumbnail', false, $hero_logo_url, 'hero-queue-card__image'); ?>
-                                    <span class="hero-queue-card__shade" aria-hidden="true"></span>
-                                    <span class="hero-queue-card__rank num"><?php echo esc_html(sprintf('%02d', $pick_index + 1)); ?></span>
+                        <?php $pick_title = $get_title($pick_id); ?>
+                        <li class="bill-card" style="--i: <?php echo (int) $pick_index; ?>;">
+                            <a href="<?php echo esc_url(get_permalink($pick_id)); ?>" class="bill-card__link group" aria-label="<?php echo esc_attr(sprintf(__('اقرأ: %s', 'mazaq'), $pick_title)); ?>">
+                                <div class="bill-card__media">
+                                    <?php // The three picks read as a programme in order; landscape stills (card-thumbnail, 800x500) suit the three-up row.
+                                          $render_media($pick_id, 'card-thumbnail', false, $hero_logo_url, 'bill-card__image'); ?>
+                                    <span class="bill-card__shade" aria-hidden="true"></span>
+                                    <span class="bill-card__rank num" aria-hidden="true"><?php echo esc_html(sprintf('%02d', $pick_index + 1)); ?></span>
                                 </div>
-                                <div class="hero-queue-card__body">
-                                    <span class="hero-queue-card__category"><?php echo esc_html($get_primary_category($pick_id)); ?></span>
-                                    <h3 class="hero-queue-card__title"><?php echo esc_html(get_the_title($pick_id)); ?></h3>
-                                    <span class="hero-queue-card__meta">
+                                <div class="bill-card__body">
+                                    <span class="bill-card__category"><?php echo esc_html($get_primary_category($pick_id)); ?></span>
+                                    <h3 class="bill-card__title"><?php echo esc_html($pick_title); ?></h3>
+                                    <span class="bill-card__meta">
                                         <time datetime="<?php echo esc_attr(get_the_date(DATE_W3C, $pick_id)); ?>"><?php echo esc_html(get_the_date('j F Y', $pick_id)); ?></time>
                                         <span aria-hidden="true">•</span>
                                         <span class="num"><?php echo esc_html(mazaq_reading_time($pick_id)); ?></span>
                                     </span>
                                 </div>
                             </a>
-                        </article>
+                        </li>
                     <?php endforeach; ?>
-                </div>
+                </ol>
             </aside>
         <?php endif; ?>
     </div>

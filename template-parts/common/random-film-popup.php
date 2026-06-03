@@ -11,9 +11,9 @@ if (isset($args['categories']) && is_array($args['categories'])) {
 <section class="random-film-panel mb-10">
     <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
         <div>
-            <p class="random-film-panel__kicker"><?php esc_html_e('قاعدة معرفة الأفلام', 'mazaq'); ?></p>
+            <p class="random-film-panel__kicker"><?php esc_html_e('توصية المحرّر', 'mazaq'); ?></p>
             <h2 class="random-film-panel__title"><?php esc_html_e('محتار؟ دعنا نقترح عليك فيلماً', 'mazaq'); ?></h2>
-            <p class="random-film-panel__summary"><?php esc_html_e('اضغط على الزر لتحصل على ترشيح عشوائي من مقالات الأفلام الموجودة لدينا.', 'mazaq'); ?></p>
+            <p class="random-film-panel__summary"><?php esc_html_e('اختر تصنيفاً أو دع الاختيار لنا، ونقترح عليك مقالاً من أرشيفنا تبدأ به ليلتك.', 'mazaq'); ?></p>
         </div>
 
         <div class="flex flex-col sm:flex-row items-stretch sm:items-end gap-3 w-full md:w-auto">
@@ -40,12 +40,11 @@ if (isset($args['categories']) && is_array($args['categories'])) {
     <div class="random-film-result__inner">
         <div class="random-film-card-glow random-film-card mb-6">
             <div id="random-film-loading" class="hidden items-center justify-center py-16" role="status">
-                <div class="text-center">
-                    <svg class="animate-spin h-8 w-8 text-primary mx-auto" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                    </svg>
-                    <p class="mt-3 text-sm font-medium text-slate-600 dark:text-slate-300"><?php esc_html_e('جاري تجهيز اقتراح الفيلم...', 'mazaq'); ?></p>
+                <div class="random-film-loader">
+                    <span class="random-film-loader__reel" aria-hidden="true">
+                        <span></span><span></span><span></span>
+                    </span>
+                    <p class="random-film-loader__text"><?php esc_html_e('جاري اختيار فيلم لك...', 'mazaq'); ?></p>
                 </div>
             </div>
 
@@ -60,7 +59,7 @@ if (isset($args['categories']) && is_array($args['categories'])) {
                     <div id="random-film-image-fallback" class="random-film-card__image-fallback hidden" aria-hidden="true">
                         <span>م</span>
                     </div>
-                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent"></div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
                     <span id="random-film-category" class="random-film-card__category"></span>
                 </div>
 
