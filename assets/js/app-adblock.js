@@ -100,10 +100,17 @@
     function resolveAdBlockState() {
         var cached = getSessionJson(adBlockStateSessionKey);
         if (cached && typeof cached.blocked === 'boolean') return Promise.resolve(cached);
-        return Promise.all([detectByBaitElement(), detectByRuntimeSignals()]).then(function (results) {
-            var state = { blocked: Boolean(results[0] || results[1]), baitBlocked: Boolean(results[0]), runtimeBlocked: Boolean(results[1]), timestamp: Date.now() };
-            setSessionJson(adBlockStateSessionKey, state);
-            return state;
+        return detectByBaitElement().then(function (baitBlocked) {
+            if (baitBlocked) {
+                var state = { blocked: true, baitBlocked: true, runtimeBlocked: false, timestamp: Date.now() };
+                setSessionJson(adBlockStateSessionKey, state);
+                return state;
+            }
+            return detectByRuntimeSignals().then(function (runtimeBlocked) {
+                var state = { blocked: runtimeBlocked, baitBlocked: false, runtimeBlocked: runtimeBlocked, timestamp: Date.now() };
+                setSessionJson(adBlockStateSessionKey, state);
+                return state;
+            });
         });
     }
 

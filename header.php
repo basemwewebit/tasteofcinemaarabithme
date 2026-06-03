@@ -28,10 +28,22 @@ if (!$og_image) {
     <meta property="og:locale" content="ar_AR">
     <link rel="preload" href="<?php echo esc_url(get_template_directory_uri()); ?>/assets/fonts/ibm-plex-sans-arabic-arabic-400-normal.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="<?php echo esc_url(get_template_directory_uri()); ?>/assets/fonts/tajawal-arabic-800-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <?php if (is_singular('post')) : ?>
+        <link rel="preload" href="<?php echo esc_url(get_template_directory_uri()); ?>/assets/fonts/amiri-arabic-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <?php endif; ?>
     <script>
         (function(){
             var isDark = localStorage.getItem('color-theme') === 'dark' || (!localStorage.getItem('color-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
             if(isDark){ document.documentElement.classList.add('dark'); }
+            try {
+                var storedFont = localStorage.getItem('mazaq-article-font-size');
+                if (storedFont) {
+                    var val = parseFloat(storedFont);
+                    if (val >= 0.875 && val <= 1.625) {
+                        document.documentElement.style.setProperty('--article-font-size-custom', val + 'rem');
+                    }
+                }
+            } catch (e) {}
         })();
     </script>
     <script>
@@ -55,7 +67,7 @@ if (!$og_image) {
     <meta name="google-adsense-account" content="ca-pub-8042646813554704">
     <?php wp_head(); ?>
 </head>
-<body <?php body_class('bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 transition-colors duration-300 antialiased font-sans'); ?>>
+<body <?php body_class('bg-primary-cream dark:bg-nocturnal text-slate-900 dark:text-white transition-colors duration-300 antialiased font-sans'); ?>>
 <?php wp_body_open(); ?>
 <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:start-4 focus:z-[200] focus:bg-primary focus:text-nocturnal-slate focus:px-4 focus:py-2 focus:rounded-lg focus:text-sm focus:font-bold focus:shadow-lg"><?php esc_html_e('تخطى إلى المحتوى', 'mazaq'); ?></a>
 <!-- T003: Brand-Aligned Site Loader -->

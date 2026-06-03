@@ -37,10 +37,11 @@ document.addEventListener('DOMContentLoaded', function () {
     currentFontSize = Math.max(fontMin, Math.min(fontMax, currentFontSize));
 
     function applyFontSize() {
+        document.documentElement.style.setProperty('--article-font-size-custom', currentFontSize + 'rem');
         var el = document.querySelector('.article-content');
-        if (!el) { return; }
-        el.classList.add('font-resized');
-        el.style.setProperty('--article-font-size', currentFontSize + 'rem');
+        if (el) {
+            el.classList.add('font-resized');
+        }
         try {
             localStorage.setItem(fontStorageKey, String(currentFontSize));
         } catch (e) {}

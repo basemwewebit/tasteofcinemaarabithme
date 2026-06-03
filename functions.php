@@ -117,6 +117,21 @@ function toc_get_related_posts($post_id, $count = 4) {
 }
 
 /**
+ * Invalidate related posts transient cache when a post is saved or updated.
+ */
+add_action('save_post', function($post_id) {
+    if (wp_is_post_revision($post_id)) {
+        return;
+    }
+    $cats = get_the_category($post_id);
+    if (!empty($cats)) {
+        $cat_ids = array_map(function($c) { return $c->term_id; }, $cats);
+        $cache_key = 'toc_related_posts_' . $post_id . '_' . implode('_', $cat_ids);
+        delete_transient($cache_key);
+    }
+});
+
+/**
  * Restrict application passwords to users who can edit posts (editors, admins, etc.)
  */
 add_filter('wp_is_application_passwords_available', function ($available, $user = null) {
