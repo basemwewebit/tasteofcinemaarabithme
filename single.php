@@ -1,28 +1,30 @@
 <?php get_header(); ?>
 <?php get_template_part('template-parts/common/reading-progress'); ?>
+<div class="reading-ambience" data-reading-ambience aria-hidden="true"></div>
 
 <main id="main-content" class="single-main max-w-6xl mx-auto px-4 pt-12 pb-8 section-gap">
     <?php if (have_posts()) : while (have_posts()) : the_post(); ?>
-        <article class="single-article">
+        <article class="single-article single-article--cinema">
+            <?php get_template_part('template-parts/common/reading-rail'); ?>
             <?php toc_breadcrumbs(); ?>
 
-            <header class="single-article__header">
+            <header class="single-article__header" data-credits>
                 <?php $cats = get_the_category(); ?>
                 <?php if (!empty($cats)) : ?>
-                    <div class="flex justify-start">
+                    <div class="flex justify-start" data-credits-line>
                         <a href="<?php echo esc_url(get_category_link($cats[0]->term_id)); ?>" class="single-article__category"><?php echo esc_html($cats[0]->name); ?></a>
                     </div>
                 <?php endif; ?>
 
-                <h1 class="single-article__title text-display font-display leading-display text-slate-900 dark:text-white mb-6"><?php the_title(); ?></h1>
+                <h1 class="single-article__title text-display font-display leading-display text-slate-900 dark:text-white mb-6" data-credits-line><?php the_title(); ?></h1>
 
                 <?php $article_deck = has_excerpt() ? wp_trim_words(wp_strip_all_tags((string) get_the_excerpt()), 32, '...') : ''; ?>
                 <?php if ($article_deck !== '') : ?>
-                    <p class="single-article__deck text-lead text-slate-600 dark:text-slate-400 font-medium leading-relaxed max-w-2xl mt-4 mb-6"><?php echo esc_html($article_deck); ?></p>
+                    <p class="single-article__deck text-lead text-slate-600 dark:text-slate-400 font-medium leading-relaxed max-w-2xl mt-4 mb-6" data-credits-line><?php echo esc_html($article_deck); ?></p>
                 <?php endif; ?>
 
                 <?php $show_modified_date = (int) get_the_modified_time('U') > ((int) get_the_time('U') + DAY_IN_SECONDS); ?>
-                <ul class="single-article__meta" aria-label="<?php esc_attr_e('معلومات المقال', 'mazaq'); ?>">
+                <ul class="single-article__meta" data-credits-line aria-label="<?php esc_attr_e('معلومات المقال', 'mazaq'); ?>">
                     <li><?php echo esc_html(get_the_author()); ?></li>
                     <li><time class="num" datetime="<?php echo esc_attr(get_the_date(DATE_W3C)); ?>"><?php echo esc_html(get_the_date('j F Y')); ?></time></li>
                     <li class="num"><?php echo esc_html(toc_estimated_reading_time()); ?></li>
@@ -35,8 +37,13 @@
             <?php get_template_part('template-parts/common/font-controls'); ?>
 
             <?php if (has_post_thumbnail()) : ?>
-                <figure class="single-article__figure my-8 md:my-12">
-                    <?php the_post_thumbnail('hero-image', ['class' => 'single-article__image w-full aspect-video object-cover rounded-lg shadow-xl', 'loading' => 'eager', 'fetchpriority' => 'high', 'decoding' => 'async', 'sizes' => '(min-width: 1180px) 72rem, 100vw', 'alt' => mazaq_get_post_thumbnail_alt(get_the_ID(), get_the_title())]); ?>
+                <figure class="single-article__figure single-article__figure--cinema my-8 md:my-12">
+                    <div class="single-article__frame" data-hero-frame>
+                        <?php the_post_thumbnail('hero-image', ['class' => 'single-article__image w-full h-full object-cover', 'loading' => 'eager', 'fetchpriority' => 'high', 'decoding' => 'async', 'sizes' => '(min-width: 1180px) 72rem, 100vw', 'alt' => mazaq_get_post_thumbnail_alt(get_the_ID(), get_the_title())]); ?>
+                        <span class="single-article__shade" aria-hidden="true"></span>
+                        <span class="single-article__sweep" aria-hidden="true"></span>
+                        <span class="single-article__perf" aria-hidden="true"></span>
+                    </div>
                     <?php $caption = wp_get_attachment_caption((int) get_post_thumbnail_id()); if ($caption) : ?>
                         <figcaption class="text-center italic text-sm text-slate-500 dark:text-slate-400 mt-3"><?php echo wp_kses_post($caption); ?></figcaption>
                     <?php endif; ?>
