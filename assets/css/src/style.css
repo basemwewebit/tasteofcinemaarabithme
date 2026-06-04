@@ -1878,12 +1878,52 @@ article.group:hover::before {
 }
 
 .feature-hero__beam {
+    --beam-x: 64%;
+    --beam-y: 42%;
     background:
-        radial-gradient(ellipse at 64% 42%, oklch(84% 0.08 89 / 0.22), transparent 34%),
+        radial-gradient(ellipse at var(--beam-x) var(--beam-y), oklch(84% 0.08 89 / 0.22), transparent 34%),
         linear-gradient(115deg, transparent 0 44%, oklch(91% 0.025 84 / 0.08) 47%, transparent 58%);
     mix-blend-mode: screen;
     opacity: 0.72;
     pointer-events: none;
+    animation: projector-shutter 6s infinite linear;
+    transform-origin: var(--beam-x) var(--beam-y);
+    will-change: transform, opacity, filter;
+}
+
+@keyframes projector-shutter {
+    0%, 100% {
+        opacity: 0.72;
+        filter: brightness(1);
+    }
+    12% {
+        opacity: 0.69;
+        filter: brightness(0.96);
+    }
+    24% {
+        opacity: 0.73;
+        filter: brightness(1.02);
+    }
+    36% {
+        opacity: 0.71;
+        filter: brightness(0.98);
+    }
+    48% {
+        opacity: 0.74;
+        filter: brightness(1.04);
+    }
+    60% {
+        opacity: 0.68;
+        filter: brightness(0.94);
+    }
+    72% {
+        opacity: 0.73;
+        filter: brightness(1.01);
+    }
+    84% {
+        opacity: 0.70;
+        filter: brightness(0.97);
+    }
 }
 
 .feature-hero__grain,
@@ -1911,9 +1951,80 @@ body::before {
     width: clamp(0.55rem, 0.9vw, 0.8rem);
     border-radius: var(--radius-pill);
     background:
-        radial-gradient(circle, oklch(91% 0.025 84 / 0.72) 0 31%, transparent 34%) center / 100% 1.35rem repeat-y;
+        radial-gradient(circle, oklch(91% 0.025 84 / 0.72) 0 31%, transparent 34%) center 0rem / 100% 1.35rem repeat-y;
     opacity: 0.28;
     pointer-events: none;
+    will-change: background-position-y;
+}
+
+/* --- Overdrive: Scroll-Driven Parallax --- */
+@supports (animation-timeline: scroll()) {
+    .feature-hero-section {
+        view-timeline: --hero-scroll-timeline block;
+    }
+    
+    .feature-hero__media {
+        animation: hero-media-scroll linear both;
+        animation-timeline: --hero-scroll-timeline;
+        animation-range: exit;
+        will-change: transform;
+    }
+    
+    .feature-hero__perforation {
+        animation: hero-perf-scroll linear both;
+        animation-timeline: --hero-scroll-timeline;
+        animation-range: exit;
+    }
+    
+    .feature-hero__beam {
+        animation: projector-shutter 6s infinite linear, hero-beam-scroll linear both;
+        animation-timeline: auto, --hero-scroll-timeline;
+        animation-range: auto, exit;
+    }
+}
+
+@keyframes hero-media-scroll {
+    from {
+        transform: translateY(0);
+    }
+    to {
+        transform: translateY(12%);
+    }
+}
+
+@keyframes hero-perf-scroll {
+    from {
+        background-position-y: 0rem;
+    }
+    to {
+        background-position-y: -13.5rem; /* 10x the pattern repeat height (1.35rem) for perfect continuity */
+    }
+}
+
+@keyframes hero-beam-scroll {
+    from {
+        transform: translateY(0) scale(1);
+    }
+    to {
+        transform: translateY(6%) scale(0.92);
+        opacity: 0.35;
+    }
+}
+
+/* --- Overdrive: Accessibility / Reduced Motion --- */
+@media (prefers-reduced-motion: reduce) {
+    .feature-hero__beam {
+        animation: none !important;
+        transform: none !important;
+    }
+    .feature-hero__media {
+        animation: none !important;
+        transform: none !important;
+    }
+    .feature-hero__perforation {
+        animation: none !important;
+        background-position-y: 0rem !important;
+    }
 }
 
 .feature-hero__content {
@@ -3380,14 +3491,10 @@ body::before {
 .delight-404__card {
     position: relative;
     padding: clamp(2.5rem, 6vw, 4.5rem) clamp(1.5rem, 4vw, 3rem);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 1.5rem;
-    background:
-        linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02)),
-        rgba(15, 23, 42, 0.68);
-    box-shadow:
-        0 40px 100px rgba(2, 6, 23, 0.55),
-        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(230, 203, 106, 0.15);
+    border-radius: 12px;
+    background: rgba(11, 11, 14, 0.85);
+    box-shadow: 0 8px 32px rgba(2, 6, 23, 0.8);
 }
 
 .delight-404__popular {
@@ -3419,11 +3526,14 @@ body::before {
 }
 
 .delight-404__code {
+    font-family: var(--font-numeric);
     font-size: clamp(4rem, 10vw, 7.5rem);
     font-weight: 700;
     line-height: 1;
-    color: rgba(248, 250, 252, 0.92);
-    text-shadow: 0 18px 50px rgba(2, 6, 23, 0.45);
+    color: rgba(248, 250, 252, 0.96);
+    text-shadow: 
+        0 4px 12px rgba(230, 203, 106, 0.25),
+        0 18px 50px rgba(2, 6, 23, 0.6);
     margin: 0 0 1.5rem;
 }
 

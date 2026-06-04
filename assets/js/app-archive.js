@@ -311,4 +311,69 @@ document.addEventListener('DOMContentLoaded', function () {
             showLoadMoreButton();
         }
     }
+
+    // Cinematic Hero Spotlight Tracking (Overdrive)
+    const heroLink = document.querySelector('.feature-hero__link');
+    const heroBeam = document.querySelector('.feature-hero__beam');
+
+    if (heroLink && heroBeam && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        let rect = heroLink.getBoundingClientRect();
+        
+        let targetX = 64; // Default position %
+        let targetY = 42;
+        let currentX = 64;
+        let currentY = 42;
+        let isHovered = false;
+        let rafId = null;
+
+        function updateBounds() {
+            rect = heroLink.getBoundingClientRect();
+        }
+        window.addEventListener('resize', updateBounds, { passive: true });
+        window.addEventListener('scroll', updateBounds, { passive: true });
+
+        heroLink.addEventListener('mouseenter', function() {
+            isHovered = true;
+            updateBounds();
+            if (!rafId) {
+                rafId = requestAnimationFrame(animateBeam);
+            }
+        });
+
+        heroLink.addEventListener('mousemove', function(e) {
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            targetX = (x / rect.width) * 100;
+            targetY = (y / rect.height) * 100;
+        });
+
+        heroLink.addEventListener('mouseleave', function() {
+            isHovered = false;
+            targetX = 64;
+            targetY = 42;
+        });
+
+        function animateBeam() {
+            const ease = 0.08;
+            currentX += (targetX - currentX) * ease;
+            currentY += (targetY - currentY) * ease;
+
+            heroBeam.style.setProperty('--beam-x', `${currentX.toFixed(2)}%`);
+            heroBeam.style.setProperty('--beam-y', `${currentY.toFixed(2)}%`);
+
+            const diffX = Math.abs(targetX - currentX);
+            const diffY = Math.abs(targetY - currentY);
+
+            if (!isHovered && diffX < 0.1 && diffY < 0.1) {
+                currentX = 64;
+                currentY = 42;
+                heroBeam.style.setProperty('--beam-x', '64%');
+                heroBeam.style.setProperty('--beam-y', '42%');
+                rafId = null;
+            } else {
+                rafId = requestAnimationFrame(animateBeam);
+            }
+        }
+    }
 });
