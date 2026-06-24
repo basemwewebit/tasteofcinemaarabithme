@@ -10,6 +10,7 @@ $mazaq_includes = [
     'inc/theme-setup.php',
     'inc/enqueue.php',
     'inc/scf-fields.php',
+    'inc/schema-film.php',
     'inc/ads.php',
     'inc/analytics.php',
     'inc/post-views.php',
