@@ -3008,6 +3008,53 @@ body::before {
     padding-top: 0.75rem;
 }
 
+/* Visible ⭐ rating — proportional gold fill over a muted star track.
+   The fill is anchored to the inline-start edge so it grows in the reading
+   direction automatically (right-to-left here), no LTR/RTL forks needed. */
+.film-rating {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.film-rating__stars {
+    position: relative;
+    display: inline-block;
+    color: rgba(148, 163, 184, 0.4);
+    font-size: 1.05rem;
+    line-height: 1;
+    letter-spacing: 0.1em;
+    white-space: nowrap;
+}
+
+.film-rating__fill {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    overflow: hidden;
+    color: var(--color-primary);
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+.film-rating__value {
+    color: var(--color-primary-hover);
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.dark .film-rating__stars {
+    color: rgba(234, 230, 220, 0.16);
+}
+
+.dark .film-rating__fill {
+    color: var(--color-gold-tint);
+}
+
+.dark .film-rating__value {
+    color: var(--color-gold-tint);
+}
+
 @media (min-width: 768px) {
     .film-infobox {
         display: grid;

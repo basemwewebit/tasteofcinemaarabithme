@@ -57,6 +57,45 @@ function mazaq_update_reading_time_meta_on_save(int $post_id, WP_Post $post): vo
 }
 add_action('save_post', 'mazaq_update_reading_time_meta_on_save', 10, 2);
 
+/**
+ * Presentation helper: turn a free-text film rating into star-display data.
+ *
+ * Single source of truth — this delegates to the exact same parser the schema
+ * layer uses (mazaq_schema_parse_rating in inc/schema-film.php), so the visible
+ * ⭐ rating in the infobox and the Schema.org reviewRating can never diverge.
+ * Returns null when the rating can't be parsed; callers should then fall back
+ * to printing the raw text.
+ *
+ * @return array{value:int|float,best:int|float,percent:float,label:string}|null
+ */
+function mazaq_film_rating_stars(string $raw): ?array
+{
+    if (!function_exists('mazaq_schema_parse_rating')) {
+        return null;
+    }
+
+    $rating = mazaq_schema_parse_rating($raw);
+    if ($rating === null) {
+        return null;
+    }
+
+    $best  = (float) $rating['bestRating'];
+    $value = (float) $rating['ratingValue'];
+    $percent = $best > 0 ? max(0.0, min(100.0, ($value / $best) * 100)) : 0.0;
+
+    return [
+        'value'   => $rating['ratingValue'],
+        'best'    => $rating['bestRating'],
+        'percent' => round($percent, 2),
+        'label'   => sprintf(
+            /* translators: 1: rating value, 2: best possible rating */
+            __('التقييم: %1$s من %2$s', 'mazaq'),
+            $rating['ratingValue'],
+            $rating['bestRating']
+        ),
+    ];
+}
+
 function mazaq_relative_date(string $date): string
 {
     $timestamp = strtotime($date);

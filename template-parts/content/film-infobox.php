@@ -25,8 +25,23 @@ if (empty($fields)) {
         <?php if (!empty($fields['film_director'])) : ?>
             <div><dt><?php esc_html_e('إخراج', 'mazaq'); ?></dt><dd><?php echo esc_html($fields['film_director']); ?></dd></div>
         <?php endif; ?>
-        <?php if (!empty($fields['film_rating'])) : ?>
-            <div><dt><?php esc_html_e('التقييم', 'mazaq'); ?></dt><dd class="num"><?php echo esc_html($fields['film_rating']); ?></dd></div>
+        <?php if (!empty($fields['film_rating'])) :
+            $rating_stars = function_exists('mazaq_film_rating_stars')
+                ? mazaq_film_rating_stars((string) $fields['film_rating'])
+                : null; ?>
+            <div>
+                <dt><?php esc_html_e('التقييم', 'mazaq'); ?></dt>
+                <?php if ($rating_stars !== null) : ?>
+                    <dd>
+                        <span class="film-rating" role="img" aria-label="<?php echo esc_attr($rating_stars['label']); ?>">
+                            <span class="film-rating__stars" aria-hidden="true">★★★★★<span class="film-rating__fill" style="width: <?php echo esc_attr((string) $rating_stars['percent']); ?>%;">★★★★★</span></span>
+                            <span class="film-rating__value num"><?php echo esc_html($rating_stars['value'] . '/' . $rating_stars['best']); ?></span>
+                        </span>
+                    </dd>
+                <?php else : ?>
+                    <dd class="num"><?php echo esc_html($fields['film_rating']); ?></dd>
+                <?php endif; ?>
+            </div>
         <?php endif; ?>
     </dl>
 </aside>
