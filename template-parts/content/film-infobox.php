@@ -32,12 +32,7 @@ if (empty($fields)) {
             <div>
                 <dt><?php esc_html_e('التقييم', 'mazaq'); ?></dt>
                 <?php if ($rating_stars !== null) : ?>
-                    <dd>
-                        <span class="film-rating" role="img" aria-label="<?php echo esc_attr($rating_stars['label']); ?>">
-                            <span class="film-rating__stars" aria-hidden="true">★★★★★<span class="film-rating__fill" style="width: <?php echo esc_attr((string) $rating_stars['percent']); ?>%;">★★★★★</span></span>
-                            <span class="film-rating__value num"><?php echo esc_html($rating_stars['value'] . '/' . $rating_stars['best']); ?></span>
-                        </span>
-                    </dd>
+                    <dd><?php get_template_part('template-parts/content/rating-stars', null, ['stars' => $rating_stars]); ?></dd>
                 <?php else : ?>
                     <dd class="num"><?php echo esc_html($fields['film_rating']); ?></dd>
                 <?php endif; ?>

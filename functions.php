@@ -18,6 +18,7 @@ $mazaq_includes = [
     'inc/infinite-scroll.php',
     'inc/breadcrumb.php',
     'inc/helpers.php',
+    'inc/film-graph.php',
     'inc/browser-notifications.php',
     'inc/random-film-popup.php',
     'inc/content-rotation-settings.php',
