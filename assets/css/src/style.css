@@ -4691,7 +4691,12 @@ html:not(.dark) .delight-menu__footer {
     display: none;
 }
 
-@media (min-width: 1280px) {
+/* 1360px, not 1280: the rail is fixed in the viewport margin while the column is a
+   centred max-w-6xl (1152px), so the margin only clears the slimmed 77px rail from
+   ~1337px up. Below that it sat on the hero and the related-posts cards. 1280 was the
+   outlier anyway -- .reel-scrubber, the other margin ornament, already gates at 1360.
+   The puck covers everything narrower -- keep the two breakpoints complementary. */
+@media (min-width: 1360px) {
     .reading-rail {
         --rail-progress: 0;
         display: block;
@@ -4789,7 +4794,10 @@ html:not(.dark) .delight-menu__footer {
     box-shadow: 0 12px 30px rgba(2, 6, 23, 0.6);
 }
 
-.reading-rail__item.is-active .reading-rail__link::before,
+/* Hover/focus only, never on .is-active: the pill is the label's backing, and an
+   always-open label made the rail permanently ~182px wide, wide enough to sit on the
+   hero and the breadcrumb at every viewport below ~1600. The active dot and its
+   rank-mirroring number carry "you are here" on their own. */
 .reading-rail__link:hover::before,
 .reading-rail__link:focus-visible::before {
     opacity: 1;
@@ -4856,7 +4864,6 @@ html:not(.dark) .delight-menu__footer {
     transition: max-width 360ms cubic-bezier(0.22, 1, 0.36, 1), opacity 220ms ease;
 }
 
-.reading-rail__item.is-active .reading-rail__label,
 .reading-rail__link:hover .reading-rail__label,
 .reading-rail__link:focus-visible .reading-rail__label {
     max-width: 15rem;
@@ -4868,7 +4875,8 @@ html:not(.dark) .delight-menu__footer {
     display: none;
 }
 
-@media (max-width: 1279px) {
+/* Complementary to the rail's 1360px: every viewport without room for the rail. */
+@media (max-width: 1359px) {
     .reading-puck {
         --reading-progress: 0;
         display: block;

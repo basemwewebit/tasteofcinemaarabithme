@@ -5,9 +5,12 @@ declare(strict_types=1);
 /**
  * The Living Reel: a scroll-spy reading index.
  *
- * Desktop renders a fixed vertical rail (aria-hidden, mouse-driven enhancement;
- * the in-content listicle TOC remains the accessible equivalent). Mobile renders
- * a floating progress puck that opens an accessible jump sheet.
+ * Wide desktop (>=1360px, where the margin clears the centred column) renders a fixed
+ * vertical rail of dots and ranks (aria-hidden, mouse-driven enhancement; the
+ * in-content listicle TOC remains the accessible equivalent). Section titles are a
+ * hover affordance, not an always-open label -- an open label makes the rail wide
+ * enough to sit on the article. Everything narrower renders a floating progress puck
+ * that opens an accessible jump sheet.
  *
  * Behaviour lives in assets/js/app-single.js; styling in the
  * "Single — Projection Room + Living Reel" CSS block.
