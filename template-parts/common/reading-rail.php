@@ -20,18 +20,23 @@ if (count($headings) < 3) {
 }
 ?>
 <aside class="reading-rail" data-reading-rail aria-hidden="true">
-    <span class="reading-rail__track" aria-hidden="true"><span class="reading-rail__fill" data-rail-fill></span></span>
-    <ol class="reading-rail__list">
-        <?php foreach ($headings as $i => $heading) : ?>
-            <li class="reading-rail__item<?php echo $heading['level'] > 2 ? ' reading-rail__item--nested' : ''; ?>" data-rail-item="<?php echo esc_attr($heading['id']); ?>">
-                <a class="reading-rail__link" href="#<?php echo esc_attr($heading['id']); ?>" tabindex="-1">
-                    <span class="reading-rail__dot" aria-hidden="true"></span>
-                    <span class="reading-rail__index num" aria-hidden="true"><?php echo esc_html(str_pad((string) ($i + 1), 2, '0', STR_PAD_LEFT)); ?></span>
-                    <span class="reading-rail__label"><?php echo esc_html($heading['text']); ?></span>
-                </a>
-            </li>
-        <?php endforeach; ?>
-    </ol>
+    <div class="reading-rail__inner">
+        <span class="reading-rail__track" aria-hidden="true"><span class="reading-rail__fill" data-rail-fill></span></span>
+        <ol class="reading-rail__list">
+            <?php foreach ($headings as $heading) : ?>
+                <li class="reading-rail__item<?php echo $heading['level'] > 2 ? ' reading-rail__item--nested' : ''; ?>" data-rail-item="<?php echo esc_attr($heading['id']); ?>">
+                    <a class="reading-rail__link" href="#<?php echo esc_attr($heading['id']); ?>" tabindex="-1">
+                        <span class="reading-rail__dot" aria-hidden="true"></span>
+                        <?php $index = mazaq_heading_index($heading['number']); ?>
+                        <?php if ($index !== '') : ?>
+                            <span class="reading-rail__index num" aria-hidden="true"><?php echo esc_html($index); ?></span>
+                        <?php endif; ?>
+                        <span class="reading-rail__label"><?php echo esc_html($heading['text']); ?></span>
+                    </a>
+                </li>
+            <?php endforeach; ?>
+        </ol>
+    </div>
 </aside>
 
 <div class="reading-puck" data-reading-puck>
@@ -43,10 +48,13 @@ if (count($headings) < 3) {
     <nav class="reading-sheet" id="reading-sheet" data-reading-sheet aria-label="<?php esc_attr_e('فهرس القراءة', 'mazaq'); ?>" hidden>
         <p class="reading-sheet__head"><?php esc_html_e('في هذا المقال', 'mazaq'); ?></p>
         <ol class="reading-sheet__list">
-            <?php foreach ($headings as $i => $heading) : ?>
+            <?php foreach ($headings as $heading) : ?>
                 <li class="reading-sheet__item<?php echo $heading['level'] > 2 ? ' reading-sheet__item--nested' : ''; ?>" data-sheet-item="<?php echo esc_attr($heading['id']); ?>">
                     <a class="reading-sheet__link" href="#<?php echo esc_attr($heading['id']); ?>">
-                        <span class="reading-sheet__index num" aria-hidden="true"><?php echo esc_html(str_pad((string) ($i + 1), 2, '0', STR_PAD_LEFT)); ?></span>
+                        <?php $index = mazaq_heading_index($heading['number']); ?>
+                        <?php if ($index !== '') : ?>
+                            <span class="reading-sheet__index num" aria-hidden="true"><?php echo esc_html($index); ?></span>
+                        <?php endif; ?>
                         <span class="reading-sheet__label"><?php echo esc_html($heading['text']); ?></span>
                     </a>
                 </li>

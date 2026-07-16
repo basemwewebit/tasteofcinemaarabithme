@@ -15,7 +15,13 @@ if (count($headings) < 3) {
         <ol class="listicle-toc__list">
             <?php foreach ($headings as $heading) : ?>
                 <li class="<?php echo $heading['level'] > 2 ? 'listicle-toc__item listicle-toc__item--nested' : 'listicle-toc__item'; ?>">
-                    <a href="#<?php echo esc_attr($heading['id']); ?>"><?php echo esc_html($heading['text']); ?></a>
+                    <a href="#<?php echo esc_attr($heading['id']); ?>">
+                        <?php $index = mazaq_heading_index($heading['number']); ?>
+                        <?php if ($index !== '') : ?>
+                            <span class="listicle-toc__index num" aria-hidden="true"><?php echo esc_html($index); ?></span>
+                        <?php endif; ?>
+                        <span><?php echo esc_html($heading['text']); ?></span>
+                    </a>
                 </li>
             <?php endforeach; ?>
         </ol>

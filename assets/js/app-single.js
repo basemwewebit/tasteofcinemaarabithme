@@ -39,11 +39,20 @@ document.addEventListener('DOMContentLoaded', function () {
     var puckNum = puck ? puck.querySelector('[data-puck-num]') : null;
     var sheet = document.getElementById('reading-sheet');
 
-    var headings = article
-        ? Array.prototype.slice.call(article.querySelectorAll('h2[id], h3[id]'))
-        : [];
     var railItems = rail ? Array.prototype.slice.call(rail.querySelectorAll('[data-rail-item]')) : [];
+    var railTrack = rail ? rail.querySelector('.reading-rail__track') : null;
     var sheetItems = sheet ? Array.prototype.slice.call(sheet.querySelectorAll('[data-sheet-item]')) : [];
+
+    // Read the sections off the rendered index instead of re-querying the article:
+    // single.php injects the inline-related block *into* .article-content, and its
+    // <h3 id> answers to 'h2[id], h3[id]' as if it were a section. That shifted every
+    // highlight after the ~60% mark by one and left the final heading with none at all.
+    // Order is kept 1:1 with the index (misses stay as null) so headings[i] always
+    // addresses railItems[i] and sheetItems[i] -- one template emits both lists from
+    // the same headings, so they always agree.
+    var headings = railItems.map(function (item) {
+        return document.getElementById(item.getAttribute('data-rail-item'));
+    });
 
     var HEADER_OFFSET = 110;
     var activeIndex = -1;
@@ -63,12 +72,47 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    // Runs off the active heading rather than page progress: the fill has to stop at
+    // the active dot, and the rail clips at 72vh so on long listicles the active dot
+    // can otherwise sit outside the visible window.
+    function syncRail(index) {
+        if (!rail || !railItems[index]) {
+            return;
+        }
+
+        // Terminate the fill at the active dot. Page progress counts the hero, the
+        // related-posts block and the footer, so it never agreed with the dots.
+        if (railTrack) {
+            var dot = railItems[index].querySelector('.reading-rail__dot');
+            var trackRect = railTrack.getBoundingClientRect();
+            if (dot && trackRect.height > 0) {
+                var dotRect = dot.getBoundingClientRect();
+                var filled = (dotRect.top + dotRect.height / 2 - trackRect.top) / trackRect.height;
+                rail.style.setProperty('--rail-progress', Math.min(1, Math.max(0, filled)));
+            }
+        }
+
+        var scrollable = rail.scrollHeight - rail.clientHeight;
+        rail.classList.toggle('is-scrollable', scrollable > 1);
+        if (scrollable <= 1) {
+            return;
+        }
+
+        var itemRect = railItems[index].getBoundingClientRect();
+        var railRect = rail.getBoundingClientRect();
+        var next = rail.scrollTop + (itemRect.top - railRect.top) - (rail.clientHeight - itemRect.height) / 2;
+        rail.scrollTop = Math.max(0, Math.min(next, scrollable));
+    }
+
     function computeActive() {
         if (!headings.length) {
             return;
         }
         var idx = 0;
         for (var i = 0; i < headings.length; i++) {
+            if (!headings[i]) {
+                continue;
+            }
             if (headings[i].getBoundingClientRect().top - HEADER_OFFSET <= 0) {
                 idx = i;
             } else {
@@ -85,9 +129,6 @@ document.addEventListener('DOMContentLoaded', function () {
             progressEl.style.setProperty('--reading-progress', p);
             progressEl.classList.toggle('is-reading', p > 0.004 && p < 0.996);
         }
-        if (rail) {
-            rail.style.setProperty('--rail-progress', p);
-        }
         if (puck) {
             puck.style.setProperty('--reading-progress', p);
         }
@@ -99,6 +140,10 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
         computeActive();
+        // After computeActive, so the active classes are applied before we measure.
+        // Called from tick (not setActive) so a resize re-syncs even when the active
+        // heading has not changed.
+        syncRail(activeIndex);
     }
 
     var onScroll = throttle(tick, 80);

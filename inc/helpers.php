@@ -330,7 +330,64 @@ function mazaq_extract_article_headings(int $post_id): array
         ];
     }
 
+    foreach (mazaq_listicle_heading_numbers(array_column($headings, 'text')) as $i => $number) {
+        $headings[$i]['number'] = $number;
+    }
+
     return $headings;
+}
+
+/**
+ * Display number for each heading in a run.
+ *
+ * A ranked listicle numbers its own headings ("31. Cars 3 (2017)") and counts down as
+ * often as up, so a positional 01..N index contradicts the heading it sits beside.
+ * Mirror the article's own numbers whenever it has any; number by position only when
+ * no heading carries one. A heading with no number of its own inside a numbered list
+ * (an intro, a conclusion) returns null: showing its position there would put a
+ * positional number next to real ranks, which is the contradiction this exists to end.
+ *
+ * Pure: no WP, no post. Covered by tests/heading-numbers-test.php.
+ *
+ * @param string[] $texts Heading texts, in document order.
+ * @return array<int, int|null> One entry per heading, same order. Null = show no number.
+ */
+function mazaq_listicle_heading_numbers(array $texts): array
+{
+    $numbers = [];
+    $numbered = 0;
+
+    foreach ($texts as $text) {
+        // [0-9] rather than \d: under /u, \d also matches Arabic-Indic digits, which
+        // (int) then casts to 0 -- every entry would render "00" on this Arabic site.
+        // Headings numbered in Arabic-Indic digits fall back to position instead.
+        // Digits must be followed by punctuation, so "1917 (2019)" and
+        // "2001: A Space Odyssey" are read as titles, not as ranks.
+        if (preg_match('/^([0-9]{1,3})\s*[.)\-–—]/u', $text, $match)) {
+            $numbers[] = (int) $match[1];
+            $numbered++;
+            continue;
+        }
+        $numbers[] = null;
+    }
+
+    if ($numbered === 0) {
+        foreach ($numbers as $i => $number) {
+            $numbers[$i] = $i + 1;
+        }
+    }
+
+    return $numbers;
+}
+
+/**
+ * A heading's index as the reading indexes print it: zero-padded, or '' for no number.
+ *
+ * @param int|null $number From mazaq_listicle_heading_numbers().
+ */
+function mazaq_heading_index(?int $number): string
+{
+    return $number === null ? '' : str_pad((string) $number, 2, '0', STR_PAD_LEFT);
 }
 
 function mazaq_add_article_heading_ids(string $content): string
