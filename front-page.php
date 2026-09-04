@@ -18,8 +18,6 @@ $categories = array_values(array_filter(
     }
 ));
 
-$published_count = (int) wp_count_posts('post')->publish;
-
 // Editor's collection: spotlight one category and surface a curated set.
 // Source order: ACF override (home_collection_category) -> top category by volume.
 $collection_term = null;
@@ -54,6 +52,12 @@ if ($collection_term instanceof WP_Term) {
     ]);
 }
 
+$collection_plate_fallbacks = [
+    get_template_directory_uri() . '/assets/plates/weekly-lead-still.png',
+    get_template_directory_uri() . '/assets/plates/weekly-side-one-still.png',
+    get_template_directory_uri() . '/assets/plates/weekly-side-two-still.png',
+];
+
 // Most read this week. If the week has no view data, fall back to all-time
 // most read (still real popularity) rather than recency, so the rail never
 // just mirrors the "latest" feed below it. Tracks scope for honest labelling.
@@ -84,21 +88,18 @@ if (!$popular->have_posts()) {
 }
 ?>
 
-<div class="reel-scrubber" aria-hidden="true"><span class="reel-scrubber__gate"></span></div>
-
-<main id="main-content" class="max-w-7xl mx-auto px-4 py-8">
+<main id="main-content" class="screening-home">
     <h1 class="sr-only"><?php bloginfo('name'); ?></h1>
 
     <?php if ($collection_query && $collection_query->post_count >= 3) : ?>
-        <section class="home-section editor-collection" aria-labelledby="editor-collection-title">
+        <section class="home-section editor-collection screening-selection" aria-labelledby="editor-collection-title">
             <div class="home-section__head editor-collection__head">
                 <div>
-                    <p class="home-section__kicker"><?php esc_html_e('ابدأ من هنا', 'mazaq'); ?></p>
                     <h2 id="editor-collection-title" class="home-section__title">
-                        <?php echo esc_html(sprintf(__('مختارات %s', 'mazaq'), $collection_term->name)); ?>
+                        <?php esc_html_e('اختيارات هذا الأسبوع', 'mazaq'); ?>
                     </h2>
                     <p class="home-section__summary">
-                        <?php echo esc_html(sprintf(__('مجموعة من أرشيفنا حول %s، اخترناها لتبدأ منها.', 'mazaq'), $collection_term->name)); ?>
+                        <?php echo esc_html(sprintf(__('مسار تحريري منتقى من باب %s، لا قائمة آلية أخرى.', 'mazaq'), $collection_term->name)); ?>
                     </p>
                 </div>
                 <a class="editor-collection__all" href="<?php echo esc_url(get_category_link($collection_term->term_id)); ?>" aria-label="<?php echo esc_attr(sprintf(__('كل مقالات %s', 'mazaq'), $collection_term->name)); ?>">
@@ -110,16 +111,28 @@ if (!$popular->have_posts()) {
                 </a>
             </div>
 
-            <div class="editor-collection__grid">
+            <div class="editor-collection__grid screening-selection__grid">
+                <?php $selection_index = 0; ?>
                 <?php while ($collection_query->have_posts()) : $collection_query->the_post(); ?>
                     <?php get_template_part('template-parts/content/article-card', null, [
-                        'layout' => 'poster',
-                        'class' => 'card-enter',
+                        'layout' => $selection_index === 0 ? 'wide' : 'compact',
+                        'class' => $selection_index === 0 ? 'screening-selection__lead' : 'screening-selection__support',
+                        'fallback_plate' => $collection_plate_fallbacks[min($selection_index, 2)],
                     ]); ?>
+                    <?php $selection_index++; ?>
                 <?php endwhile; wp_reset_postdata(); ?>
             </div>
         </section>
     <?php endif; ?>
+
+    <?php get_template_part('template-parts/common/random-film-popup', null, [
+        'categories' => $categories,
+    ]); ?>
+
+    <div class="screening-home__ad">
+        <span class="screening-home__ad-label"><?php esc_html_e('إعلان', 'mazaq'); ?></span>
+        <?php get_template_part('template-parts/ads/ad-responsive'); ?>
+    </div>
 
     <?php if (!empty($categories)) : ?>
         <section class="home-section" aria-labelledby="browse-categories-title">
@@ -142,10 +155,6 @@ if (!$popular->have_posts()) {
             </div>
         </section>
     <?php endif; ?>
-
-    <?php get_template_part('template-parts/common/random-film-popup', null, [
-        'categories' => $categories,
-    ]); ?>
 
     <?php if ($popular->have_posts()) : ?>
         <section class="home-section home-section--popular" aria-labelledby="popular-posts-title">
@@ -198,8 +207,6 @@ if (!$popular->have_posts()) {
         </section>
     <?php endif; ?>
 
-    <?php get_template_part('template-parts/common/newsletter', null, ['context' => 'home']); ?>
-
     <section class="home-section home-section--latest" aria-labelledby="latest-posts-title">
         <div class="home-section__head">
             <div>
@@ -207,12 +214,7 @@ if (!$popular->have_posts()) {
                 <p class="home-section__summary"><?php esc_html_e('تابع آخر ما نُشر من مراجعات وقوائم وتحليلات.', 'mazaq'); ?></p>
             </div>
 
-            <span class="home-section__count">
-                <span id="post-count">
-                    <span class="num"><?php echo esc_html(number_format_i18n($published_count)); ?></span>
-                    <?php echo esc_html(_n('مقال منشور', 'مقالاً منشوراً', $published_count, 'mazaq')); ?>
-                </span>
-            </span>
+            <p class="home-section__promise"><?php esc_html_e('لمن يريد متابعة المشهد بعد اختيارات التحرير.', 'mazaq'); ?></p>
         </div>
 
         <div id="infinite-scroll-container" class="latest-feed" data-page="2" aria-live="polite" aria-relevant="additions" aria-busy="false">
@@ -232,7 +234,7 @@ if (!$popular->have_posts()) {
                     $query->the_post();
                     get_template_part('template-parts/content/article-card', null, [
                         'layout' => $post_index === 0 ? 'wide' : 'standard',
-                        'class' => $post_index === 0 ? 'latest-feed__lead' : '',
+                        'class' => $post_index === 0 ? 'latest-feed__lead' : ($post_index === 5 ? 'latest-feed__finale' : ''),
                     ]);
                     $post_index++;
                 endwhile;
@@ -269,6 +271,8 @@ if (!$popular->have_posts()) {
         </div>
         <div id="infinite-scroll-sentinel" class="infinite-scroll-sentinel" aria-hidden="true"></div>
     </section>
+
+    <?php get_template_part('template-parts/common/newsletter', null, ['context' => 'home']); ?>
 </main>
 
 <?php get_footer(); ?>

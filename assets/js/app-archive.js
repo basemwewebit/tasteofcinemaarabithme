@@ -292,24 +292,10 @@ document.addEventListener('DOMContentLoaded', function () {
             loadMoreButton.addEventListener('click', loadMorePosts);
         }
 
-        if ('IntersectionObserver' in window && infiniteScrollSentinel) {
-            hideLoadMoreButton();
-            infiniteScrollObserver = new IntersectionObserver(function (entries) {
-                entries.forEach(function (entry) {
-                    if (!entry.isIntersecting || isLoading || !hasMore || loadError) {
-                        return;
-                    }
-                    loadMorePosts();
-                });
-            }, {
-                rootMargin: '0px 0px 300px 0px',
-                threshold: 0
-            });
-
-            infiniteScrollObserver.observe(infiniteScrollSentinel);
-        } else {
-            showLoadMoreButton();
+        if (infiniteScrollSentinel) {
+            infiniteScrollSentinel.hidden = true;
         }
+        showLoadMoreButton();
     }
 
     // Cinematic Hero Spotlight Tracking (Overdrive)

@@ -8,6 +8,7 @@ $args = wp_parse_args(
         'layout' => 'standard',
         'class' => '',
         'show_category' => true,
+        'fallback_plate' => '',
     ]
 );
 
@@ -45,8 +46,12 @@ $article_classes = trim(sprintf(
     (string) $args['class']
 ));
 
-$render_media = static function (string $class_name = 'article-card__image') use ($post_id, $image_size, $image_sizes, $title): void {
+$render_media = static function (string $class_name = 'article-card__image') use ($post_id, $image_size, $image_sizes, $title, $args): void {
     if (has_post_thumbnail($post_id)) {
+        $initial = function_exists('mb_substr') ? mb_substr($title, 0, 1, 'UTF-8') : substr($title, 0, 1);
+        ?>
+        <span class="article-card__media-fallback" aria-hidden="true"><?php echo esc_html($initial); ?></span>
+        <?php
         echo get_the_post_thumbnail($post_id, $image_size, [
             'class' => $class_name,
             'loading' => 'lazy',
@@ -54,6 +59,12 @@ $render_media = static function (string $class_name = 'article-card__image') use
             'sizes' => $image_sizes,
             'alt' => mazaq_get_post_thumbnail_alt($post_id, $title),
         ]);
+        return;
+    }
+    if ($args['fallback_plate'] !== '') {
+        ?>
+        <img src="<?php echo esc_url((string) $args['fallback_plate']); ?>" class="<?php echo esc_attr($class_name); ?>" alt="" loading="lazy" decoding="async">
+        <?php
         return;
     }
     ?>

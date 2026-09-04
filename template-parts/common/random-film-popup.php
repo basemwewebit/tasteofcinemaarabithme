@@ -11,7 +11,6 @@ if (isset($args['categories']) && is_array($args['categories'])) {
 <section class="random-film-panel mb-10">
     <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
         <div>
-            <p class="random-film-panel__kicker"><?php esc_html_e('توصية المحرّر', 'mazaq'); ?></p>
             <h2 class="random-film-panel__title"><?php esc_html_e('محتار؟ دعنا نقترح عليك فيلماً', 'mazaq'); ?></h2>
             <p class="random-film-panel__summary"><?php esc_html_e('اختر تصنيفاً أو دع الاختيار لنا، ونقترح عليك مقالاً من أرشيفنا تبدأ به ليلتك.', 'mazaq'); ?></p>
         </div>
@@ -64,7 +63,6 @@ if (isset($args['categories']) && is_array($args['categories'])) {
                 </div>
 
                 <div class="p-6 md:p-8 flex flex-col">
-                    <p class="random-film-card__kicker"><?php esc_html_e('ترشيح عشوائي', 'mazaq'); ?></p>
                     <h3 id="random-film-title" class="random-film-card__title"></h3>
                     <p id="random-film-excerpt" class="random-film-card__excerpt"></p>
 

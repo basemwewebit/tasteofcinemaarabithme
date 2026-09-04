@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-05-22T22:06:03.292+03:00",
+  "generatedAt": "2026-09-04T21:32:51+03:00",
   "title": "Design System: Mazaq Cinema",
   "extensions": {
     "colorMeta": {
@@ -16,6 +16,12 @@
         "canonical": "#8E2A2A",
         "tonalRamp": ["oklch(16% 0.04 28)", "oklch(25% 0.07 28)", "oklch(35% 0.1 28)", "oklch(45% 0.13 28)", "oklch(57% 0.12 28)", "oklch(70% 0.085 28)", "oklch(84% 0.045 28)", "oklch(94% 0.02 28)"]
       },
+      "celluloid": {
+        "role": "secondary",
+        "displayName": "Celluloid Beige",
+        "canonical": "#D4C9A8",
+        "tonalRamp": ["oklch(18% 0.018 88)", "oklch(28% 0.025 88)", "oklch(40% 0.032 88)", "oklch(53% 0.038 88)", "oklch(66% 0.042 88)", "oklch(77% 0.038 88)", "oklch(87% 0.025 88)", "oklch(95% 0.012 88)"]
+      },
       "ink": {
         "role": "neutral",
         "displayName": "Nocturnal Ink",
@@ -26,74 +32,30 @@
         "role": "neutral",
         "displayName": "Warm Paper",
         "canonical": "#F7F4ED",
-        "tonalRamp": ["#0F0E0C", "#4E4A40", "#9C988E", "#D4C9A8", "#ECE7DC", "#F7F4ED", "#FAFBFE", "#FFFFFF"]
+        "tonalRamp": ["#0F0E0C", "#4E4A40", "#9C988E", "#D4C9A8", "#ECE7DC", "#F7F4ED", "#FFFFFF", "#FFFFFF"]
       }
     },
     "typographyMeta": {
-      "display": {
-        "displayName": "Poster Display",
-        "purpose": "Hero titles and cinematic section moments."
-      },
-      "editorial": {
-        "displayName": "Long-form Editorial",
-        "purpose": "Single article H1s and magazine-like reading moments."
-      },
-      "body": {
-        "displayName": "Arabic Reading Body",
-        "purpose": "Prose, summaries, descriptions, and UI copy."
-      },
-      "numeric": {
-        "displayName": "Isolated Numeric",
-        "purpose": "Dates, ranks, views, reading time, and other tabular values."
-      }
+      "display": {"displayName": "Arabic Poster Display", "purpose": "Strong editorial entry points and section moments."},
+      "editorial": {"displayName": "Long-form Editorial", "purpose": "Article titles and deliberate magazine moments."},
+      "body": {"displayName": "Arabic Reading Body", "purpose": "Prose, summaries, descriptions, and UI copy."},
+      "label": {"displayName": "Arabic Interface Label", "purpose": "Controls, categories, eyebrows, and status labels without tracking."},
+      "numeric": {"displayName": "Isolated Numeric", "purpose": "Dates, ranks, views, and reading time."}
     },
     "shadows": [
-      {
-        "name": "card-shadow",
-        "value": "0 1px 0 rgba(255,255,255,0.04) inset, 0 8px 24px rgba(0,0,0,0.4)",
-        "purpose": "Dark elevated cards and panels."
-      },
-      {
-        "name": "editor-card-lift",
-        "value": "0 18px 45px rgba(15, 23, 42, 0.14)",
-        "purpose": "Light-mode editor picks and image-led feature cards."
-      },
-      {
-        "name": "focus-glow",
-        "value": "0 0 0 3px rgba(230, 203, 106, 0.42)",
-        "purpose": "Keyboard focus and critical interactive outlines."
-      }
+      {"name": "card-shadow", "value": "0 1px 0 rgba(255,255,255,0.04) inset, 0 8px 24px rgba(0,0,0,0.4)", "purpose": "Dark elevated cards and panels."},
+      {"name": "editorial-card-lift", "value": "0 18px 45px rgba(15,23,42,0.14)", "purpose": "Selected light-mode features and image-led editorial containers."},
+      {"name": "focus-glow", "value": "0 0 0 3px rgba(230,203,106,0.42)", "purpose": "Keyboard focus on both theme surfaces."}
     ],
     "motion": [
-      {
-        "name": "ease-out-quint",
-        "value": "cubic-bezier(0.22, 1, 0.36, 1)",
-        "purpose": "Hero image, loader, and polished entrance movement."
-      },
-      {
-        "name": "quick-state",
-        "value": "200ms ease",
-        "purpose": "Button, chip, and input feedback."
-      },
-      {
-        "name": "image-reveal",
-        "value": "500ms to 900ms cubic-bezier(0.22, 1, 0.36, 1)",
-        "purpose": "Poster and hero image scale, saturation, and brightness changes."
-      }
+      {"name": "ease-editorial", "value": "cubic-bezier(0.22, 1, 0.36, 1)", "purpose": "Card lift, reveals, and polished state movement."},
+      {"name": "quick-state", "value": "200ms ease", "purpose": "Button, chip, field, and status feedback."},
+      {"name": "image-reveal", "value": "520ms cubic-bezier(0.22, 1, 0.36, 1)", "purpose": "Image scale and treatment changes on editorial cards."}
     ],
     "breakpoints": [
-      {
-        "name": "mobile",
-        "value": "640px"
-      },
-      {
-        "name": "tablet",
-        "value": "768px"
-      },
-      {
-        "name": "desktop",
-        "value": "1024px"
-      }
+      {"name": "mobile", "value": "640px"},
+      {"name": "tablet", "value": "768px"},
+      {"name": "desktop", "value": "1024px"}
     ]
   },
   "components": [
@@ -101,88 +63,86 @@
       "name": "Primary Button",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "Gold editorial CTA used for newsletter signup and primary actions.",
+      "description": "Rare gold editorial action with a distinct keyboard focus state.",
       "html": "<button class=\"ds-button-primary\">اشترك</button>",
-      "css": ".ds-button-primary { min-height: 3rem; border: 0; border-radius: var(--radius-md, 8px); background: var(--color-primary, #C9A227); color: var(--color-nocturnal-slate, #0B0B0E); padding: 0.85rem 1rem; font-family: var(--font-body, system-ui); font-size: 0.875rem; font-weight: 800; cursor: pointer; transition: filter 200ms ease, transform 200ms ease; } .ds-button-primary:hover { filter: brightness(0.94); transform: translateY(-1px); } .ds-button-primary:focus-visible { outline: 3px solid var(--color-gold-tint, #E6CB6A); outline-offset: 2px; box-shadow: var(--shadow-focus, 0 0 0 3px rgba(230, 203, 106, 0.42)); }"
+      "css": ".ds-button-primary { min-height: 3rem; border: 0; border-radius: var(--radius-md, 8px); background: var(--color-primary, #C9A227); color: var(--color-text-on-paper, #0F0E0C); padding: .85rem 1rem; font-family: var(--font-body, system-ui); font-size: .9375rem; font-weight: 800; cursor: pointer; transition: filter 200ms ease, transform 200ms ease; } .ds-button-primary:hover { filter: brightness(.94); transform: translateY(-1px); } .ds-button-primary:focus-visible { outline: 3px solid var(--color-gold-tint, #E6CB6A); outline-offset: 2px; box-shadow: var(--shadow-focus, 0 0 0 3px rgba(230,203,106,.42)); } .ds-button-primary:disabled { cursor: wait; opacity: .68; transform: none; }"
     },
     {
       "name": "Category Chip",
       "kind": "chip",
       "refersTo": "chip-category",
-      "description": "Pill chip for categories, article tags, and suggested searches.",
+      "description": "Theme-aware pill label for categories, tags, and suggestions.",
       "html": "<a class=\"ds-chip\" href=\"#\">قوائم</a>",
-      "css": ".ds-chip { display: inline-flex; min-height: 2.5rem; align-items: center; gap: 0.25rem; padding: 0.45rem 0.9rem; border: 1px solid var(--color-mist, #E2E8F0); border-radius: var(--radius-pill, 9999px); background: var(--color-warm-ash, #ECE7DC); color: var(--color-slate-700, #334155); font-family: var(--font-body, system-ui); font-size: 0.875rem; font-weight: 700; text-decoration: none; transition: border-color 200ms ease, color 200ms ease; } .ds-chip:hover, .ds-chip:focus-visible { border-color: rgba(201, 162, 39, 0.45); color: var(--color-primary-hover, #B88F1E); outline: none; }"
+      "css": ".ds-chip { display: inline-flex; min-height: 2.5rem; align-items: center; padding: .45rem .9rem; border: 1px solid var(--color-mist, #E2E8F0); border-radius: var(--radius-pill, 9999px); background: var(--color-paper-muted, #ECE7DC); color: var(--color-charcoal, #475569); font-family: var(--font-body, system-ui); font-size: .9375rem; font-weight: 700; text-decoration: none; transition: border-color 200ms ease, color 200ms ease; } .ds-chip:hover, .ds-chip:focus-visible { border-color: rgba(201,162,39,.45); color: var(--color-primary-hover, #B88F1E); outline: 2px solid transparent; }"
     },
     {
-      "name": "Editorial Card",
+      "name": "Editorial Card with Image Fallback",
       "kind": "card",
       "refersTo": "card-editorial",
-      "description": "Image-led article card with quiet border, dark tonal surface, and gold focus border.",
-      "html": "<article class=\"ds-card\"><div class=\"ds-card-media\"></div><div class=\"ds-card-body\"><span>اختيارات التحرير</span><h3>عنوان مقال سينمائي طويل</h3></div></article>",
-      "css": ".ds-card { overflow: hidden; border: 1px solid rgba(234, 230, 220, 0.08); border-radius: var(--radius-lg, 12px); background: var(--color-ink-elevated, #16161B); color: var(--color-text-on-ink, #EAE6DC); box-shadow: var(--shadow-card, 0 1px 0 rgba(255,255,255,0.04) inset, 0 8px 24px rgba(0,0,0,0.4)); transition: transform 250ms ease, border-color 250ms ease; } .ds-card:hover, .ds-card:focus-within { transform: translateY(-3px); border-color: rgba(201, 162, 39, 0.44); } .ds-card-media { aspect-ratio: 16 / 10; background: radial-gradient(circle at 28% 20%, rgba(201, 162, 39, 0.18), transparent 34%), linear-gradient(135deg, var(--color-ink-elevated, #16161B), var(--color-ink, #0B0B0E)); } .ds-card-body { padding: 1.15rem; } .ds-card span { color: var(--color-gold-tint, #E6CB6A); font-size: 0.8rem; font-weight: 700; } .ds-card h3 { margin: 0.6rem 0 0; font-family: var(--font-display, system-ui); font-size: 1.25rem; line-height: 1.45; font-weight: 800; }"
+      "description": "Image-led article card whose branded initial plate preserves the frame when imagery is unavailable.",
+      "html": "<article class=\"ds-card\"><a class=\"ds-card-media\" href=\"#\"><span class=\"ds-card-fallback\">ر</span></a><div class=\"ds-card-body\"><span class=\"ds-card-category\">اختيارات التحرير</span><h3><a href=\"#\">رحلة داخل عالم الفيلم</a></h3><p>قراءة سينمائية بهدوء المجلة ووضوح الشاشة.</p></div></article>",
+      "css": ".ds-card { overflow: hidden; border: 1px solid rgba(212,201,168,.5); border-radius: var(--radius-lg, 12px); background: rgba(247,244,237,.72); color: var(--color-text-on-paper, #0F0E0C); transition: transform 250ms cubic-bezier(.22,1,.36,1), border-color 250ms ease; } .ds-card:hover, .ds-card:focus-within { transform: translateY(-3px); border-color: rgba(201,162,39,.56); } .ds-card-media { display: grid; min-height: 13rem; place-items: center; background: radial-gradient(circle at 28% 20%, rgba(201,162,39,.18), transparent 34%), linear-gradient(135deg, var(--color-ink-elevated, #16161B), var(--color-ink, #0B0B0E)); text-decoration: none; } .ds-card-fallback { color: rgba(230,203,106,.28); font-family: var(--font-display, system-ui); font-size: 5rem; font-weight: 800; } .ds-card-body { padding: 1.15rem; } .ds-card-category { color: var(--color-primary, #C9A227); font-size: .8125rem; font-weight: 800; } .ds-card h3 { margin: .65rem 0 0; font-family: var(--font-display, system-ui); font-size: 1.35rem; line-height: 1.4; } .ds-card h3 a { color: inherit; text-decoration: none; } .ds-card p { margin: .75rem 0 0; color: var(--color-text-on-paper-muted, #4E4A40); line-height: 1.8; }"
     },
     {
-      "name": "Search Input",
+      "name": "Editorial Email Field",
       "kind": "input",
-      "refersTo": "search-input",
-      "description": "Large archive-search field for the cinematic overlay.",
-      "html": "<label class=\"ds-search\"><span>ابحث في أرشيف السينما</span><input type=\"search\" placeholder=\"ابحث عن فيلم أو مقال...\"></label>",
-      "css": ".ds-search { display: grid; gap: 0.75rem; color: var(--color-text-on-ink, #EAE6DC); font-family: var(--font-body, system-ui); } .ds-search span { font-family: var(--font-display, system-ui); font-size: 1.25rem; font-weight: 800; } .ds-search input { min-height: 3.75rem; border: 1px solid rgba(234, 230, 220, 0.16); border-radius: var(--radius-lg, 12px); background: var(--color-ink, #0B0B0E); color: var(--color-text-on-ink, #EAE6DC); padding: 1rem 1.25rem; font-size: 1.125rem; line-height: 1.6; } .ds-search input:focus-visible { outline: 3px solid var(--color-gold-tint, #E6CB6A); outline-offset: 2px; border-color: rgba(201, 162, 39, 0.52); }"
+      "refersTo": "input-editorial",
+      "description": "High-contrast email field with a warm border and visible gold focus.",
+      "html": "<label class=\"ds-field\"><span>البريد الإلكتروني</span><input type=\"email\" dir=\"ltr\" placeholder=\"you@example.com\"></label>",
+      "css": ".ds-field { display: grid; gap: .5rem; color: var(--color-text-on-paper, #0F0E0C); font-family: var(--font-body, system-ui); font-weight: 700; } .ds-field input { min-height: 3rem; border: 1px solid var(--color-celluloid, #D4C9A8); border-radius: var(--radius-lg, 12px); background: var(--color-paper, #F7F4ED); color: var(--color-text-on-paper, #0F0E0C); padding: .9rem 1rem; font: inherit; font-weight: 400; } .ds-field input:focus-visible { outline: 3px solid var(--color-gold-tint, #E6CB6A); outline-offset: 2px; box-shadow: var(--shadow-focus, 0 0 0 3px rgba(230,203,106,.42)); }"
     },
     {
-      "name": "Feature Hero",
-      "kind": "custom",
-      "refersTo": "feature-hero",
-      "description": "Full-bleed cinematic lead story surface with shaded imagery and one editorial CTA.",
-      "html": "<section class=\"ds-hero\"><div class=\"ds-hero-shade\"></div><div class=\"ds-hero-content\"><p>اختيارات التحرير</p><h1>رحلة داخل عالم الفيلم</h1><span>اقرأ المقال</span></div></section>",
-      "css": ".ds-hero { position: relative; min-height: 34rem; overflow: hidden; border-radius: var(--radius-lg, 12px); background: radial-gradient(circle at 16% 18%, rgba(201, 162, 39, 0.14), transparent 34%), linear-gradient(180deg, var(--color-ink, #0B0B0E) 0%, var(--color-deep-shadow, #020617) 55%, var(--color-nocturnal-slate, #0B0B0E) 100%); color: var(--color-text-on-ink, #EAE6DC); } .ds-hero-shade { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0.2), rgba(2, 6, 23, 0.72)); } .ds-hero-content { position: relative; z-index: 1; width: min(100%, 46rem); padding: clamp(6rem, 12vw, 10rem) 1rem clamp(4rem, 8vw, 7rem); } .ds-hero p { color: var(--color-gold-tint, #E6CB6A); font-size: 0.82rem; font-weight: 700; } .ds-hero h1 { margin: 0.75rem 0 1.25rem; font-family: var(--font-display, system-ui); font-size: clamp(2.75rem, 6vw, 5.5rem); line-height: 1.05; font-weight: 800; } .ds-hero span { display: inline-flex; min-height: 2.75rem; align-items: center; font-weight: 700; }"
+      "name": "Load More Control",
+      "kind": "button",
+      "description": "Explicit continuation action with understandable busy and completed behavior.",
+      "html": "<button class=\"ds-load-more\" type=\"button\" aria-busy=\"false\">تحميل المزيد</button>",
+      "css": ".ds-load-more { min-height: 3rem; border: 1px solid var(--color-celluloid, #D4C9A8); border-radius: var(--radius-md, 8px); background: transparent; color: var(--color-text-on-paper, #0F0E0C); padding: .8rem 1.25rem; font-family: var(--font-body, system-ui); font-weight: 800; cursor: pointer; transition: border-color 200ms ease, color 200ms ease, background-color 200ms ease; } .ds-load-more:hover { border-color: var(--color-primary, #C9A227); color: var(--color-primary-hover, #B88F1E); background: rgba(201,162,39,.08); } .ds-load-more:focus-visible { outline: 3px solid var(--color-gold-tint, #E6CB6A); outline-offset: 2px; } .ds-load-more[aria-busy=\"true\"], .ds-load-more:disabled { cursor: wait; opacity: .66; }"
+    },
+    {
+      "name": "Resilient Footer Navigation",
+      "kind": "nav",
+      "description": "Optional footer links enhance a brand-and-copyright baseline that remains complete without them.",
+      "html": "<footer class=\"ds-footer\"><strong>مذاق السينما</strong><p>مجلة رقمية تهتم بشؤون الفن السابع.</p><nav aria-label=\"الأقسام\"><a href=\"#\">مراجعات</a><a href=\"#\">قوائم</a></nav><small>© مذاق السينما</small></footer>",
+      "css": ".ds-footer { display: grid; gap: 1rem; border-top: 1px solid rgba(212,201,168,.2); background: var(--color-ink, #0B0B0E); color: var(--color-text-on-ink, #EAE6DC); padding: 2rem; font-family: var(--font-body, system-ui); } .ds-footer strong { font-family: var(--font-display, system-ui); font-size: 1.5rem; } .ds-footer p, .ds-footer small { margin: 0; color: var(--color-text-on-ink-muted, #9C988E); } .ds-footer nav { display: flex; flex-wrap: wrap; gap: .75rem 1.25rem; } .ds-footer a { min-height: 44px; display: inline-flex; align-items: center; color: inherit; text-decoration: none; } .ds-footer a:hover { color: var(--color-primary, #C9A227); } .ds-footer a:focus-visible { outline: 3px solid var(--color-gold-tint, #E6CB6A); outline-offset: 2px; }"
     }
   ],
   "narrative": {
-    "northStar": "The Streaming Editorial House",
-    "overview": "Mazaq Cinema is a dark, poster-led Arabic-first editorial system. It should feel like entering a curated cinema room: warm gold glints, near-black surfaces, cream text, bold Arabic titles, and film imagery that carries the atmosphere rather than decorating the page. The system is brand-register, not utility-register. Design creates the publication's credibility.",
+    "northStar": "The Critic's Screening Room",
+    "overview": "Mazaq Cinema is an Arabic-first editorial system built as a pair of cinematic rooms: warm paper for open, readable discovery and nocturnal ink for atmospheric focus. Cream text, disciplined Arabic type, and photographic material create the sense of a film-literate publication without turning every surface into a dark spectacle.\n\nThe system uses magazine pacing rather than a uniform content grid. Large and small image-led modules may sit asymmetrically to express editorial judgment, then collapse into an intentional single-column reading sequence. The exact composition of any one hero belongs to its surface brief; the durable rule is that hierarchy and imagery reveal what the editors value.",
     "keyCharacteristics": [
-      "Dark-first cinematic surfaces with warm, tinted neutrals.",
-      "Poster and still imagery as primary editorial material.",
-      "Tajawal for confident display, Amiri for long-form editorial headlines, IBM Plex Sans Arabic for body clarity.",
-      "Gold used as a rare editorial signal, not decoration.",
-      "Motion is atmospheric and restrained, using scale, opacity, and image treatment rather than layout movement."
+      "Warm-paper and nocturnal-ink themes are equal expressions of one system.",
+      "Film stills and posters are editorial material; branded initial plates preserve composition when imagery fails or is absent.",
+      "Tajawal carries display hierarchy, while IBM Plex Sans Arabic keeps body copy and controls clear.",
+      "Projector Gold is a rare signal for actions, focus, ranks, and selected editorial emphasis.",
+      "Editorial frames use restrained 8px to 12px corners; pill shapes are reserved for labels and circular controls.",
+      "Every asynchronous interaction exposes understandable loading, success, error, retry, empty, and end states as applicable."
     ],
     "rules": [
-      {
-        "name": "The Gold Is Rare Rule",
-        "body": "Gold is a signal, not trim. If every card, heading, and icon is gold, nothing is important.",
-        "section": "colors"
-      },
-      {
-        "name": "The No Netflix Costume Rule",
-        "body": "Claret may create editorial tension, but never combine it with black as a red-streaming-service costume.",
-        "section": "colors"
-      },
-      {
-        "name": "The Arabic Letterforms Rule",
-        "body": "Arabic labels do not get tracked uppercase treatment. Preserve connected forms with zero letter-spacing, contextual alternates, ligatures, and RTL-aware spacing.",
-        "section": "typography"
-      },
-      {
-        "name": "The Screen Depth Rule",
-        "body": "Depth comes from imagery, tonal layers, and controlled shadows. Do not stack nested cards to fake hierarchy.",
-        "section": "elevation"
-      }
+      {"name": "The Paired Rooms Rule", "body": "A component is not complete until its hierarchy, contrast, borders, and states work on both Warm Paper and Nocturnal Ink.", "section": "colors"},
+      {"name": "The Gold Is Rare Rule", "body": "Gold is a signal, not trim. If every card, heading, and icon is gold, nothing is important.", "section": "colors"},
+      {"name": "The No Netflix Costume Rule", "body": "Claret may create editorial tension, but never combine it with black as a red-streaming-service costume.", "section": "colors"},
+      {"name": "The Arabic Letterforms Rule", "body": "Arabic labels do not get tracked uppercase treatment. Preserve connected forms, contextual alternates, ligatures, and RTL-aware spacing.", "section": "typography"},
+      {"name": "The Reading Room Rule", "body": "Long-form pages prioritize measure, line-height, and quiet hierarchy over decorative flourishes.", "section": "typography"},
+      {"name": "The Composition Is Local Rule", "body": "Reuse asymmetric hierarchy and editorial pacing, but keep exact hero splits, rails, section order, and first-viewport choreography in each surface brief.", "section": "layout"},
+      {"name": "The Screen Depth Rule", "body": "Depth comes from imagery, tonal layers, and controlled shadows; do not stack nested cards to manufacture hierarchy.", "section": "elevation"},
+      {"name": "The Focus Is Not Optional Rule", "body": "Focus rings remain visible on both Warm Paper and Nocturnal Ink and are never removed without an equivalent replacement.", "section": "elevation"}
     ],
     "dos": [
-      "Do keep cinema imagery dominant on discovery surfaces; posters and stills are editorial evidence.",
-      "Do use Projector Gold sparingly for CTAs, ranks, focus, and category emphasis.",
-      "Do preserve Arabic typography with zero tracking, strong line-height, and RTL-aware layout.",
-      "Do keep reduced-motion support for loaders, image movement, overlays, and scroll interactions."
+      "Do treat Warm Paper and Nocturnal Ink as a matched system, not primary and afterthought themes.",
+      "Do let image scale and asymmetric placement express editorial priority while preserving a clear RTL reading order.",
+      "Do keep real cinema imagery dominant and ship branded initial fallbacks beneath failure-prone images.",
+      "Do use Projector Gold sparingly for primary actions, ranks, focus, and selected emphasis.",
+      "Do preserve Arabic typography with zero tracking, generous line-height, and RTL-aware layout.",
+      "Do make loading, success, error, retry, empty, and end states explicit and accessible.",
+      "Do keep reduced-motion support for loaders, image movement, overlays, and entrance effects."
     ],
     "donts": [
-      "Don't use generic WordPress news and blog templates.",
-      "Don't use Netflix-copycat red and black cliches.",
-      "Don't use cold SaaS styling.",
+      "Don't turn a surface-specific hero split, rail, or story sequence into a site-wide template.",
+      "Don't use generic WordPress news grids, Netflix-copycat red and black, cold SaaS styling, or clickbait density.",
       "Don't use weak Arabic typography, tracked Arabic labels, or cramped reading measures.",
-      "Don't use cluttered entertainment portals or clickbait visual systems.",
-      "Don't treat film imagery as decoration instead of editorial substance."
+      "Don't treat film imagery as decoration or let a failed image collapse an editorial module.",
+      "Don't add side-stripe borders, gradient text, default glassmorphism, identical card grids everywhere, or nested cards.",
+      "Don't hide content continuation or asynchronous progress behind unreliable implicit behavior."
     ]
   }
 }

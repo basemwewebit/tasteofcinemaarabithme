@@ -1,6 +1,6 @@
 ---
 name: "Mazaq Cinema"
-description: "A dark, poster-led Arabic cinema magazine system for cinematic discovery and long-form reading."
+description: "A warm-paper and nocturnal-ink Arabic cinema magazine system for curated discovery and long-form reading."
 colors:
   primary: "#C9A227"
   primary-hover: "#B88F1E"
@@ -12,8 +12,8 @@ colors:
   ink-overlay: "#1E1E25"
   deep-shadow: "#020617"
   paper: "#F7F4ED"
+  paper-elevated: "#FFFFFF"
   paper-muted: "#ECE7DC"
-  warm-ash: "#ECE7DC"
   mist: "#E2E8F0"
   pewter: "#94A3B8"
   charcoal: "#475569"
@@ -21,23 +21,22 @@ colors:
   text-on-ink-muted: "#9C988E"
   text-on-paper: "#0F0E0C"
   text-on-paper-muted: "#4E4A40"
-  soft-white: "#FAFBFE"
 typography:
   display:
     fontFamily: "Tajawal, Reem Kufi, IBM Plex Sans Arabic, system-ui, sans-serif"
-    fontSize: "clamp(2.75rem, 6vw, 5.5rem)"
+    fontSize: "clamp(2.35rem, 4.8vw, 4.75rem)"
     fontWeight: 800
     lineHeight: 1.08
     letterSpacing: "0"
   headline:
     fontFamily: "Tajawal, Reem Kufi, IBM Plex Sans Arabic, system-ui, sans-serif"
-    fontSize: "clamp(1.5rem, 3vw, 2.25rem)"
-    fontWeight: 800
+    fontSize: "clamp(1.65rem, 3.2vw, 2.6rem)"
+    fontWeight: 700
     lineHeight: 1.25
     letterSpacing: "0"
   title:
     fontFamily: "Tajawal, Reem Kufi, IBM Plex Sans Arabic, system-ui, sans-serif"
-    fontSize: "1.25rem"
+    fontSize: "clamp(1.2rem, 1.45vw, 1.45rem)"
     fontWeight: 700
     lineHeight: 1.4
     letterSpacing: "0"
@@ -55,13 +54,13 @@ typography:
     letterSpacing: "0"
   label:
     fontFamily: "IBM Plex Sans Arabic, Noto Sans Arabic, system-ui, sans-serif"
-    fontSize: "0.875rem"
-    fontWeight: 700
+    fontSize: "0.9375rem"
+    fontWeight: 600
     lineHeight: 1.4
     letterSpacing: "0"
   numeric:
     fontFamily: "IBM Plex Mono, JetBrains Mono, ui-monospace, monospace"
-    fontSize: "0.875rem"
+    fontSize: "0.8125rem"
     fontWeight: 500
     lineHeight: 1.4
     letterSpacing: "0"
@@ -81,7 +80,7 @@ spacing:
 components:
   button-primary:
     backgroundColor: "{colors.primary}"
-    textColor: "{colors.ink}"
+    textColor: "{colors.text-on-paper}"
     typography: "{typography.label}"
     rounded: "{rounded.md}"
     padding: "0.85rem 1rem"
@@ -92,157 +91,170 @@ components:
     rounded: "{rounded.lg}"
     padding: "1.15rem"
   chip-category:
-    backgroundColor: "{colors.warm-ash}"
+    backgroundColor: "{colors.paper-muted}"
     textColor: "{colors.charcoal}"
     typography: "{typography.label}"
     rounded: "{rounded.pill}"
     padding: "0.45rem 0.9rem"
     height: "2.5rem"
-  search-input:
-    backgroundColor: "{colors.ink}"
-    textColor: "{colors.text-on-ink}"
+  input-editorial:
+    backgroundColor: "{colors.paper}"
+    textColor: "{colors.text-on-paper}"
     typography: "{typography.body}"
     rounded: "{rounded.lg}"
-    padding: "1rem 3.5rem 1rem 1.25rem"
-    height: "3.75rem"
+    padding: "0.9rem 1rem"
+    height: "3rem"
 ---
 
 # Design System: Mazaq Cinema
 
-## 1. Overview
+## Overview
 
-**Creative North Star: "The Streaming Editorial House"**
+**Creative North Star: "The Critic's Screening Room"**
 
-Mazaq Cinema is a dark, poster-led Arabic-first editorial system. It should feel like entering a curated cinema room: warm gold glints, near-black surfaces, cream text, bold Arabic titles, and film imagery that carries the atmosphere rather than decorating the page.
+Mazaq Cinema is an Arabic-first editorial system built as a pair of cinematic rooms: warm paper for open, readable discovery and nocturnal ink for atmospheric focus. Cream text, disciplined Arabic type, and photographic material create the sense of a film-literate publication without turning every surface into a dark spectacle.
 
-The system is brand-register, not utility-register. Design creates the publication's credibility. It uses streaming-platform immediacy for discovery, magazine pacing for reading, and Arabic typographic care for trust. It rejects generic WordPress news and blog templates, Netflix-copycat red and black cliches, cold SaaS styling, weak Arabic typography, cluttered entertainment portals, clickbait visual systems, and film imagery treated as filler.
+The system uses magazine pacing rather than a uniform content grid. Large and small image-led modules may sit asymmetrically to express editorial judgment, then collapse into an intentional single-column reading sequence. The exact composition of any one hero belongs to its surface brief; the durable rule is that hierarchy and imagery reveal what the editors value.
 
 **Key Characteristics:**
-- Dark-first cinematic surfaces with warm, tinted neutrals.
-- Poster and still imagery as primary editorial material.
-- Tajawal for confident display, Amiri for long-form editorial headlines, IBM Plex Sans Arabic for body clarity.
-- Gold used as a rare editorial signal, not decoration.
-- Rounded but not soft: 8px to 12px corners, pill chips only where the affordance is label-like.
-- Motion is atmospheric and restrained, using scale, opacity, and image treatment rather than layout movement.
+- Warm-paper and nocturnal-ink themes are equal expressions of one system.
+- Film stills and posters are editorial material; branded initial plates preserve composition when imagery fails or is absent.
+- Tajawal carries display hierarchy, while IBM Plex Sans Arabic keeps body copy and controls clear.
+- Projector Gold is a rare signal for actions, focus, ranks, and selected editorial emphasis.
+- Editorial frames use restrained 8px to 12px corners; pill shapes are reserved for labels and circular controls.
+- Every asynchronous interaction exposes understandable loading, success, error, retry, empty, and end states as applicable.
 
-## 2. Colors
+## Colors
 
-The palette is a committed cinematic system: near-black ink and warm paper carry most surfaces, refined gold marks importance, and claret exists only for sharp editorial or semantic moments.
+The palette pairs warm paper with nocturnal ink; both modes retain cream, celluloid, and restrained gold so theme changes never feel like a change of publication.
 
 ### Primary
-- **Projector Gold**: the primary accent for CTAs, category emphasis, focus glow, ranks, and selected editorial signals. Its value comes from rarity.
-- **Lamp Gold**: the lighter gold for dark surfaces, loader glow, and small text that needs stronger contrast.
+- **Projector Gold:** the scarce action and attention color for primary controls, keyboard focus, ranks, and selected editorial cues.
+- **Lamp Gold:** the lighter supporting gold for dark-stage legibility and small luminous details.
 
 ### Secondary
-- **Censor Claret**: a deep red reserved for spoilers, warnings, destructive states, or editorial moments that need tension. Never use it as a Netflix imitation.
-- **Celluloid Beige**: a secondary warm accent for borders, separators, and quiet editorial framing.
+- **Censor Claret:** reserved for warnings, destructive states, and rare editorial tension; it is not a general brand accent.
+- **Celluloid Beige:** a quiet framing tone for borders, separators, and image-adjacent surfaces.
 
 ### Neutral
-- **Nocturnal Ink**: the default dark-stage background.
-- **Midnight Surface**: elevated dark panels, cards, overlays, and newsletter containers.
-- **Deep Shadow**: hero gradients, image fallbacks, and cinematic depth.
-- **Warm Paper**: light-mode editorial surface, not generic white.
-- **Warm Ash**: muted light containers, tags, and quiet content blocks.
-- **Text Cream**: primary text on dark surfaces.
-- **Pewter and Charcoal**: metadata, captions, and supporting text.
+- **Nocturnal Ink and Midnight Surface:** dark-stage foundations and raised dark panels.
+- **Warm Paper, Paper Elevated, and Warm Ash:** light-stage foundations, lifted surfaces, and muted containers.
+- **Text Cream and Ink Text:** primary readable text chosen as a pair with their surface.
+- **Pewter and Charcoal:** metadata, captions, helper copy, and subdued controls.
 
 ### Named Rules
+**The Paired Rooms Rule.** A component is not complete until its hierarchy, contrast, borders, and states work on both Warm Paper and Nocturnal Ink.
+
 **The Gold Is Rare Rule.** Gold is a signal, not trim. If every card, heading, and icon is gold, nothing is important.
 
 **The No Netflix Costume Rule.** Claret may create editorial tension, but never combine it with black as a red-streaming-service costume.
 
-**The Warm Neutral Rule.** New neutrals should stay warm and cinematic. Do not add cold slate surfaces unless preserving an existing legacy state.
-
-## 3. Typography
+## Typography
 
 **Display Font:** Tajawal, with Reem Kufi and IBM Plex Sans Arabic fallbacks.  
 **Body Font:** IBM Plex Sans Arabic, with Noto Sans Arabic and system fallbacks.  
 **Editorial Font:** Amiri, with Aref Ruqaa, IBM Plex Serif, Georgia, and serif fallbacks.  
 **Numeric Font:** IBM Plex Mono, with JetBrains Mono and ui-monospace fallbacks.
 
-**Character:** The pairing is cinematic but legible. Tajawal gives section titles and hero lines a contemporary Arabic poster voice; Amiri slows article titles into magazine mode; IBM Plex Sans Arabic keeps body text and UI clear.
+**Character:** Tajawal gives discovery surfaces a confident contemporary Arabic poster voice; IBM Plex Sans Arabic sustains calm reading and reliable UI. Amiri is reserved for long-form editorial moments, while isolated monospaced numerals keep metadata steady in RTL layouts.
 
 ### Hierarchy
-- **Display** (800, fluid hero scale, 1.08): home hero titles and high-drama entry points only.
-- **Headline** (800, fluid headline scale, 1.25): section titles, related content groups, and editorial feature headings.
-- **Title** (700, 1.25rem, 1.4): card titles and compact editorial modules.
-- **Editorial** (700, fluid display scale, 1.16): single article H1s and long-form title moments.
-- **Body** (400, 1.125rem, 1.85): article prose, descriptions, summaries, and reading surfaces. Keep long-form text near 65 to 75ch.
-- **Label** (700, 0.875rem, no tracking): Arabic labels, eyebrows, chips, and categories. Do not letter-space Arabic.
-- **Numeric** (500, tabular, isolated bidi): dates, ranks, view counts, and reading time.
+- **Display** (800, fluid display scale, 1.08): the strongest editorial entry points; keep it rare.
+- **Headline** (700, fluid headline scale, 1.25): section titles and feature headings.
+- **Title** (700, fluid title scale, 1.4): cards and compact editorial modules.
+- **Editorial** (700, fluid editorial scale, 1.16): long-form article titles and deliberate magazine moments.
+- **Body** (400, 1.125rem, 1.85): prose, summaries, descriptions, and UI copy; keep long-form measure near 65 to 75ch.
+- **Label** (600, 0.9375rem, zero tracking): Arabic labels, eyebrows, chips, and controls.
+- **Numeric** (500, tabular and bidi-isolated): dates, ranks, view counts, and reading time.
 
 ### Named Rules
-**The Arabic Letterforms Rule.** Arabic labels do not get tracked uppercase treatment. Preserve connected forms with zero letter-spacing, contextual alternates, ligatures, and RTL-aware spacing.
+**The Arabic Letterforms Rule.** Arabic labels do not get tracked uppercase treatment. Preserve connected forms, contextual alternates, ligatures, and RTL-aware spacing.
 
 **The Reading Room Rule.** Long-form pages prioritize measure, line-height, and quiet hierarchy over decorative flourishes.
 
-## 4. Elevation
+## Layout
 
-The system uses hybrid elevation: dark mode relies on tonal layering and subtle inset light, while light mode allows soft cinematic lift for image-led editorial cards. Shadows should feel like theater ambient light, not app chrome.
+Use an image-led editorial grid with deliberate changes in scale: one lead item may span columns while supporting items remain compact. Asymmetry communicates curation, but alignment, reading order, and whitespace remain disciplined. Use the established spacing rhythm from tight inline gaps through generous section spacing; do not fill every open area with another module.
+
+At narrower widths, multi-column compositions collapse to one clear RTL sequence, actions become comfortably full-width when needed, and interactive targets remain at least 44px. Photography keeps purposeful aspect ratios and responsive sources rather than being stretched to fit arbitrary boxes.
+
+**The Composition Is Local Rule.** Reuse asymmetric hierarchy and editorial pacing, but keep exact hero splits, rails, section order, and first-viewport choreography in each surface brief.
+
+## Elevation & Depth
+
+Depth is hybrid and restrained. Dark surfaces rely on tonal layering, image gradients, and a faint inset highlight; light surfaces may use a soft ambient lift. Hover can raise an editorial card by a few pixels, but hierarchy must still be legible without motion or shadow.
 
 ### Shadow Vocabulary
 - **Card Shadow** (`0 1px 0 rgba(255,255,255,0.04) inset, 0 8px 24px rgba(0,0,0,0.4)`): dark elevated cards and panels.
-- **Editor Card Lift** (`0 18px 45px rgba(15, 23, 42, 0.14)`): light-mode editor picks and featured cards.
-- **Focus Glow** (`0 0 0 3px rgba(230, 203, 106, 0.42)`): keyboard focus and critical interactive outlines.
+- **Editorial Card Lift** (`0 18px 45px rgba(15,23,42,0.14)`): selected light-mode features and image-led editorial containers.
+- **Focus Glow** (`0 0 0 3px rgba(230,203,106,0.42)`): visible keyboard focus on both theme surfaces.
 
 ### Named Rules
-**The Screen Depth Rule.** Depth comes from imagery, tonal layers, and controlled shadows. Do not stack nested cards to fake hierarchy.
+**The Screen Depth Rule.** Depth comes from imagery, tonal layers, and controlled shadows; do not stack nested cards to manufacture hierarchy.
 
-**The Focus Is Not Optional Rule.** Focus rings must remain visible on both warm paper and nocturnal ink.
+**The Focus Is Not Optional Rule.** Focus rings remain visible on both Warm Paper and Nocturnal Ink and are never removed without an equivalent replacement.
 
-## 5. Components
+## Shapes
+
+The core form language is a restrained editorial frame: small utility details may use 4px corners, controls use 8px, and cards use 12px. Pills belong only to category labels, tags, and truly circular controls. Large atmospheric panels may exceed the core radius when their scale justifies it, but repeated content cards stay within the 8px to 12px system.
+
+Borders are hairline and warm or softly translucent. Gold borders appear in active, hover, or focus states rather than outlining every object at rest. Image crops inherit their container shape and keep a consistent silhouette even while a fallback is showing.
+
+## Components
 
 ### Buttons
-- **Shape:** Gently curved, editorial-control shape (8px radius).
-- **Primary:** Projector Gold background with Nocturnal Ink text, heavy label weight, and at least 3rem height.
-- **Hover / Focus:** Use subtle brightness and 1px to 2px translate movement. Keep focus outline distinct from hover.
-- **Secondary / Ghost:** Use text or border treatments when an action is not primary. Do not create a row of gold buttons.
+- **Shape:** restrained editorial controls with 8px to 12px corners and a minimum 44px touch target.
+- **Primary:** Projector Gold with dark ink text, heavy label weight, and one clear action per group.
+- **Hover / Focus:** a slight brightness or 1px lift may confirm hover; a separate gold focus outline remains unmistakable.
+- **Secondary / Ghost:** warm hairline borders and theme-aware text for lower-priority actions.
+- **State:** loading disables duplicate submission without erasing the label's meaning; errors offer a clear retry path.
 
 ### Chips
-- **Style:** Pill labels for categories, tags, and search suggestions. Light mode uses Warm Ash and Charcoal; dark mode uses Midnight Surface and Text Cream or Pewter.
-- **State:** Hover changes border or text color toward gold. Selected chips may use a gold tint, but should not become miniature buttons.
+- **Style:** pill labels for categories, tags, and suggestions; Warm Ash and Charcoal on light surfaces, tonal ink with cream or pewter on dark surfaces.
+- **State:** hover, focus, and selection may shift toward gold, but chips should not read like miniature primary buttons.
 
 ### Cards / Containers
-- **Corner Style:** 12px for editorial cards, 8px for smaller category tiles.
-- **Background:** Light cards use translucent warm surfaces; dark cards use Midnight Surface or Ink Elevated.
-- **Shadow Strategy:** Dark cards use Card Shadow. Light feature cards may use Editor Card Lift.
-- **Border:** Quiet warm or pewter border. Gold border appears only on hover, focus, or selected editorial emphasis.
-- **Internal Padding:** 1rem to 1.25rem for compact cards, 1.5rem to 2rem for newsletter and feature containers.
+- **Corner Style:** 12px for recurring editorial cards and 8px for smaller tiles.
+- **Background:** paired translucent warm surfaces and Midnight Surface treatments.
+- **Image:** use a real poster or still whenever available. Keep a branded, title-derived initial plate beneath remote or lazy imagery and as the final no-image fallback.
+- **Hierarchy:** standard, wide, poster, compact, and related variants share type, tint, and state behavior while changing composition.
+- **State:** image failure reveals the prepared fallback without collapsing the card or exposing broken-image chrome.
 
 ### Inputs / Fields
-- **Style:** Search and newsletter inputs use rounded rectangular fields, warm border, and high-contrast text.
-- **Focus:** Gold focus ring or border shift, never outline removal.
-- **Error / Disabled:** Disabled states reduce opacity only when the control remains understandable. Error states should use claret with text, not color alone.
+- **Style:** warm hairline border, theme-aware surface and text, restrained corners, and high-contrast placeholder treatment.
+- **Focus:** visible Projector Gold ring and border shift.
+- **Error / Disabled:** communicate with live text as well as color; disabled controls remain understandable.
 
 ### Navigation
-- **Style:** Sticky header, compact text, strong focus states, and logo-centered identity. Dark and light headers stay slightly translucent but should not become decorative glass.
-- **Mobile:** Menu and search interactions must preserve focus trap behavior, 44px touch targets, and clear close affordances.
+- **Style:** compact Arabic type, robust focus states, and a strong brand anchor. Translucency may soften the header, but must not become decorative glass.
+- **Responsive:** mobile navigation preserves logical focus, clear close affordances, and 44px targets.
+- **Footer:** brand description and copyright form the resilient baseline. Optional menus and social links enhance it only when configured; their absence never leaves an empty or broken footer.
 
-### Feature Hero
-The hero is the signature component. It uses a full-bleed image, dark gradient shade, subtle grain, a single editorial title, and a restrained CTA. The image may scale and brighten on hover, but the text remains steady.
+### Load More and Asynchronous States
+- **Action:** use an explicit load-more control when content continues; do not rely on invisible infinite-scroll behavior.
+- **Loading:** expose a live status, set busy state, and prevent duplicate requests.
+- **Completion:** announce empty and end states clearly, then remove or disable actions that can no longer succeed.
+- **Failure:** preserve loaded content and present a retryable error rather than replacing the feed.
 
-### Editor Picks
-Editor picks break the equal-card grid with one larger lead card and supporting cards. This is the preferred pattern for curation: editorial hierarchy first, grid regularity second.
+### Newsletter
+- **Layout:** a compact editorial invitation paired with an email field and one primary action; stack cleanly on narrow screens.
+- **State:** submission feedback is announced in a live region. Loading, success, and error copy should never shift the panel into an unusable state.
 
-### Search Overlay
-Search is theatrical but functional: large Arabic title, high-contrast input, suggested chips, and live suggestions with thumbnails. The overlay should feel like browsing an archive, not opening a utility modal.
-
-## 6. Do's and Don'ts
+## Do's and Don'ts
 
 ### Do:
-- **Do** keep cinema imagery dominant on discovery surfaces; posters and stills are editorial evidence.
-- **Do** use Projector Gold sparingly for CTAs, ranks, focus, and category emphasis.
-- **Do** preserve Arabic typography with zero tracking, strong line-height, and RTL-aware layout.
-- **Do** use numeric isolation and tabular numerals for dates, ranks, views, and reading time.
-- **Do** use curation patterns: featured article, editor picks, most-read strip, category paths, and related-reading modules.
-- **Do** keep reduced-motion support for loaders, image movement, overlays, and scroll interactions.
+- **Do** treat Warm Paper and Nocturnal Ink as a matched system, not primary and afterthought themes.
+- **Do** let image scale and asymmetric placement express editorial priority while preserving a clear RTL reading order.
+- **Do** keep real cinema imagery dominant and ship branded initial fallbacks beneath failure-prone images.
+- **Do** use Projector Gold sparingly for primary actions, ranks, focus, and selected emphasis.
+- **Do** preserve Arabic typography with zero tracking, generous line-height, and RTL-aware layout.
+- **Do** make loading, success, error, retry, empty, and end states explicit and accessible.
+- **Do** keep reduced-motion support for loaders, image movement, overlays, and entrance effects.
 
 ### Don't:
-- **Don't** use generic WordPress news and blog templates.
-- **Don't** use Netflix-copycat red and black cliches.
-- **Don't** use cold SaaS styling.
+- **Don't** turn a surface-specific hero split, rail, or story sequence into a site-wide template.
+- **Don't** use generic WordPress news grids, Netflix-copycat red and black, cold SaaS styling, or clickbait density.
 - **Don't** use weak Arabic typography, tracked Arabic labels, or cramped reading measures.
-- **Don't** use cluttered entertainment portals or clickbait visual systems.
-- **Don't** treat film imagery as decoration instead of editorial substance.
+- **Don't** treat film imagery as decoration or let a failed image collapse an editorial module.
 - **Don't** add side-stripe borders, gradient text, default glassmorphism, identical card grids everywhere, or nested cards.
-- **Don't** make modals the first answer. Exhaust inline, overlay, and progressive alternatives first.
+- **Don't** hide content continuation or asynchronous progress behind unreliable implicit behavior.

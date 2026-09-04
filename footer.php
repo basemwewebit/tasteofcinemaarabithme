@@ -8,7 +8,6 @@ $social_website = function_exists('get_field') ? (string) get_field('social_webs
 <footer role="contentinfo" class="delight-footer">
     <span class="delight-footer__stage" aria-hidden="true"></span>
     <div class="delight-footer__inner container mx-auto px-4">
-        <p class="delight-footer__eyebrow"><?php esc_html_e('خاتمة العرض', 'mazaq'); ?></p>
         <div class="delight-footer__grid">
             <div class="delight-footer__col delight-footer__col--brand">
                 <a href="<?php echo esc_url(home_url('/')); ?>" class="delight-footer__brand focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2">

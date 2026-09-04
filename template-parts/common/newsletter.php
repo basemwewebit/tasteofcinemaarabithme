@@ -11,7 +11,6 @@ $args = wp_parse_args(
 ?>
 <section class="newsletter-panel newsletter-panel--<?php echo esc_attr((string) $args['context']); ?>" aria-labelledby="newsletter-panel-title">
     <div>
-        <p class="newsletter-panel__kicker"><?php esc_html_e('النشرة السينمائية', 'mazaq'); ?></p>
         <h2 id="newsletter-panel-title" class="newsletter-panel__title"><?php esc_html_e('اختيارات تحريرية تصل إلى بريدك', 'mazaq'); ?></h2>
         <p class="newsletter-panel__summary"><?php esc_html_e('رسالة خفيفة عند صدور مقالات مميزة، بدون ضجيج أو رسائل متكررة.', 'mazaq'); ?></p>
     </div>

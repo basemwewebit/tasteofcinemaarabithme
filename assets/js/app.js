@@ -418,16 +418,27 @@ document.addEventListener('DOMContentLoaded', function () {
             footer.removeEventListener('focusin', reveal);
         };
 
-        var observer = new IntersectionObserver(function (entries) {
-            entries.forEach(function (entry) {
-                if (!entry.isIntersecting) return;
-                reveal();
-            });
-        }, { rootMargin: '0px 0px -10% 0px' });
-
-        footer.addEventListener('focusin', reveal);
-        observer.observe(footer);
+        var observer;
+        try {
+            observer = new IntersectionObserver(function (entries) {
+                entries.forEach(function (entry) {
+                    if (!entry.isIntersecting) return;
+                    reveal();
+                });
+            }, { rootMargin: '0px 0px -10% 0px' });
+            footer.classList.add('delight-footer--animate');
+            footer.addEventListener('focusin', reveal);
+            observer.observe(footer);
+        } catch (error) {
+            footer.classList.add('delight-footer--in');
+        }
     })();
+
+    document.querySelectorAll('.article-card__image').forEach(function (image) {
+        image.addEventListener('error', function () {
+            image.classList.add('article-card__image--unavailable');
+        });
+    });
 
     var lazyImages = document.querySelectorAll('.lazy-image[data-src]');
     if ('IntersectionObserver' in window && lazyImages.length) {

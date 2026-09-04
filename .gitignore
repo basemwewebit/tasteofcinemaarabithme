@@ -13,3 +13,8 @@ Thumbs.db
 *.swp
 .vscode/
 .idea/
+
+# Impeccable generated build and review evidence
+.impeccable/build/
+.impeccable/review/
+.impeccable/mocks/decision/*-generated.png
