@@ -240,6 +240,18 @@ Borders are hairline and warm or softly translucent. Gold borders appear in acti
 - **Layout:** a compact editorial invitation paired with an email field and one primary action; stack cleanly on narrow screens.
 - **State:** submission feedback is announced in a live region. Loading, success, and error copy should never shift the panel into an unusable state.
 
+### Single Article Surface
+The article is a festival programme page: criticism holds the main column at a 66ch measure, and every capability is a programme note beside it. This surface owns these patterns:
+
+- **Programme grid:** from 1360px a persistent 17.5rem margin column (sticky near the top) holds the notes beside the text; below that width the same notes stack ahead of the body, and a floating circular progress puck (conic gold ring, live percentage, jump sheet) carries navigation.
+- **Programme note skin:** margin notes — the film card, the section index, the font controls — share one skin: hairline Celluloid Beige border, 12px corners, Paper Elevated surface (Ink Elevated with a faint cream hairline in dark mode). New margin capabilities wear this skin rather than inventing a new container.
+- **Living section index:** the in-article table of contents reads as a "now showing" board. Each entry carries a small square marker (0.55rem) that fills Projector Gold with a soft halo for the section in view and a quiet gold tint for sections already read; a gold fill creeps along a 2px hairline track via transform scaleY and stops at the active tick — it tracks section position, not page scroll.
+- **Entry block typography:** Display Tajawal title (800, balanced, up to ~3.8rem), an Amiri standfirst at reading sizes (1.95 leading), and a label-weight credit line whose items are separated by gold micro-dots (0.3rem); the author leads the line set heavier in Tajawal.
+- **Note label as heading:** margin notes use no kicker — the note's own label is its heading ("بطاقة الفيلم", "في هذا المقال").
+- **Ticket-stub finale:** the end-of-read panel is a stub with a dashed perforation and punched notches filled with the page surface color (`--surface-body`), so the punch reads as a real hole on both themes.
+
+**The Gold Needs a Dark Room Rule.** On Warm Paper, small gold text falls to roughly 2:1 contrast. Small text on light paper uses warm muted ink; gold survives as borders, dots, and fills, and gold text is reserved for dark rooms and solid signal elements like the active tick.
+
 ## Do's and Don'ts
 
 ### Do:

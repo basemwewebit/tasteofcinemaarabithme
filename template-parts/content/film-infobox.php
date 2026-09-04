@@ -15,9 +15,9 @@ if (empty($fields)) {
     return;
 }
 ?>
-<aside class="film-infobox" aria-labelledby="film-infobox-title">
-    <p class="film-infobox__kicker"><?php esc_html_e('بطاقة الفيلم', 'mazaq'); ?></p>
-    <h2 id="film-infobox-title" class="film-infobox__title"><?php echo esc_html($fields['film_title'] ?? get_the_title()); ?></h2>
+<aside class="film-infobox programme__note" aria-labelledby="film-infobox-title">
+    <h2 id="film-infobox-title" class="film-infobox__title"><?php esc_html_e('بطاقة الفيلم', 'mazaq'); ?></h2>
+    <p class="film-infobox__film"><?php echo esc_html($fields['film_title'] ?? get_the_title()); ?></p>
     <dl class="film-infobox__list">
         <?php if (!empty($fields['film_year'])) : ?>
             <div><dt><?php esc_html_e('السنة', 'mazaq'); ?></dt><dd class="num"><?php echo esc_html($fields['film_year']); ?></dd></div>

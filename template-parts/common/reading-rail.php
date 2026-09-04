@@ -3,17 +3,15 @@
 declare(strict_types=1);
 
 /**
- * The Living Reel: a scroll-spy reading index.
+ * The programme index — the margin's living table of contents.
  *
- * Wide desktop (>=1360px, where the margin clears the centred column) renders a fixed
- * vertical rail of dots and ranks (aria-hidden, mouse-driven enhancement; the
- * in-content listicle TOC remains the accessible equivalent). Section titles are a
- * hover affordance, not an always-open label -- an open label makes the rail wide
- * enough to sit on the article. Everything narrower renders a floating progress puck
- * that opens an accessible jump sheet.
+ * Wide screens (>=1360px) render the index as a sticky programme note in the
+ * margin column: scroll-spy ticks the current section like a "now showing"
+ * marker, and a gold fill creeps along the hairline. Everything narrower
+ * gets the floating progress puck with an accessible jump sheet.
  *
  * Behaviour lives in assets/js/app-single.js; styling in the
- * "Single — Projection Room + Living Reel" CSS block.
+ * "Single — The Festival Programme" and "Single — Projection Room" CSS blocks.
  */
 
 $headings = mazaq_extract_article_headings(get_the_ID());
@@ -22,25 +20,26 @@ if (count($headings) < 3) {
     return;
 }
 ?>
-<aside class="reading-rail" data-reading-rail aria-hidden="true">
-    <div class="reading-rail__inner">
-        <span class="reading-rail__track" aria-hidden="true"><span class="reading-rail__fill" data-rail-fill></span></span>
-        <ol class="reading-rail__list">
+<nav class="programme-index programme__note" data-reading-rail aria-labelledby="programme-index-title">
+    <h2 id="programme-index-title" class="programme-index__title"><?php esc_html_e('في هذا المقال', 'mazaq'); ?></h2>
+    <div class="programme-index__reel">
+        <span class="programme-index__track" aria-hidden="true"><span class="programme-index__fill" data-rail-fill></span></span>
+        <ol class="programme-index__list">
             <?php foreach ($headings as $heading) : ?>
-                <li class="reading-rail__item<?php echo $heading['level'] > 2 ? ' reading-rail__item--nested' : ''; ?>" data-rail-item="<?php echo esc_attr($heading['id']); ?>">
-                    <a class="reading-rail__link" href="#<?php echo esc_attr($heading['id']); ?>" tabindex="-1">
-                        <span class="reading-rail__dot" aria-hidden="true"></span>
+                <li class="programme-index__item<?php echo $heading['level'] > 2 ? ' programme-index__item--nested' : ''; ?>" data-rail-item="<?php echo esc_attr($heading['id']); ?>">
+                    <a class="programme-index__link" href="#<?php echo esc_attr($heading['id']); ?>">
+                        <span class="programme-index__marker" aria-hidden="true"></span>
                         <?php $index = mazaq_heading_index($heading['number']); ?>
                         <?php if ($index !== '') : ?>
-                            <span class="reading-rail__index num" aria-hidden="true"><?php echo esc_html($index); ?></span>
+                            <span class="programme-index__index num" aria-hidden="true"><?php echo esc_html($index); ?></span>
                         <?php endif; ?>
-                        <span class="reading-rail__label"><?php echo esc_html($heading['text']); ?></span>
+                        <span class="programme-index__label"><?php echo esc_html($heading['text']); ?></span>
                     </a>
                 </li>
             <?php endforeach; ?>
         </ol>
     </div>
-</aside>
+</nav>
 
 <div class="reading-puck" data-reading-puck>
     <button type="button" class="reading-puck__toggle" data-puck-toggle aria-expanded="false" aria-controls="reading-sheet">

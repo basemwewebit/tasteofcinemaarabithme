@@ -1,6 +1,7 @@
-<div class="flex items-center gap-3 mb-8 bg-primary-cream dark:bg-midnight p-2 rounded-md border border-primary-border dark:border-border-subtle max-w-fit" aria-label="أدوات تحكم حجم الخط" aria-live="polite">
-    <span class="text-xs text-slate-800 dark:text-primary-tint font-display font-bold px-2"><?php esc_html_e('حجم الخط:', 'mazaq'); ?></span>
-    <button type="button" id="font-decrease" aria-label="تصغير حجم الخط" class="w-11 h-11 flex items-center justify-center rounded-sm bg-white dark:bg-nocturnal border border-primary-border dark:border-border-subtle text-slate-800 dark:text-slate-200 hover:text-primary dark:hover:text-primary-tint hover:border-primary-tint font-bold transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2" aria-pressed="false">-A</button>
-    <button type="button" id="font-increase" aria-label="تكبير حجم الخط" class="w-11 h-11 flex items-center justify-center rounded-sm bg-white dark:bg-nocturnal border border-primary-border dark:border-border-subtle text-slate-800 dark:text-slate-200 hover:text-primary dark:hover:text-primary-tint hover:border-primary-tint font-bold transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2" aria-pressed="false">+A</button>
+<div class="font-controls programme__note" aria-label="أدوات تحكم حجم الخط" aria-live="polite">
+    <span class="font-controls__label"><?php esc_html_e('حجم الخط', 'mazaq'); ?></span>
+    <div class="font-controls__buttons">
+        <button type="button" id="font-decrease" aria-label="تصغير حجم الخط" class="font-controls__button" aria-pressed="false">-A</button>
+        <button type="button" id="font-increase" aria-label="تكبير حجم الخط" class="font-controls__button" aria-pressed="false">+A</button>
+    </div>
 </div>
-

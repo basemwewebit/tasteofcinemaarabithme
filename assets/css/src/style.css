@@ -3490,114 +3490,156 @@ html.dark .screening-home__ad-label {
     }
 }
 
+/* =====================================================================
+   SINGLE — The Festival Programme
+   The article reads as a festival booklet page: criticism holds the main
+   column, and every capability is a programme note beside it. On wide
+   screens the margin is persistent (film card, section index, reading
+   controls); below 1360px the same notes stack ahead of the body and the
+   floating puck carries the jump sheet. Behaviour: assets/js/app-single.js.
+   ===================================================================== */
+
 .single-main {
-    --reading-measure: 68ch;
+    --reading-measure: 66ch;
+    --programme-width: 17.5rem;
 }
 
 .single-article {
-    max-width: 72rem;
+    max-width: 76rem;
     margin-inline: auto;
 }
 
+/* --- The page grid: margin notes beside the text from 1360px --- */
+.programme-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+}
+
+.programme-main {
+    min-width: 0;
+}
+
+/* --- Entry block: category, display title, standfirst, credit line --- */
 .single-article__header {
-    max-width: 58rem;
-    margin: 0 auto clamp(2.5rem, 5vw, 4rem);
-    text-align: start;
+    max-width: 54rem;
+    margin-block-end: clamp(2rem, 4.5vw, 3rem);
 }
 
 .single-article__category {
     display: inline-flex;
     align-items: center;
     min-height: 2rem;
-    margin-bottom: 1.25rem;
-    padding: 0.35rem 0.9rem;
-    border: 1px solid rgba(201, 162, 39, 0.28);
+    margin-block-end: 1.4rem;
+    padding: 0.3rem 0.85rem;
+    border: 1px solid rgba(201, 162, 39, 0.32);
     border-radius: var(--radius-pill);
-    background: rgba(201, 162, 39, 0.12);
-    color: var(--color-primary-hover);
+    background: rgba(201, 162, 39, 0.1);
+    color: var(--color-text-on-paper-muted);
+    font-family: var(--font-display);
     font-size: var(--text-label);
     font-weight: 800;
-    line-height: 1.45;
+    line-height: 1.5;
+    transition: border-color 200ms ease, background-color 200ms ease;
+}
+
+.single-article__category:hover,
+.single-article__category:focus-visible {
+    border-color: rgba(201, 162, 39, 0.6);
+    background: rgba(201, 162, 39, 0.16);
 }
 
 .dark .single-article__category {
+    border-color: rgba(230, 203, 106, 0.26);
+    background: rgba(230, 203, 106, 0.08);
     color: var(--color-gold-tint);
 }
 
+.dark .single-article__category:hover,
+.dark .single-article__category:focus-visible {
+    border-color: rgba(230, 203, 106, 0.5);
+    background: rgba(230, 203, 106, 0.14);
+}
+
 .single-article__title {
-    font-family: var(--font-editorial);
-    font-size: var(--text-display);
-    font-weight: 700;
-    line-height: 1.2;
-    color: var(--color-nocturnal-slate);
+    margin: 0;
+    color: var(--text-heading);
+    font-family: var(--font-display);
+    font-size: clamp(2.3rem, 1.55rem + 3.4vw, 3.8rem);
+    font-weight: 800;
+    line-height: 1.18;
+    letter-spacing: 0;
     text-wrap: balance;
+    overflow-wrap: break-word;
 }
 
 .single-article__deck {
-    max-width: 46rem;
-    margin-top: 1.25rem;
-    margin-bottom: 0;
+    max-width: 44rem;
+    margin-block: 1.1rem 0;
     color: var(--color-text-on-paper-muted);
-    font-size: var(--text-lead);
-    font-weight: 600;
-    line-height: 1.9;
+    font-family: var(--font-editorial);
+    font-size: clamp(1.2rem, 1.08rem + 0.5vw, 1.4rem);
+    font-weight: 400;
+    line-height: 1.95;
     text-wrap: pretty;
+    overflow-wrap: break-word;
 }
 
 .dark .single-article__deck {
     color: var(--color-text-on-ink-muted);
 }
 
-.dark .single-article__title {
-    color: var(--color-screen-light);
-}
-
+/* The credit line: who screened it, when, and how long it runs. */
 .single-article__meta {
     display: flex;
     flex-wrap: wrap;
-    justify-content: flex-start;
-    gap: 0.45rem 0.9rem;
-    margin-top: 1.5rem;
-    margin-bottom: 0;
+    align-items: center;
+    gap: 0.5rem 0.85rem;
+    margin-block: 1.6rem 0;
     padding: 0;
     color: var(--color-text-on-paper-muted);
     font-size: var(--text-label);
     font-weight: 600;
-    line-height: 1.65;
+    line-height: 1.7;
     list-style: none;
 }
 
 .single-article__meta li {
     display: inline-flex;
     align-items: center;
-    gap: 0.45rem;
+    gap: 0.5rem;
+}
+
+.single-article__meta li:first-child {
+    color: var(--text-heading);
+    font-family: var(--font-display);
+    font-weight: 800;
 }
 
 .single-article__meta li:not(:last-child)::after {
     content: "";
-    width: 0.32rem;
-    height: 0.32rem;
+    width: 0.3rem;
+    height: 0.3rem;
     border-radius: var(--radius-pill);
-    background: rgba(201, 162, 39, 0.58);
+    background: rgba(201, 162, 39, 0.55);
 }
 
 .dark .single-article__meta {
-    border-color: rgba(234, 230, 220, 0.08);
     color: var(--color-text-on-ink-muted);
 }
 
-.single-article__figure {
-    margin: clamp(2rem, 5vw, 4rem) auto clamp(2.5rem, 6vw, 4.5rem);
+.dark .single-article__meta li:first-child {
+    color: var(--text-heading);
 }
 
-.single-article__image {
-    width: 100%;
-    height: auto;
-    aspect-ratio: 16 / 9;
-    object-fit: cover;
-    margin-inline: auto;
-    border-radius: var(--radius-lg);
-    box-shadow: 0 1.4rem 3rem rgba(15, 23, 42, 0.16);
+.dark .single-article__meta li:not(:last-child)::after {
+    background: rgba(230, 203, 106, 0.45);
+}
+
+/* --- The still: placement only; the framed cell lives in the
+       Projection Room block below --- */
+.single-article__figure {
+    margin-block: 0 clamp(2.25rem, 4.5vw, 3.25rem);
 }
 
 .single-article__figure figcaption {
@@ -3614,158 +3656,276 @@ html.dark .screening-home__ad-label {
     color: var(--color-text-on-ink-muted);
 }
 
-.single .article-content {
-    width: min(100%, var(--reading-measure));
-    margin: 0 auto;
-}
-
-.inline-related,
-.single-article__tags {
-    margin-top: 4rem;
-    padding-top: 2rem;
-    border-top: 1px solid var(--color-mist);
-}
-
-.dark .inline-related,
-.dark .single-article__tags {
-    border-color: rgba(234, 230, 220, 0.08);
-}
-
-.inline-related {
-    width: min(100%, 72rem);
-    margin-inline: auto;
-}
-
-.inline-related__grid {
-    display: grid;
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-    gap: clamp(1rem, 2vw, 1.5rem);
-}
-
-.inline-related__grid > .article-card {
-    grid-column: span 4 / span 4;
-    height: 100%;
-}
-
-.inline-related__grid > .article-card--wide {
-    grid-column: span 8 / span 8;
-}
-
-.listicle-toc,
-.film-infobox,
-.series-nav,
-.newsletter-panel {
-    margin: 2rem auto;
-    border: 1px solid rgba(212, 201, 168, 0.52);
-    border-radius: var(--radius-lg);
-    background: rgba(247, 244, 237, 0.68);
-}
-
-.dark .listicle-toc,
-.dark .film-infobox,
-.dark .series-nav,
-.dark .newsletter-panel {
-    border-color: rgba(234, 230, 220, 0.08);
-    background: rgba(22, 22, 27, 0.78);
-}
-
-.single .listicle-toc,
-.single .film-infobox,
-.single .series-nav,
-.single .newsletter-panel,
-.single .author-box,
-.single .single-article__tags {
-    width: min(100%, 52rem);
-    margin-inline: auto;
-}
-
-.listicle-toc,
-.film-infobox,
-.series-nav {
-    padding: clamp(1.25rem, 2.4vw, 1.75rem);
-}
-
-.listicle-toc__kicker,
-.film-infobox__kicker,
-.series-nav__kicker,
-.newsletter-panel__kicker {
-    margin-bottom: 0.35rem;
-    color: var(--color-primary-hover);
-    font-size: var(--text-caption);
-    font-weight: 800;
-    line-height: 1.45;
-}
-
-.dark .listicle-toc__kicker,
-.dark .film-infobox__kicker,
-.dark .series-nav__kicker,
-.dark .newsletter-panel__kicker {
-    color: var(--color-gold-tint);
-}
-
-.listicle-toc__title,
-.film-infobox__title,
-.series-nav__title,
-.newsletter-panel__title {
-    color: var(--color-nocturnal-slate);
-    font-family: var(--font-display);
-    font-size: clamp(1.25rem, 2vw, 1.65rem);
-    font-weight: 800;
-    line-height: 1.3;
-    text-wrap: balance;
-}
-
-.dark .listicle-toc__title,
-.dark .film-infobox__title,
-.dark .series-nav__title,
-.dark .newsletter-panel__title {
-    color: var(--color-screen-light);
-}
-
-.listicle-toc__list {
-    display: grid;
-    gap: 0.5rem;
-    margin-top: 1rem;
-}
-
-.listicle-toc__item a {
+/* --- Margin programme: shared note skin --- */
+.programme {
     display: flex;
-    min-height: 44px;
-    align-items: center;
-    gap: 0.7rem;
-    color: var(--color-slate-700);
-    font-weight: 700;
-    line-height: 1.65;
+    flex-direction: column;
+    gap: 0.9rem;
+    margin-block-start: clamp(1.5rem, 3vw, 2rem);
 }
 
-.dark .listicle-toc__item a {
+.programme__note {
+    border: 1px solid rgba(212, 201, 168, 0.55);
+    border-radius: var(--radius-lg);
+    background: var(--color-paper-elevated);
+    padding: 1.05rem 1.15rem 1.15rem;
+}
+
+.dark .programme__note {
+    border-color: rgba(234, 230, 220, 0.09);
+    background: var(--color-ink-elevated);
+}
+
+@media (min-width: 1360px) {
+    .programme-grid {
+        grid-template-columns: var(--programme-width) minmax(0, 1fr);
+        column-gap: clamp(2.75rem, 4vw, 4.5rem);
+    }
+
+    .single-article__header,
+    .single-article__figure--cinema,
+    .programme-main {
+        grid-column: 2;
+    }
+
+    .programme {
+        grid-column: 1;
+        grid-row: 1 / span 3;
+        align-self: start;
+        position: sticky;
+        top: 6.75rem;
+        max-height: calc(100vh - 8rem);
+        margin-block-start: 0;
+        overflow-y: auto;
+        scrollbar-width: none;
+        padding-block-end: 0.25rem;
+    }
+
+    .programme::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+/* --- Section index: the living programme. The reel clips long
+       listicles and JS scrolls the active note into view; the gold fill
+       on the hairline stops at the current section. --- */
+.programme-index {
+    display: none;
+}
+
+@media (min-width: 1360px) {
+    .programme-index {
+        display: block;
+    }
+}
+
+.programme-index__title {
+    margin-block-end: 0.55rem;
+    color: var(--text-heading);
+    font-family: var(--font-display);
+    font-size: var(--text-label);
+    font-weight: 800;
+    line-height: 1.4;
+}
+
+.programme-index__reel {
+    position: relative;
+    max-height: min(50vh, 28rem);
+    overflow: hidden;
+    padding-inline-start: 0.95rem;
+}
+
+.programme-index__reel.is-scrollable {
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #0B0B0E 1.6rem, #0B0B0E calc(100% - 1.6rem), transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent 0, #0B0B0E 1.6rem, #0B0B0E calc(100% - 1.6rem), transparent 100%);
+}
+
+.programme-index__track {
+    position: absolute;
+    inset-inline-start: 0;
+    top: 0.4rem;
+    bottom: 0.4rem;
+    width: 2px;
+    border-radius: var(--radius-pill);
+    background: rgba(148, 163, 184, 0.3);
+    overflow: hidden;
+}
+
+.dark .programme-index__track {
+    background: rgba(148, 163, 184, 0.22);
+}
+
+.programme-index__fill {
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(to bottom, var(--color-primary), var(--color-gold-tint));
+    transform: scaleY(var(--rail-progress, 0));
+    transform-origin: top;
+    transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.programme-index__list {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.programme-index__link {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin-inline: -0.55rem;
+    padding: 0.4rem 0.55rem;
+    border-radius: var(--radius-sm);
+    color: var(--color-slate-600);
+    font-size: var(--text-caption);
+    font-weight: 600;
+    line-height: 1.65;
+    text-decoration: none;
+    transition: color 200ms ease, background-color 200ms ease;
+}
+
+.dark .programme-index__link {
     color: var(--color-slate-300);
 }
 
-/* Printed by the template, not a CSS counter: a ranked listicle numbers its own
-   headings, and a counter can only ever count position. See mazaq_heading_index(). */
-.listicle-toc__index {
-    color: var(--color-primary);
-    font-size: 0.82rem;
+.programme-index__link:hover {
+    color: var(--text-heading);
+    background: rgba(201, 162, 39, 0.09);
 }
 
-.listicle-toc__item--nested {
-    padding-inline-start: 1rem;
+.dark .programme-index__link:hover {
+    background: rgba(230, 203, 106, 0.08);
 }
 
-.film-infobox__list,
-.series-nav__links {
+.programme-index__item--nested .programme-index__link {
+    padding-inline-start: 1.5rem;
+}
+
+/* The "now showing" tick: a small square that fills gold for the section
+   you are in, and tints for the ones already read. */
+.programme-index__marker {
+    flex: 0 0 auto;
+    align-self: center;
+    width: 0.55rem;
+    height: 0.55rem;
+    border: 1.5px solid rgba(148, 163, 184, 0.65);
+    border-radius: 0;
+    background: transparent;
+    transition: border-color 240ms ease, background-color 240ms ease, box-shadow 280ms ease, transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.dark .programme-index__marker {
+    border-color: rgba(148, 163, 184, 0.45);
+}
+
+.programme-index__item.is-read .programme-index__marker {
+    border-color: rgba(184, 143, 30, 0.6);
+    background: rgba(201, 162, 39, 0.24);
+}
+
+.dark .programme-index__item.is-read .programme-index__marker {
+    border-color: rgba(230, 203, 106, 0.55);
+    background: rgba(230, 203, 106, 0.22);
+}
+
+.programme-index__item.is-active .programme-index__marker {
+    border-color: var(--color-primary);
+    background: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(201, 162, 39, 0.18);
+    transform: scale(1.12);
+}
+
+.dark .programme-index__item.is-active .programme-index__marker {
+    border-color: var(--color-gold-tint);
+    background: var(--color-gold-tint);
+    box-shadow: 0 0 0 3px rgba(230, 203, 106, 0.16);
+}
+
+.programme-index__index {
+    flex: 0 0 auto;
+    color: var(--color-text-on-paper-muted);
+    font-size: var(--text-caption);
+    font-weight: 500;
+}
+
+.dark .programme-index__index {
+    color: var(--color-gold-tint);
+}
+
+.programme-index__label {
+    min-width: 0;
+}
+
+.programme-index__item.is-active .programme-index__link {
+    color: var(--text-heading);
+    font-weight: 800;
+}
+
+/* --- Film card: the programme note for the screened film --- */
+.film-infobox__title {
+    margin-block-end: 0.6rem;
+    color: var(--text-heading);
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    font-weight: 800;
+    line-height: 1.4;
+}
+
+.film-infobox__film {
+    margin: 0 0 0.85rem;
+    color: var(--text-heading);
+    font-family: var(--font-display);
+    font-size: 1.18rem;
+    font-weight: 800;
+    line-height: 1.5;
+    text-wrap: balance;
+}
+
+.film-infobox__list {
     display: grid;
-    gap: 0.75rem;
-    margin-top: 1rem;
+    gap: 0.55rem;
+    margin: 0;
 }
 
 .film-infobox__list div {
     display: flex;
     justify-content: space-between;
+    align-items: baseline;
     gap: 1rem;
     border-top: 1px solid rgba(148, 163, 184, 0.18);
-    padding-top: 0.75rem;
+    padding-block-start: 0.55rem;
+}
+
+.film-infobox__list dt {
+    color: var(--color-text-on-paper-muted);
+    font-size: var(--text-caption);
+    font-weight: 700;
+    line-height: 1.5;
+}
+
+.film-infobox__list dd {
+    margin: 0;
+    color: var(--text-heading);
+    font-size: 0.92rem;
+    font-weight: 700;
+    line-height: 1.5;
+    text-align: end;
+}
+
+.dark .film-infobox__list dt {
+    color: var(--color-text-on-ink-muted);
+}
+
+.dark .film-infobox__list dd {
+    color: var(--text-heading);
 }
 
 /* Visible ⭐ rating — proportional gold fill over a muted star track.
@@ -3815,54 +3975,135 @@ html.dark .screening-home__ad-label {
     color: var(--color-gold-tint);
 }
 
-@media (min-width: 768px) {
-    .film-infobox {
-        display: grid;
-        grid-template-columns: minmax(11rem, 0.7fr) minmax(0, 1fr);
-        column-gap: clamp(1.5rem, 4vw, 3rem);
-        align-items: start;
-    }
-
-    .film-infobox__list {
-        grid-column: 2;
-        grid-row: 1 / span 2;
-        margin-top: 0;
-    }
+/* --- Reading controls: a quiet dial in the margin --- */
+/* JS-gated: the font buttons have no behaviour without app-single.js. */
+.font-controls:not(.is-live) {
+    display: none;
 }
 
-.film-infobox__list dt,
-.series-nav__link span {
-    color: var(--color-slate-600);
-    font-size: var(--text-caption);
+.font-controls__label {
+    display: block;
+    margin-block-end: 0.6rem;
+    color: var(--text-heading);
+    font-family: var(--font-display);
+    font-size: 0.95rem;
     font-weight: 800;
-    line-height: 1.45;
+    line-height: 1.4;
 }
 
-.film-infobox__list dd,
-.series-nav__link strong {
-    color: var(--color-nocturnal-slate);
+.font-controls__buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.font-controls__button {
+    flex: 1 1 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.75rem;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--text-heading);
+    font-family: var(--font-body);
+    font-size: 0.95rem;
     font-weight: 800;
-    line-height: 1.45;
+    line-height: 1;
+    cursor: pointer;
+    transition: border-color 200ms ease, color 200ms ease, background-color 200ms ease;
+}
+
+.dark .font-controls__button {
+    border-color: rgba(234, 230, 220, 0.14);
+}
+
+.font-controls__button:hover {
+    border-color: rgba(201, 162, 39, 0.55);
+    background: rgba(201, 162, 39, 0.08);
+    color: var(--color-primary-hover);
+}
+
+.dark .font-controls__button:hover {
+    border-color: rgba(230, 203, 106, 0.45);
+    background: rgba(230, 203, 106, 0.08);
+    color: var(--color-gold-tint);
+}
+
+.font-controls__button:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+/* --- Body column --- */
+.single .article-content {
+    width: min(100%, var(--reading-measure));
+    margin-inline: auto;
+}
+
+.inline-related {
+    width: min(100%, 66rem);
+    margin-block: 3.5rem 0;
+    padding-block: 2rem;
+    border-block-start: 1px solid var(--color-mist);
+}
+
+.dark .inline-related {
+    border-color: rgba(234, 230, 220, 0.08);
+}
+
+.inline-related__head h3 {
+    font-family: var(--font-display);
+}
+
+.inline-related__grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: clamp(1rem, 2vw, 1.5rem);
+}
+
+.inline-related__grid > .article-card {
+    grid-column: span 6 / span 6;
+    height: 100%;
+}
+
+/* --- Series: the next screenings --- */
+.series-nav {
+    width: min(100%, 46rem);
+    margin-block-start: 3.5rem;
+    padding: clamp(1.15rem, 2.5vw, 1.6rem);
+    border: 1px solid rgba(212, 201, 168, 0.55);
+    border-radius: var(--radius-lg);
+    background: var(--color-paper-elevated);
+}
+
+.dark .series-nav {
+    border-color: rgba(234, 230, 220, 0.09);
+    background: var(--color-ink-elevated);
+}
+
+.series-nav__title {
+    margin: 0 0 1rem;
+    color: var(--text-heading);
+    font-family: var(--font-display);
+    font-size: var(--text-title);
+    font-weight: 800;
+    line-height: 1.4;
     text-wrap: balance;
 }
 
-.dark .film-infobox__list dt,
-.dark .series-nav__link span,
-.dark .film-infobox__list dd,
-.dark .series-nav__link strong {
-    color: var(--color-slate-300);
-}
-
 .series-nav__links {
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
-    gap: 1rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+    gap: 0.75rem;
+    margin: 0;
 }
 
 .series-nav__link {
     min-height: 44px;
-    border: 1px solid rgba(148, 163, 184, 0.2);
+    border: 1px solid rgba(148, 163, 184, 0.24);
     border-radius: var(--radius-md);
-    padding: 1rem;
+    padding: 0.9rem 1rem;
     transition: border-color 200ms ease, transform 200ms ease;
 }
 
@@ -3872,49 +4113,82 @@ html.dark .screening-home__ad-label {
     transform: translateY(-2px);
 }
 
+.dark .series-nav__link {
+    border-color: rgba(234, 230, 220, 0.12);
+}
+
+.dark .series-nav__link:hover,
+.dark .series-nav__link:focus-visible {
+    border-color: rgba(230, 203, 106, 0.4);
+}
+
+.series-nav__link span {
+    color: var(--color-text-on-paper-muted);
+    font-size: var(--text-caption);
+    font-weight: 700;
+    line-height: 1.5;
+}
+
+.series-nav__link strong {
+    color: var(--text-heading);
+    font-weight: 800;
+    line-height: 1.5;
+    text-wrap: balance;
+}
+
+.dark .series-nav__link span {
+    color: var(--color-text-on-ink-muted);
+}
+
+/* --- Tags --- */
+.single-article__tags {
+    width: min(100%, 46rem);
+    margin-block-start: 3.25rem;
+    padding-block-start: 1.75rem;
+    border-block-start: 1px solid var(--color-mist);
+}
+
+.dark .single-article__tags {
+    border-color: rgba(234, 230, 220, 0.08);
+}
+
 .single-article__tags-head {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 1rem;
-    color: var(--color-slate-600);
+    gap: 0.6rem;
+    margin-block-end: 0.95rem;
+    color: var(--text-heading);
     font-family: var(--font-display);
-    font-size: 1.1rem;
+    font-size: 1.15rem;
     font-weight: 800;
-    line-height: 1.35;
-}
-
-.dark .single-article__tags-head {
-    color: var(--color-slate-300);
+    line-height: 1.4;
 }
 
 .single-article__tag-list {
     display: flex;
+    flex-wrap: wrap;
     gap: 0.5rem;
-    overflow-x: auto;
-    padding-bottom: 0.4rem;
 }
 
 .single-article__tag {
     display: inline-flex;
     align-items: center;
     gap: 0.25rem;
-    min-height: 2.75rem;
-    flex: 0 0 auto;
-    padding: 0.45rem 0.9rem;
+    min-height: 2.5rem;
+    padding: 0.4rem 0.85rem;
     border: 1px solid var(--color-mist);
     border-radius: var(--radius-pill);
     background: var(--color-warm-ash);
     color: var(--color-slate-700);
-    font-size: 0.875rem;
+    font-size: var(--text-label);
     font-weight: 700;
-    line-height: 1.45;
+    line-height: 1.5;
     transition: border-color 200ms ease, color 200ms ease;
 }
 
 .dark .single-article__tag {
     border-color: rgba(234, 230, 220, 0.08);
-    background: var(--color-ink-elevated);
+    background: var(--color-ink-overlay);
     color: var(--color-slate-300);
 }
 
@@ -3924,33 +4198,32 @@ html.dark .screening-home__ad-label {
     color: var(--color-primary-hover);
 }
 
+.dark .single-article__tag:hover,
+.dark .single-article__tag:focus-visible {
+    border-color: rgba(230, 203, 106, 0.4);
+    color: var(--color-gold-tint);
+}
+
+/* --- Author: the closing credit --- */
 .author-box {
-    margin-top: clamp(3rem, 6vw, 5rem);
-    padding: clamp(1.25rem, 3vw, 2rem);
-    border: 1px solid var(--color-mist);
+    width: min(100%, 46rem);
+    margin-block-start: 3.5rem;
+    padding: clamp(1.15rem, 2.5vw, 1.7rem);
+    border: 1px solid rgba(212, 201, 168, 0.55);
     border-radius: var(--radius-lg);
-    background:
-        radial-gradient(circle at 12% 15%, rgba(201, 162, 39, 0.12), transparent 30%),
-        rgba(247, 244, 237, 0.68);
-    transition: border-color 200ms ease, background-color 200ms ease;
+    background: var(--color-paper-elevated);
 }
 
 .dark .author-box {
-    border-color: rgba(234, 230, 220, 0.08);
-    background:
-        radial-gradient(circle at 12% 15%, rgba(230, 203, 106, 0.1), transparent 32%),
-        rgba(22, 22, 27, 0.78);
+    border-color: rgba(234, 230, 220, 0.09);
+    background: var(--color-ink-elevated);
 }
 
 .author-box__inner {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
-    gap: clamp(1rem, 3vw, 1.75rem);
+    gap: clamp(1rem, 3vw, 1.5rem);
     align-items: start;
-}
-
-.author-box__media {
-    padding-top: 0.2rem;
 }
 
 .author-box__avatar-link {
@@ -3959,44 +4232,37 @@ html.dark .screening-home__ad-label {
 }
 
 .author-box__avatar {
-    width: clamp(4.75rem, 9vw, 6rem);
-    height: clamp(4.75rem, 9vw, 6rem);
-    border: 2px solid rgba(201, 162, 39, 0.28);
+    width: clamp(4.25rem, 8vw, 5.25rem);
+    height: clamp(4.25rem, 8vw, 5.25rem);
+    border: 2px solid rgba(201, 162, 39, 0.3);
     border-radius: var(--radius-pill);
     object-fit: cover;
-    box-shadow: 0 1rem 2.25rem rgba(15, 23, 42, 0.16);
     transition: transform 250ms cubic-bezier(0.22, 1, 0.36, 1), border-color 250ms ease;
 }
 
 .author-box__avatar-link:hover .author-box__avatar,
 .author-box__avatar-link:focus-visible .author-box__avatar {
     transform: translateY(-2px);
-    border-color: rgba(201, 162, 39, 0.56);
+    border-color: rgba(201, 162, 39, 0.6);
 }
 
-.author-box__kicker {
-    margin-bottom: 0.35rem;
-    color: var(--color-primary-hover);
-    font-size: var(--text-caption);
-    font-weight: 800;
-    line-height: 1.45;
+.dark .author-box__avatar {
+    border-color: rgba(230, 203, 106, 0.28);
 }
 
-.dark .author-box__kicker {
-    color: var(--color-gold-tint);
+.dark .author-box__avatar-link:hover .author-box__avatar,
+.dark .author-box__avatar-link:focus-visible .author-box__avatar {
+    border-color: rgba(230, 203, 106, 0.55);
 }
 
 .author-box__name {
-    color: var(--color-nocturnal-slate);
+    margin: 0;
+    color: var(--text-heading);
     font-family: var(--font-display);
-    font-size: clamp(1.25rem, 2vw, 1.55rem);
+    font-size: var(--text-title);
     font-weight: 800;
-    line-height: 1.35;
+    line-height: 1.4;
     text-wrap: balance;
-}
-
-.dark .author-box__name {
-    color: var(--color-screen-light);
 }
 
 .author-box__name a {
@@ -4008,16 +4274,21 @@ html.dark .screening-home__ad-label {
     color: var(--color-primary-hover);
 }
 
+.dark .author-box__name a:hover,
+.dark .author-box__name a:focus-visible {
+    color: var(--color-gold-tint);
+}
+
 .author-box__bio {
-    margin-top: 0.75rem;
-    color: var(--color-slate-600);
-    font-size: 1rem;
+    margin-block-start: 0.6rem;
+    color: var(--color-text-on-paper-muted);
+    font-size: var(--text-body);
     line-height: 1.85;
     text-wrap: pretty;
 }
 
 .dark .author-box__bio {
-    color: var(--color-slate-300);
+    color: var(--color-text-on-ink-muted);
 }
 
 .author-box__link {
@@ -4025,7 +4296,7 @@ html.dark .screening-home__ad-label {
     align-items: center;
     gap: 0.55rem;
     min-height: 2.75rem;
-    margin-top: 1rem;
+    margin-block-start: 0.75rem;
     color: var(--color-primary-hover);
     font-size: 0.92rem;
     font-weight: 800;
@@ -4038,18 +4309,83 @@ html.dark .screening-home__ad-label {
 
 .author-box__link:hover,
 .author-box__link:focus-visible {
-    color: var(--color-nocturnal-slate);
-}
-
-.dark .author-box__link:hover,
-.dark .author-box__link:focus-visible {
-    color: var(--color-screen-light);
+    color: var(--text-heading);
 }
 
 .author-box__link-icon {
     width: 1rem;
     height: 1rem;
     flex: 0 0 1rem;
+}
+
+.author-box__latest {
+    margin-block-start: 1.25rem;
+    padding-block-start: 1.25rem;
+    border-top: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.dark .author-box__latest {
+    border-top-color: rgba(234, 230, 220, 0.08);
+}
+
+.author-box__latest h3 {
+    margin-block-end: 1rem;
+    color: var(--text-heading);
+    font-family: var(--font-display);
+    font-size: var(--text-label);
+    font-weight: 800;
+    line-height: 1.45;
+}
+
+/* --- More from this section --- */
+.more-from-category {
+    width: min(100%, 62rem);
+    margin-block-start: 3.5rem;
+    padding-block-start: 2rem;
+    border-block-start: 1px solid var(--color-mist);
+}
+
+.dark .more-from-category {
+    border-color: rgba(234, 230, 220, 0.08);
+}
+
+/* --- Newsletter: one honest panel at the exit --- */
+.newsletter-panel {
+    border: 1px solid rgba(212, 201, 168, 0.55);
+    border-radius: var(--radius-lg);
+    background: var(--color-paper-elevated);
+}
+
+.dark .newsletter-panel {
+    border-color: rgba(234, 230, 220, 0.09);
+    background: var(--color-ink-elevated);
+}
+
+.single .newsletter-panel {
+    width: min(100%, 46rem);
+    margin-block-start: 3.5rem;
+}
+
+/* --- The bottom ad slot stays a calm, honest frame --- */
+.single-article__ad {
+    width: min(100%, 46rem);
+    margin-block-start: 3.5rem;
+}
+
+/* Text selection belongs to the world, not the browser. */
+.single-main ::selection {
+    background: rgba(201, 162, 39, 0.3);
+}
+
+.dark .single-main ::selection {
+    background: rgba(230, 203, 106, 0.32);
+}
+
+@media (max-width: 767px) {
+    .author-box__inner {
+        grid-template-columns: 1fr;
+        text-align: start;
+    }
 }
 
 @media (max-width: 1023px) {
@@ -4393,48 +4729,80 @@ html.dark .screening-home__ad-label {
     }
 }
 
-/* --- End-of-Content: Closing Credits --- */
+/* --- End-of-Content: the ticket stub. The screening is over; the
+       perforated edge and punched notches make the exit tangible. --- */
 .delight-finale {
-    position: relative;
-    text-align: center;
-    padding: clamp(3rem, 8vw, 5rem) 1.5rem;
-    margin-top: 2rem;
+    margin-block-start: clamp(3.5rem, 7vw, 5rem);
 }
 
-.delight-finale__line {
-    display: block;
-    width: 4rem;
-    height: 1px;
-    margin: 0 auto 1.5rem;
-    background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.8), transparent);
+.delight-finale__stub {
+    position: relative;
+    width: min(100%, 33rem);
+    margin-inline: auto;
+    padding: clamp(1.9rem, 4vw, 2.4rem) clamp(1.5rem, 4vw, 2.2rem);
+    padding-inline-end: clamp(4.6rem, 10vw, 5.2rem);
+    border: 1px solid rgba(212, 201, 168, 0.62);
+    border-radius: var(--radius-md);
+    background: var(--color-paper-elevated);
+    box-shadow: 0 1.1rem 2.4rem rgba(15, 23, 42, 0.08);
+    text-align: center;
+}
+
+.dark .delight-finale__stub {
+    border-color: rgba(234, 230, 220, 0.1);
+    background: var(--color-ink-elevated);
+    box-shadow: 0 1.2rem 2.6rem rgba(2, 6, 23, 0.5);
+}
+
+.delight-finale__stub::before {
+    content: "";
+    position: absolute;
+    inset-block: 0.7rem;
+    inset-inline-end: 3.2rem;
+    border-inline-start: 2px dashed rgba(148, 163, 184, 0.5);
+}
+
+.delight-finale__notch {
+    position: absolute;
+    inset-inline-end: calc(3.2rem - 0.5rem);
+    width: 1rem;
+    height: 1rem;
+    border: 1px solid rgba(212, 201, 168, 0.62);
+    border-radius: var(--radius-pill);
+    background: var(--surface-body);
+}
+
+.dark .delight-finale__notch {
+    border-color: rgba(234, 230, 220, 0.1);
+}
+
+.delight-finale__notch--top {
+    top: -0.55rem;
+}
+
+.delight-finale__notch--end {
+    bottom: -0.55rem;
 }
 
 .delight-finale__title {
-    font-size: clamp(1.6rem, 3.5vw, 2.4rem);
-    font-weight: 700;
-    line-height: 1.2;
-    color: rgba(15, 23, 42, 0.9);
-    margin-bottom: 0.5rem;
-}
-
-.dark .delight-finale__title {
-    color: rgba(248, 250, 252, 0.9);
+    margin: 0;
+    color: var(--text-heading);
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 3vw, 1.9rem);
+    font-weight: 800;
+    line-height: 1.3;
 }
 
 .delight-finale__subtitle {
+    margin-block-start: 0.5rem;
+    color: var(--color-text-on-paper-muted);
     font-size: 0.95rem;
     font-weight: 500;
-    letter-spacing: 0;
-    color: rgba(100, 116, 139, 0.85);
-    text-transform: none;
+    line-height: 1.8;
 }
 
 .dark .delight-finale__subtitle {
-    color: rgba(148, 163, 184, 0.75);
-}
-
-.delight-finale__line--bottom {
-    margin: 1.5rem auto 0;
+    color: var(--color-text-on-ink-muted);
 }
 
 /* --- Search Overlay: House Lights --- */
@@ -5947,9 +6315,10 @@ html:not(.dark) .delight-menu__footer {
 }
 
 /* =====================================================================
-   Single — Projection Room + Living Reel
-   Atmospheric reading environment (house lights, hero treatment, credits)
-   plus a scroll-spy reading index (desktop rail + mobile puck).
+   Single — Projection Room + the reading puck
+   Atmospheric reading environment (house lights, the framed still,
+   opening credits) plus the mobile jump sheet. The margin section index
+   itself lives in the "Single — The Festival Programme" block above.
    ===================================================================== */
 
 /* Content sits above the ambient vignette */
@@ -6090,198 +6459,16 @@ html:not(.dark) .delight-menu__footer {
     to { opacity: 1; transform: translateY(0); filter: blur(0); }
 }
 
-/* --- Living Reel: desktop scroll-spy rail --- */
-.reading-rail {
-    display: none;
-}
-
-/* 1360px, not 1280: the rail is fixed in the viewport margin while the column is a
-   centred max-w-6xl (1152px), so the margin only clears the slimmed 77px rail from
-   ~1337px up. Below that it sat on the hero and the related-posts cards. 1280 was the
-   outlier anyway -- .reel-scrubber, the other margin ornament, already gates at 1360.
-   The puck covers everything narrower -- keep the two breakpoints complementary. */
-@media (min-width: 1360px) {
-    .reading-rail {
-        --rail-progress: 0;
-        display: block;
-        position: fixed;
-        z-index: 35;
-        inset-inline-start: clamp(1rem, 3.2vw, 2.75rem);
-        top: 50%;
-        transform: translateY(-50%);
-        max-height: 72vh;
-        /* Long listicles overflow 72vh. Clip and let JS drive scrollTop to follow
-           the active item; `hidden` (not `auto`) keeps the wheel on the page and
-           the scrollbar out of the margin. The in-content TOC stays the a11y path. */
-        overflow: hidden;
-        /* Room for .reading-rail__link::before, which overhangs the link box by
-           0.85rem inline / 0.42rem block — without this the clip slices the pill. */
-        padding-block: 0.5rem;
-        padding-inline: 0.9rem;
-        margin-inline-start: -0.9rem;
-    }
-
-    /* Fades the clipped ends so a cut-off reel reads as "more here", not as a bug.
-       JS adds the class only while the reel actually overflows. */
-    .reading-rail.is-scrollable {
-        -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 2rem, #000 calc(100% - 2rem), transparent 100%);
-        mask-image: linear-gradient(to bottom, transparent 0, #000 2rem, #000 calc(100% - 2rem), transparent 100%);
-    }
-}
-
-/* Sized to the whole reel, not the clipped window, so the track spans every dot
-   and scrolls with them. */
-.reading-rail__inner {
-    position: relative;
-}
-
-.reading-rail__track {
-    position: absolute;
-    inset-inline-start: 0.45rem;
-    top: 0.3rem;
-    bottom: 0.3rem;
-    width: 2px;
-    border-radius: var(--radius-pill);
-    background: rgba(148, 163, 184, 0.28);
-    overflow: hidden;
-}
-
-.reading-rail__fill {
-    position: absolute;
-    inset-inline: 0;
-    top: 0;
-    height: calc(var(--rail-progress, 0) * 100%);
-    border-radius: inherit;
-    background: linear-gradient(to bottom, var(--color-primary), var(--color-gold-tint));
-    /* The fill lands on the active dot, so it steps rather than creeps. */
-    transition: height 320ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.reading-rail__list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.55rem;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-
-.reading-rail__link {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 0.65rem;
-    min-height: 1.2rem;
-    text-decoration: none;
-    color: inherit;
-    isolation: isolate;
-}
-
-.reading-rail__link::before {
-    content: "";
-    position: absolute;
-    inset: -0.42rem -0.85rem;
-    z-index: -1;
-    border-radius: var(--radius-pill);
-    background: var(--color-paper-elevated);
-    border: 1px solid var(--color-mist);
-    box-shadow: 0 10px 26px rgba(15, 23, 42, 0.12);
-    opacity: 0;
-    transform: scale(0.94);
-    transform-origin: inline-start;
-    transition: opacity 220ms ease, transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.dark .reading-rail__link::before {
-    background: var(--color-ink-overlay);
-    border-color: rgba(234, 230, 220, 0.1);
-    box-shadow: 0 12px 30px rgba(2, 6, 23, 0.6);
-}
-
-/* Hover/focus only, never on .is-active: the pill is the label's backing, and an
-   always-open label made the rail permanently ~182px wide, wide enough to sit on the
-   hero and the breadcrumb at every viewport below ~1600. The active dot and its
-   rank-mirroring number carry "you are here" on their own. */
-.reading-rail__link:hover::before,
-.reading-rail__link:focus-visible::before {
-    opacity: 1;
-    transform: scale(1);
-}
-
-.reading-rail__dot {
-    flex: 0 0 auto;
-    width: 0.9rem;
-    height: 0.9rem;
-    border-radius: var(--radius-pill);
-    border: 2px solid rgba(148, 163, 184, 0.55);
-    background: var(--surface-body);
-    transition: border-color 240ms ease, background-color 240ms ease, box-shadow 280ms ease, transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.reading-rail__item--nested .reading-rail__dot {
-    width: 0.6rem;
-    height: 0.6rem;
-    margin-inline-start: 0.15rem;
-}
-
-.reading-rail__item.is-read .reading-rail__dot {
-    border-color: var(--color-primary-hover);
-    background: rgba(201, 162, 39, 0.28);
-}
-
-.reading-rail__item.is-active .reading-rail__dot {
-    border-color: var(--color-primary);
-    background: var(--color-primary);
-    box-shadow: 0 0 0 4px rgba(201, 162, 39, 0.18);
-    transform: scale(1.08);
-}
-
-.reading-rail__index {
-    flex: 0 0 auto;
-    color: var(--color-text-on-paper-muted);
-    font-size: 0.68rem;
-    font-weight: 500;
-    transition: color 220ms ease;
-}
-
-.dark .reading-rail__index {
-    color: var(--color-text-on-ink-muted);
-}
-
-.reading-rail__item.is-active .reading-rail__index {
-    color: var(--color-primary-hover);
-}
-
-.dark .reading-rail__item.is-active .reading-rail__index {
-    color: var(--color-gold-tint);
-}
-
-.reading-rail__label {
-    max-width: 0;
-    overflow: hidden;
-    white-space: nowrap;
-    opacity: 0;
-    color: var(--text-heading);
-    font-size: 0.82rem;
-    font-weight: 700;
-    line-height: 1.4;
-    transition: max-width 360ms cubic-bezier(0.22, 1, 0.36, 1), opacity 220ms ease;
-}
-
-.reading-rail__link:hover .reading-rail__label,
-.reading-rail__link:focus-visible .reading-rail__label {
-    max-width: 15rem;
-    opacity: 1;
-}
-
-/* --- Living Reel: mobile progress puck + jump sheet --- */
+/* --- Mobile progress puck + jump sheet --- */
 .reading-puck {
     display: none;
 }
 
-/* Complementary to the rail's 1360px: every viewport without room for the rail. */
+/* Complementary to the margin's 1360px: every viewport without room for
+   the programme column. */
 @media (max-width: 1359px) {
-    .reading-puck {
+    /* .is-live is set by app-single.js: without JS the button has no behaviour. */
+    .reading-puck.is-live {
         --reading-progress: 0;
         display: block;
         position: fixed;
@@ -6314,11 +6501,6 @@ html:not(.dark) .delight-menu__footer {
     background: var(--color-ink-elevated);
     border-color: rgba(234, 230, 220, 0.12);
     box-shadow: 0 10px 26px rgba(2, 6, 23, 0.6);
-}
-
-.reading-puck__toggle:focus-visible {
-    outline: 3px solid var(--color-gold-tint);
-    outline-offset: 2px;
 }
 
 .reading-puck__ring {
@@ -6365,6 +6547,8 @@ html:not(.dark) .delight-menu__footer {
     opacity: 0;
     transform: translateY(10px) scale(0.97);
     transition: opacity 220ms ease, transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-pewter) transparent;
 }
 
 .dark .reading-sheet {
@@ -6441,10 +6625,9 @@ html:not(.dark) .delight-menu__footer {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .reading-rail__link::before,
-    .reading-rail__dot,
-    .reading-rail__fill,
-    .reading-rail__label,
+    .programme-index__fill,
+    .programme-index__marker,
+    .programme-index__link,
     .reading-sheet {
         transition: none !important;
     }

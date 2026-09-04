@@ -36,7 +36,6 @@ $author_posts = new WP_Query([
             </a>
         </div>
         <div class="author-box__body">
-            <p class="author-box__kicker"><?php esc_html_e('صوت من غرفة التحرير', 'mazaq'); ?></p>
             <h2 id="author-box-title" class="author-box__name">
                 <a href="<?php echo esc_url($author_link); ?>">
                     <?php echo esc_html($author_name); ?>

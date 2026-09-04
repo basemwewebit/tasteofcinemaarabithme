@@ -17,7 +17,6 @@ if (!$series_label && !$show_previous && !$show_next) {
 }
 ?>
 <nav class="series-nav" aria-labelledby="series-nav-title">
-    <p class="series-nav__kicker"><?php esc_html_e('سلسلة تحريرية', 'mazaq'); ?></p>
     <h2 id="series-nav-title" class="series-nav__title"><?php echo esc_html($series_label ?: __('اقرأ أجزاء السلسلة', 'mazaq')); ?></h2>
     <div class="series-nav__links">
         <?php if ($show_previous) : ?>

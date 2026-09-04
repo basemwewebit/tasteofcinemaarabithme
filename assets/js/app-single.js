@@ -2,7 +2,7 @@
  * Single-post features.
  *
  * - Reading progress beam (top) + projector spark.
- * - The Living Reel: scroll-spy reading index (desktop rail + mobile puck/sheet).
+ * - The programme index: scroll-spy margin index (>=1360px) + mobile puck/sheet.
  * - Article font-size controls.
  */
 document.addEventListener('DOMContentLoaded', function () {
@@ -40,8 +40,19 @@ document.addEventListener('DOMContentLoaded', function () {
     var sheet = document.getElementById('reading-sheet');
 
     var railItems = rail ? Array.prototype.slice.call(rail.querySelectorAll('[data-rail-item]')) : [];
-    var railTrack = rail ? rail.querySelector('.reading-rail__track') : null;
+    var railReel = rail ? rail.querySelector('.programme-index__reel') : null;
+    var railTrack = rail ? rail.querySelector('.programme-index__track') : null;
     var sheetItems = sheet ? Array.prototype.slice.call(sheet.querySelectorAll('[data-sheet-item]')) : [];
+
+    // The puck and the font buttons are JS-only controls: keep them out of the
+    // tab order entirely when this script never ran.
+    if (puck) {
+        puck.classList.add('is-live');
+    }
+    var fontControls = document.querySelector('.font-controls');
+    if (fontControls) {
+        fontControls.classList.add('is-live');
+    }
 
     // Read the sections off the rendered index instead of re-querying the article:
     // single.php injects the inline-related block *into* .article-content, and its
@@ -73,35 +84,35 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Runs off the active heading rather than page progress: the fill has to stop at
-    // the active dot, and the rail clips at 72vh so on long listicles the active dot
-    // can otherwise sit outside the visible window.
+    // the active tick, and the reel clips at its max-height so on long listicles the
+    // active item can otherwise sit outside the visible window.
     function syncRail(index) {
-        if (!rail || !railItems[index]) {
+        if (!rail || !railItems[index] || !railReel) {
             return;
         }
 
-        // Terminate the fill at the active dot. Page progress counts the hero, the
-        // related-posts block and the footer, so it never agreed with the dots.
+        // Terminate the fill at the active tick. Page progress counts the hero, the
+        // related-posts block and the footer, so it never agreed with the index.
         if (railTrack) {
-            var dot = railItems[index].querySelector('.reading-rail__dot');
+            var tick = railItems[index].querySelector('.programme-index__marker');
             var trackRect = railTrack.getBoundingClientRect();
-            if (dot && trackRect.height > 0) {
-                var dotRect = dot.getBoundingClientRect();
-                var filled = (dotRect.top + dotRect.height / 2 - trackRect.top) / trackRect.height;
+            if (tick && trackRect.height > 0) {
+                var tickRect = tick.getBoundingClientRect();
+                var filled = (tickRect.top + tickRect.height / 2 - trackRect.top) / trackRect.height;
                 rail.style.setProperty('--rail-progress', Math.min(1, Math.max(0, filled)));
             }
         }
 
-        var scrollable = rail.scrollHeight - rail.clientHeight;
-        rail.classList.toggle('is-scrollable', scrollable > 1);
+        var scrollable = railReel.scrollHeight - railReel.clientHeight;
+        railReel.classList.toggle('is-scrollable', scrollable > 1);
         if (scrollable <= 1) {
             return;
         }
 
         var itemRect = railItems[index].getBoundingClientRect();
-        var railRect = rail.getBoundingClientRect();
-        var next = rail.scrollTop + (itemRect.top - railRect.top) - (rail.clientHeight - itemRect.height) / 2;
-        rail.scrollTop = Math.max(0, Math.min(next, scrollable));
+        var reelRect = railReel.getBoundingClientRect();
+        var next = railReel.scrollTop + (itemRect.top - reelRect.top) - (railReel.clientHeight - itemRect.height) / 2;
+        railReel.scrollTop = Math.max(0, Math.min(next, scrollable));
     }
 
     function computeActive() {
@@ -185,7 +196,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    wireJumpLinks(rail, '.reading-rail__link');
+    wireJumpLinks(rail, '.programme-index__link');
     wireJumpLinks(sheet, '.reading-sheet__link');
 
     // --- Mobile puck / jump sheet ---
@@ -256,8 +267,15 @@ document.addEventListener('DOMContentLoaded', function () {
     var fontStorageKey = 'mazaq-article-font-size';
     var fontMin = 0.875;
     var fontMax = 1.625;
-    var storedFont = parseFloat(localStorage.getItem(fontStorageKey) || '1.125');
-    var currentFontSize = isFinite(storedFont) ? storedFont : 1.125;
+    var currentFontSize = 1.125;
+    try {
+        // getItem throws in browsers with storage blocked entirely; losing the
+        // preference must not cost the rest of this init.
+        var storedFont = parseFloat(localStorage.getItem(fontStorageKey) || '');
+        if (isFinite(storedFont)) {
+            currentFontSize = storedFont;
+        }
+    } catch (e) {}
     currentFontSize = Math.max(fontMin, Math.min(fontMax, currentFontSize));
 
     function applyFontSize() {
