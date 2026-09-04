@@ -179,3 +179,18 @@ function mazaq_enqueue_assets(): void
     ]);
 }
 add_action('wp_enqueue_scripts', 'mazaq_enqueue_assets');
+
+// Browsers request /favicon.ico even when no icon is declared, which 404s on
+// every page. Fall back to the theme logo until a Customizer icon is set.
+function mazaq_fallback_site_icon(): void
+{
+    if (has_site_icon()) {
+        return;
+    }
+
+    printf(
+        '<link rel="icon" type="image/png" href="%s">' . "\n",
+        esc_url(get_template_directory_uri() . '/assets/images/logo.png')
+    );
+}
+add_action('wp_head', 'mazaq_fallback_site_icon');

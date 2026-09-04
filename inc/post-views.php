@@ -30,15 +30,19 @@ function mazaq_get_post_views(int $post_id): int
     return (int) get_post_meta($post_id, '_post_views_count', true);
 }
 
-function mazaq_get_most_read_posts(int $count = 3): WP_Query
+/**
+ * @param int[] $exclude_ids Post IDs to omit (e.g. hero posts already on the page).
+ */
+function mazaq_get_most_read_posts(int $count = 3, array $exclude_ids = []): WP_Query
 {
-    return new WP_Query([
+    $query_args = [
         'post_type' => 'post',
         'posts_per_page' => $count,
         'meta_key' => '_post_views_count',
         'orderby' => 'meta_value_num',
         'order' => 'DESC',
         'no_found_rows' => true,
+        'ignore_sticky_posts' => true,
         'date_query' => [
             [
                 'after' => '1 week ago',
@@ -52,5 +56,12 @@ function mazaq_get_most_read_posts(int $count = 3): WP_Query
                 'type'    => 'NUMERIC',
             ],
         ],
-    ]);
+    ];
+
+    $exclude_ids = array_values(array_filter(array_map('intval', $exclude_ids)));
+    if (!empty($exclude_ids)) {
+        $query_args['post__not_in'] = $exclude_ids;
+    }
+
+    return new WP_Query($query_args);
 }

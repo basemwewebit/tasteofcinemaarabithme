@@ -54,7 +54,7 @@ if (isset($args['categories']) && is_array($args['categories'])) {
 
             <div id="random-film-content" class="hidden grid md:grid-cols-[1.1fr_1fr]">
                 <div class="random-film-card__media">
-                    <img id="random-film-image" src="" alt="" class="w-full h-full object-cover" loading="lazy" decoding="async">
+                    <img id="random-film-image" alt="" class="w-full h-full object-cover" loading="lazy" decoding="async">
                     <div id="random-film-image-fallback" class="random-film-card__image-fallback hidden" aria-hidden="true">
                         <span>م</span>
                     </div>

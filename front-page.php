@@ -4,6 +4,7 @@
 
 <?php
 $hero_ids = mazaq_get_hero_post_ids();
+$hero_ids = is_array($hero_ids) ? array_map('intval', $hero_ids) : [];
 
 $categories = get_categories([
     'orderby' => 'count',
@@ -39,6 +40,16 @@ if (!$collection_term instanceof WP_Term && !empty($categories)) {
     $collection_term = $categories[0];
 }
 
+// get_category_link() can return WP_Error (e.g. a stale configured term),
+// and esc_url() on a WP_Error is a PHP 8 fatal. Guard once, omit the link.
+$collection_url = '';
+if ($collection_term instanceof WP_Term) {
+    $collection_link = get_category_link($collection_term);
+    if (!is_wp_error($collection_link)) {
+        $collection_url = $collection_link;
+    }
+}
+
 $collection_query = null;
 if ($collection_term instanceof WP_Term) {
     $collection_query = new WP_Query([
@@ -61,7 +72,8 @@ $collection_plate_fallbacks = [
 // Most read this week. If the week has no view data, fall back to all-time
 // most read (still real popularity) rather than recency, so the rail never
 // just mirrors the "latest" feed below it. Tracks scope for honest labelling.
-$popular = mazaq_get_most_read_posts(5);
+// Hero exclusions keep a featured article from repeating in the rail.
+$popular = mazaq_get_most_read_posts(5, $hero_ids);
 $popular_scope_week = true;
 if (!$popular->have_posts()) {
     wp_reset_postdata();
@@ -89,7 +101,7 @@ if (!$popular->have_posts()) {
 ?>
 
 <main id="main-content" class="screening-home">
-    <h1 class="sr-only"><?php bloginfo('name'); ?></h1>
+    <h1 class="sr-only"><?php echo esc_html(get_bloginfo('name')); ?></h1>
 
     <?php if ($collection_query && $collection_query->post_count >= 3) : ?>
         <section class="home-section editor-collection screening-selection" aria-labelledby="editor-collection-title">
@@ -102,13 +114,15 @@ if (!$popular->have_posts()) {
                         <?php echo esc_html(sprintf(__('مسار تحريري منتقى من باب %s، لا قائمة آلية أخرى.', 'mazaq'), $collection_term->name)); ?>
                     </p>
                 </div>
-                <a class="editor-collection__all" href="<?php echo esc_url(get_category_link($collection_term->term_id)); ?>" aria-label="<?php echo esc_attr(sprintf(__('كل مقالات %s', 'mazaq'), $collection_term->name)); ?>">
-                    <span><?php esc_html_e('كل المقالات', 'mazaq'); ?></span>
-                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5"></path>
-                        <path stroke-linecap="round" stroke-linejoin="round" d="m11 6-6 6 6 6"></path>
-                    </svg>
-                </a>
+                <?php if ($collection_url !== '') : ?>
+                    <a class="editor-collection__all" href="<?php echo esc_url($collection_url); ?>" aria-label="<?php echo esc_attr(sprintf(__('كل مقالات %s', 'mazaq'), $collection_term->name)); ?>">
+                        <span><?php esc_html_e('كل المقالات', 'mazaq'); ?></span>
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m11 6-6 6 6 6"></path>
+                        </svg>
+                    </a>
+                <?php endif; ?>
             </div>
 
             <div class="editor-collection__grid screening-selection__grid">
@@ -171,6 +185,11 @@ if (!$popular->have_posts()) {
                 <?php while ($popular->have_posts()) : $popular->the_post(); ?>
                     <?php
                     $popular_views = mazaq_get_post_views(get_the_ID());
+                    $popular_title = get_the_title();
+                    // Fallback initial is decorative; an empty title still needs a plate glyph.
+                    $popular_initial = $popular_title !== ''
+                        ? (function_exists('mb_substr') ? mb_substr($popular_title, 0, 1, 'UTF-8') : substr($popular_title, 0, 1))
+                        : '؟';
                     // Thumbnail is decorative here: the title sits beside it as text,
                     // so an empty alt avoids a duplicate screen-reader announcement.
                     $popular_thumb = get_the_post_thumbnail(get_the_ID(), 'sidebar-thumbnail', [
@@ -187,11 +206,11 @@ if (!$popular->have_posts()) {
                                 <?php if ($popular_thumb !== '') : ?>
                                     <?php echo $popular_thumb; ?>
                                 <?php else : ?>
-                                    <span class="popular-rail__image popular-rail__image--fallback" aria-hidden="true"><?php echo esc_html(function_exists('mb_substr') ? mb_substr(get_the_title(), 0, 1, 'UTF-8') : substr(get_the_title(), 0, 1)); ?></span>
+                                    <span class="popular-rail__image popular-rail__image--fallback" aria-hidden="true"><?php echo esc_html($popular_initial); ?></span>
                                 <?php endif; ?>
                             </span>
                             <span class="popular-rail__body">
-                                <span class="popular-rail__title"><?php the_title(); ?></span>
+                                <span class="popular-rail__title"><?php echo esc_html($popular_title); ?></span>
                                 <?php if ($popular_views > 0) : ?>
                                     <span class="popular-rail__meta">
                                         <span class="num"><?php echo esc_html(number_format_i18n($popular_views)); ?></span>
@@ -217,7 +236,7 @@ if (!$popular->have_posts()) {
             <p class="home-section__promise"><?php esc_html_e('لمن يريد متابعة المشهد بعد اختيارات التحرير.', 'mazaq'); ?></p>
         </div>
 
-        <div id="infinite-scroll-container" class="latest-feed" data-page="2" aria-live="polite" aria-relevant="additions" aria-busy="false">
+        <div id="infinite-scroll-container" class="latest-feed" data-page="2" aria-live="polite" aria-busy="false">
             <?php
             $query = new WP_Query([
                 'post_type' => 'post',
@@ -243,23 +262,20 @@ if (!$popular->have_posts()) {
                 ?>
                 <div class="home-empty-state col-span-full">
                     <p class="home-empty-state__text"><?php esc_html_e('لا توجد مقالات منشورة بعد. تصفّح التصنيفات للعثور على ما يناسبك.', 'mazaq'); ?></p>
-                    <div class="home-empty-state__actions">
-                        <?php if (!empty($categories)) : ?>
+                    <?php if (!empty($categories)) : ?>
+                        <div class="home-empty-state__actions">
                             <a href="<?php echo esc_url(get_category_link($categories[0]->term_id)); ?>" class="home-empty-state__link">
                                 <span><?php echo esc_html(sprintf(__('تصفّح %s', 'mazaq'), $categories[0]->name)); ?></span>
                             </a>
-                        <?php endif; ?>
-                        <a href="<?php echo esc_url(home_url('/')); ?>" class="home-empty-state__link">
-                            <span><?php esc_html_e('العودة إلى الرئيسية', 'mazaq'); ?></span>
-                        </a>
-                    </div>
+                        </div>
+                    <?php endif; ?>
                 </div>
                 <?php
             endif;
             ?>
         </div>
 
-        <div id="loading-indicator" class="infinite-scroll-status hidden" role="status" aria-live="polite">
+        <div id="loading-indicator" class="infinite-scroll-status hidden" role="status">
             <div class="infinite-scroll-status__spinner" aria-hidden="true">
                 <div class="infinite-scroll-status__track"></div>
                 <div class="infinite-scroll-status__ring animate-spin"></div>

@@ -7,17 +7,19 @@ function mazaq_ajax_load_more_posts(): void
     check_ajax_referer('mazaq_load_more_nonce', 'nonce');
 
     $page = isset($_POST['page']) ? max(1, (int) $_POST['page']) : 1;
+    // ignore_sticky_posts keeps sticky posts from jumping to the top of an
+    // AJAX page after already appearing in the initial front-page feed.
     $query = new WP_Query([
         'post_type' => 'post',
         'post_status' => 'publish',
         'paged' => $page,
         'posts_per_page' => 6,
         'post__not_in' => mazaq_get_hero_post_ids(),
+        'ignore_sticky_posts' => true,
     ]);
 
-    // Force site locale for AJAX responses so that formatted dates are not in English
-    $site_locale = get_option('WPLANG') ?: 'ar';
-    switch_to_locale($site_locale);
+    // Force the site locale for AJAX responses so that formatted dates are not in English.
+    switch_to_locale(get_locale());
 
     ob_start();
     if ($query->have_posts()) {
