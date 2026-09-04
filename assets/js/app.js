@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', function () {
     var themeBtn = document.getElementById('theme-toggle');
-    var sunIcon = '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>';
-    var moonIcon = '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>';
+    var sunIcon = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>';
+    var moonIcon = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>';
 
     if (themeBtn) {
         var syncThemeBtn = function (isDark) {
@@ -350,6 +350,83 @@ document.addEventListener('DOMContentLoaded', function () {
                     });
             });
         });
+    })();
+
+    (function initMasthead() {
+        var masthead = document.getElementById('toc-masthead');
+        if (!masthead) return;
+
+        var isOverlayPage = masthead.classList.contains('delight-masthead--overlay-page');
+        var lastY = window.scrollY;
+        var SOLID_AT = 24;
+        var HIDE_AFTER = 180;
+
+        function updateMasthead() {
+            var y = window.scrollY;
+            var delta = y - lastY;
+
+            if (isOverlayPage) {
+                if (y > SOLID_AT) {
+                    masthead.classList.add('delight-masthead--solid');
+                    masthead.classList.remove('delight-masthead--overlay');
+                } else {
+                    masthead.classList.remove('delight-masthead--solid');
+                    masthead.classList.add('delight-masthead--overlay');
+                }
+            }
+
+            var shouldHide = delta > 2 && y > HIDE_AFTER && !document.body.classList.contains('overflow-hidden');
+            if (shouldHide || delta < -2 || y <= HIDE_AFTER) {
+                masthead.classList.toggle('delight-masthead--hidden', shouldHide);
+                if (shouldHide) {
+                    if (!masthead.contains(document.activeElement)) masthead.setAttribute('inert', '');
+                } else {
+                    masthead.removeAttribute('inert');
+                }
+            }
+
+            lastY = y;
+        }
+
+        var rafPending = false;
+        function onMastheadScroll() {
+            if (rafPending) return;
+            rafPending = true;
+            window.requestAnimationFrame(function () {
+                rafPending = false;
+                updateMasthead();
+            });
+        }
+
+        window.addEventListener('scroll', onMastheadScroll, { passive: true });
+        window.addEventListener('pageshow', updateMasthead);
+        updateMasthead();
+    })();
+
+    (function initFooterCredits() {
+        var footer = document.querySelector('.delight-footer');
+        if (!footer) return;
+
+        if (!('IntersectionObserver' in window)) {
+            footer.classList.add('delight-footer--in');
+            return;
+        }
+
+        var reveal = function () {
+            footer.classList.add('delight-footer--in');
+            observer.disconnect();
+            footer.removeEventListener('focusin', reveal);
+        };
+
+        var observer = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                if (!entry.isIntersecting) return;
+                reveal();
+            });
+        }, { rootMargin: '0px 0px -10% 0px' });
+
+        footer.addEventListener('focusin', reveal);
+        observer.observe(footer);
     })();
 
     var lazyImages = document.querySelectorAll('.lazy-image[data-src]');

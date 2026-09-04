@@ -33,6 +33,7 @@ if (!$og_image) {
     <?php endif; ?>
     <script>
         (function(){
+            document.documentElement.classList.add('toc-js');
             var isDark = localStorage.getItem('color-theme') === 'dark' || (!localStorage.getItem('color-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
             if(isDark){ document.documentElement.classList.add('dark'); }
             try {
@@ -67,7 +68,8 @@ if (!$og_image) {
     <meta name="google-adsense-account" content="ca-pub-8042646813554704">
     <?php wp_head(); ?>
 </head>
-<body <?php body_class('bg-primary-cream dark:bg-nocturnal text-slate-900 dark:text-white transition-colors duration-300 antialiased font-sans'); ?>>
+<?php $is_overlay_page = is_front_page(); ?>
+<body <?php body_class('bg-primary-cream dark:bg-nocturnal text-slate-900 dark:text-white transition-colors duration-300 antialiased font-sans' . ($is_overlay_page ? ' toc-overlay-nav' : '')); ?>>
 <?php wp_body_open(); ?>
 <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:start-4 focus:z-[200] focus:bg-primary focus:text-nocturnal-slate focus:px-4 focus:py-2 focus:rounded-lg focus:text-sm focus:font-bold focus:shadow-lg"><?php esc_html_e('تخطى إلى المحتوى', 'mazaq'); ?></a>
 <!-- T003: Brand-Aligned Site Loader -->
@@ -80,32 +82,40 @@ if (!$og_image) {
     </div>
 </div>
 
-<header class="sticky top-0 z-40 bg-slate-50/85 dark:bg-slate-900/85 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors">
-    <div class="container mx-auto px-4 h-20 flex items-center justify-between">
-        <button id="mobile-menu-toggle" aria-label="<?php esc_attr_e('فتح القائمة', 'mazaq'); ?>" aria-expanded="false" class="lg:hidden p-2.5 text-slate-600 dark:text-slate-300 hover:text-primary transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 rounded-sm">
-            <svg class="w-7 h-7" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-        </button>
+<header id="toc-masthead" class="delight-masthead sticky top-0 z-40<?php echo $is_overlay_page ? ' delight-masthead--overlay-page delight-masthead--overlay' : ' delight-masthead--solid'; ?>">
+    <span class="delight-masthead__scrim" aria-hidden="true"></span>
+    <span class="delight-masthead__surface" aria-hidden="true"></span>
 
-        <nav aria-label="<?php esc_attr_e('القائمة الرئيسية', 'mazaq'); ?>" class="hidden lg:flex items-center gap-6 text-sm font-semibold">
-            <?php
-            wp_nav_menu([
-                'theme_location' => 'primary-menu',
-                'container' => false,
-                'menu_class' => 'flex items-center gap-6',
-                'fallback_cb' => false,
-            ]);
-            ?>
-        </nav>
+    <div class="delight-masthead__inner container mx-auto w-full px-4">
+        <div class="delight-masthead__cluster delight-masthead__cluster--start">
+            <button id="mobile-menu-toggle" aria-label="<?php esc_attr_e('فتح القائمة', 'mazaq'); ?>" aria-expanded="false" class="delight-masthead__btn lg:hidden">
+                <svg class="w-6 h-6" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            </button>
 
-        <a href="<?php echo esc_url(home_url('/')); ?>" class="block focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 rounded-sm">
-            <img src="<?php echo esc_url(get_template_directory_uri() . '/assets/images/logo.webp'); ?>" alt="<?php bloginfo('name'); ?>" class="h-12 w-auto dark:brightness-125 transition-all" width="474" height="460" data-no-lazy="1">
+            <nav aria-label="<?php esc_attr_e('القائمة الرئيسية', 'mazaq'); ?>" class="hidden lg:block">
+                <?php
+                wp_nav_menu([
+                    'theme_location' => 'primary-menu',
+                    'container' => false,
+                    'menu_class' => 'delight-masthead__nav-list',
+                    'fallback_cb' => false,
+                    'depth' => 2,
+                ]);
+                ?>
+            </nav>
+        </div>
+
+        <a href="<?php echo esc_url(home_url('/')); ?>" class="delight-masthead__brand focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2">
+            <img src="<?php echo esc_url(get_template_directory_uri() . '/assets/images/logo.webp'); ?>" alt="<?php bloginfo('name'); ?>" class="delight-masthead__logo" width="474" height="460" data-no-lazy="1">
         </a>
 
-        <div class="flex items-center gap-4">
-            <button id="search-toggle" aria-label="<?php esc_attr_e('فتح البحث', 'mazaq'); ?>" class="p-2.5 text-slate-600 dark:text-slate-300 hover:text-primary transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 rounded-sm">
-                <svg class="w-6 h-6" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        <div class="delight-masthead__cluster delight-masthead__cluster--end">
+            <button id="search-toggle" aria-label="<?php esc_attr_e('فتح البحث', 'mazaq'); ?>" class="delight-masthead__btn">
+                <svg class="w-5 h-5" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
             </button>
-            <button id="theme-toggle" aria-label="<?php esc_attr_e('تبديل الوضع الليلي', 'mazaq'); ?>" aria-pressed="false" class="p-2.5 text-slate-600 dark:text-slate-300 hover:text-primary transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 rounded-sm"></button>
+            <button id="theme-toggle" aria-label="<?php esc_attr_e('تبديل الوضع الليلي', 'mazaq'); ?>" aria-pressed="false" class="delight-masthead__btn">
+                <svg class="w-5 h-5" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+            </button>
         </div>
     </div>
 </header>

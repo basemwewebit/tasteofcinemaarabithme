@@ -1353,10 +1353,10 @@ li {
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid rgba(201, 162, 39, 0.28);
+    border: 1px solid rgba(212, 175, 55, 0.3);
     border-radius: var(--radius-pill);
-    background-color: var(--color-primary);
-    color: var(--color-primary-text);
+    background-color: rgba(11, 11, 14, 0.92);
+    color: var(--color-primary);
     cursor: pointer;
     opacity: 0;
     visibility: hidden;
@@ -1364,7 +1364,7 @@ li {
     transform: translateY(1rem);
     will-change: transform, opacity;
     transition: opacity 0.3s cubic-bezier(0.22, 1, 0.36, 1), visibility 0.3s cubic-bezier(0.22, 1, 0.36, 1), transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), filter 0.2s cubic-bezier(0.22, 1, 0.36, 1);
-    box-shadow: var(--shadow-card);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
 }
 
 .back-to-top.visible {
@@ -1376,12 +1376,12 @@ li {
 
 .back-to-top:hover,
 .back-to-top:focus-visible {
-    filter: brightness(0.9);
+    border-color: rgba(212, 175, 55, 0.6);
     transform: translateY(-2px);
 }
 
 .back-to-top:focus-visible {
-    outline: 3px solid var(--color-gold-tint);
+    outline: 2px solid var(--color-primary);
     outline-offset: 2px;
 }
 
@@ -1390,10 +1390,14 @@ li {
     height: 1.25rem;
 }
 
-.dark .back-to-top {
-    background-color: var(--color-primary);
-    color: var(--color-primary-text);
-    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.5);
+html:not(.dark) .back-to-top {
+    background-color: rgba(247, 244, 237, 0.95);
+    color: rgba(15, 14, 12, 0.92);
+    box-shadow: 0 4px 14px rgba(15, 14, 12, 0.12);
+}
+
+html:not(.dark) .back-to-top:hover {
+    background-color: rgba(255, 252, 244, 0.97);
 }
 
 @media (max-width: 640px) {
@@ -3688,6 +3692,350 @@ body::before {
     visibility: visible;
 }
 
+/* --- Delight Masthead: The Marquee Entrance --- */
+.delight-masthead {
+    --masthead-ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --masthead-h-tall: 5rem;
+    --masthead-h-short: 4rem;
+    --masthead-fg: rgba(234, 230, 220, 0.82);
+    --masthead-fg-strong: #EAE6DC;
+    --masthead-hairline: rgba(212, 175, 55, 0.18);
+    --masthead-surface: linear-gradient(180deg, rgba(11, 11, 14, 0.9) 0%, rgba(11, 11, 14, 0.84) 100%);
+    --masthead-surface-shadow: 0 12px 32px rgba(2, 6, 23, 0.35);
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    color: var(--masthead-fg);
+    transition: transform 0.45s var(--masthead-ease);
+}
+
+html:not(.dark) .delight-masthead--solid {
+    --masthead-fg: rgba(15, 14, 12, 0.72);
+    --masthead-fg-strong: rgba(15, 14, 12, 0.94);
+    --masthead-hairline: rgba(184, 143, 30, 0.22);
+    --masthead-surface: linear-gradient(180deg, rgba(247, 244, 237, 0.92) 0%, rgba(247, 244, 237, 0.86) 100%);
+    --masthead-surface-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+}
+
+.delight-masthead--solid {
+    backdrop-filter: blur(14px) saturate(1.15);
+    -webkit-backdrop-filter: blur(14px) saturate(1.15);
+}
+
+.delight-masthead--hidden {
+    transform: translateY(-101%);
+}
+
+.delight-masthead__scrim,
+.delight-masthead__surface {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.delight-masthead__scrim {
+    z-index: 0;
+    opacity: 0;
+    background: linear-gradient(180deg, rgba(2, 6, 23, 0.62) 0%, rgba(2, 6, 23, 0.28) 55%, rgba(2, 6, 23, 0) 100%);
+    transition: opacity 0.4s ease;
+}
+
+.delight-masthead__surface {
+    z-index: 0;
+    opacity: 1;
+    background: var(--masthead-surface);
+    border-bottom: 1px solid var(--masthead-hairline);
+    box-shadow: var(--masthead-surface-shadow);
+    transition: opacity 0.4s ease;
+}
+
+/* The transparent "lobby" state: bar floats over the ink hero */
+html.toc-js .delight-masthead--overlay .delight-masthead__surface {
+    opacity: 0;
+}
+
+html.toc-js .delight-masthead--overlay .delight-masthead__scrim {
+    opacity: 1;
+}
+
+html.toc-js .delight-masthead--overlay {
+    --masthead-fg: rgba(234, 230, 220, 0.88);
+    --masthead-fg-strong: #EAE6DC;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
+
+.delight-masthead__inner {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: 1rem;
+    height: var(--masthead-h-tall);
+    transition: height 0.35s var(--masthead-ease);
+}
+
+html.toc-js .delight-masthead--solid .delight-masthead__inner {
+    height: var(--masthead-h-short);
+}
+
+.delight-masthead__cluster {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-width: 0;
+}
+
+.delight-masthead__cluster--start {
+    justify-self: start;
+}
+
+.delight-masthead__cluster--end {
+    justify-self: end;
+}
+
+.delight-masthead__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 1px solid transparent;
+    border-radius: var(--radius-pill);
+    background: transparent;
+    color: var(--masthead-fg);
+    cursor: pointer;
+    transition: color 0.22s ease, border-color 0.22s ease, background-color 0.22s ease, transform 0.22s ease;
+}
+
+.delight-masthead__btn:hover {
+    color: var(--color-primary);
+    border-color: rgba(212, 175, 55, 0.4);
+    background: rgba(212, 175, 55, 0.09);
+}
+
+.delight-masthead__btn:active {
+    transform: scale(0.94);
+}
+
+.delight-masthead__btn:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+/* The marquee: centered brand with a stage light that finds it when the bar materializes */
+.delight-masthead__brand {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.25rem;
+    border-radius: var(--radius-sm);
+}
+
+.delight-masthead__brand::before {
+    content: "";
+    position: absolute;
+    inset: -45% -35%;
+    background: radial-gradient(circle, rgba(212, 175, 55, 0.16) 0%, rgba(212, 175, 55, 0) 65%);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.55s var(--masthead-ease);
+}
+
+html.toc-js .delight-masthead--solid .delight-masthead__brand::before {
+    opacity: 1;
+}
+
+.delight-masthead__logo {
+    position: relative;
+    z-index: 1;
+    height: 3rem;
+    width: auto;
+    transition: height 0.35s var(--masthead-ease);
+}
+
+html.toc-js .delight-masthead--solid .delight-masthead__logo {
+    height: 2.5rem;
+}
+
+html.dark .delight-masthead__logo,
+html.toc-js .delight-masthead--overlay .delight-masthead__logo {
+    filter: brightness(1.25);
+}
+
+/* Desktop section nav: editorial links with a gold hairline that draws from the start edge */
+.delight-masthead__nav-list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.15rem;
+    row-gap: 0;
+    max-width: 100%;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.delight-masthead__nav-list > li {
+    position: relative;
+    margin: 0;
+    padding: 0;
+}
+
+.delight-masthead__nav-list > li > a {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.6rem 0.75rem;
+    color: var(--masthead-fg);
+    font-family: Tajawal, "Reem Kufi", "IBM Plex Sans Arabic", system-ui, sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1.4;
+    white-space: nowrap;
+    transition: color 0.22s ease;
+}
+
+.delight-masthead__nav-list > li > a:hover,
+.delight-masthead__nav-list > li > a:focus-visible {
+    color: var(--masthead-fg-strong);
+}
+
+.delight-masthead__nav-list > li > a::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0.75rem;
+    bottom: 0.2rem;
+    height: 2px;
+    border-radius: 1px;
+    background: var(--color-primary);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.3s var(--masthead-ease);
+}
+
+:dir(rtl) .delight-masthead__nav-list > li > a::after {
+    transform-origin: right center;
+}
+
+.delight-masthead__nav-list > li > a:hover::after,
+.delight-masthead__nav-list > li > a:focus-visible::after,
+.delight-masthead__nav-list > li.current-menu-item > a::after,
+.delight-masthead__nav-list > li.current-page-ancestor > a::after,
+.delight-masthead__nav-list > li.current-menu-ancestor > a::after,
+.delight-masthead__nav-list > li > a[aria-current="page"]::after {
+    transform: scaleX(1);
+}
+
+.delight-masthead__nav-list > li.current-menu-item > a,
+.delight-masthead__nav-list > li.current-page-ancestor > a,
+.delight-masthead__nav-list > li.current-menu-ancestor > a {
+    color: var(--masthead-fg-strong);
+}
+
+.delight-masthead__nav-list > li > a:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+}
+
+/* One-level dropdown: the materialized panel language, no JS required */
+.delight-masthead__nav-list .sub-menu {
+    position: absolute;
+    top: calc(100% + 0.35rem);
+    inset-inline-start: 50%;
+    z-index: 20;
+    min-width: 11.5rem;
+    max-width: calc(100vw - 2rem);
+    margin: 0;
+    padding: 0.45rem;
+    list-style: none;
+    border: 1px solid var(--masthead-hairline);
+    border-radius: var(--radius-lg);
+    background: rgba(11, 11, 14, 0.96);
+    box-shadow: var(--shadow-card);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translate(-50%, 8px);
+    transition: opacity 0.24s ease, transform 0.3s var(--masthead-ease), visibility 0s linear 0.3s;
+}
+
+html:not(.dark) .delight-masthead__nav-list .sub-menu {
+    background: rgba(247, 244, 237, 0.97);
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.14);
+}
+
+.delight-masthead__nav-list .sub-menu::before {
+    content: "";
+    position: absolute;
+    top: -0.55rem;
+    inset-inline: 0;
+    height: 0.55rem;
+}
+
+.delight-masthead__nav-list > li:hover > .sub-menu,
+.delight-masthead__nav-list > li:focus-within > .sub-menu {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translate(-50%, 0);
+    transition-delay: 0s;
+}
+
+.delight-masthead__nav-list .sub-menu li {
+    margin: 0;
+    padding: 0;
+}
+
+.delight-masthead__nav-list .sub-menu a {
+    display: block;
+    padding: 0.6rem 0.8rem;
+    border-radius: var(--radius-md);
+    color: var(--masthead-fg);
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.5;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.delight-masthead__nav-list .sub-menu a:hover,
+.delight-masthead__nav-list .sub-menu a:focus-visible {
+    color: var(--color-primary);
+    background: rgba(212, 175, 55, 0.09);
+}
+
+.delight-masthead__nav-list .sub-menu a:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: -2px;
+}
+
+/* The homepage premiere: hero tucks under the floating bar */
+html.toc-js body.toc-overlay-nav .feature-hero-section {
+    margin-block-start: calc(-1 * var(--masthead-h-tall));
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .delight-masthead,
+    .delight-masthead__inner,
+    .delight-masthead__logo,
+    .delight-masthead__scrim,
+    .delight-masthead__surface,
+    .delight-masthead__brand::before,
+    .delight-masthead__btn,
+    .delight-masthead__nav-list > li > a,
+    .delight-masthead__nav-list > li > a::after,
+    .delight-masthead__nav-list .sub-menu {
+        transition: none;
+    }
+}
+
 .delight-search__stage {
     position: absolute;
     inset: 0;
@@ -4087,6 +4435,308 @@ html:not(.dark) .delight-search__close:hover {
 html,
 body {
     overflow-x: clip;
+}
+
+/* --- Delight Footer: The End Credits --- */
+.delight-footer {
+    position: relative;
+    overflow: hidden;
+    margin-block-start: 3.5rem;
+    padding-block: 4.5rem 2rem;
+    border-top: 1px solid rgba(212, 175, 55, 0.14);
+    background: linear-gradient(180deg, #0b0b0e, #14141a);
+    color: rgba(248, 250, 252, 0.92);
+    font-family: var(--font-body);
+}
+
+html:not(.dark) .delight-footer {
+    border-top-color: rgba(15, 14, 12, 0.08);
+    background: linear-gradient(180deg, #f7f4ed, #ece7dc);
+    color: rgba(15, 14, 12, 0.92);
+}
+
+.delight-footer__stage {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(42rem 30rem at 100% 0%, rgba(201, 162, 39, 0.14), transparent 70%),
+        radial-gradient(38rem 28rem at 0% 110%, rgba(142, 42, 42, 0.1), transparent 70%);
+}
+
+html:not(.dark) .delight-footer__stage {
+    background:
+        radial-gradient(42rem 30rem at 100% 0%, rgba(201, 162, 39, 0.12), transparent 70%),
+        radial-gradient(38rem 28rem at 0% 110%, rgba(142, 42, 42, 0.05), transparent 70%);
+}
+
+.delight-footer__inner {
+    position: relative;
+    z-index: 2;
+}
+
+.delight-footer__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin-block-end: 2rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--color-primary);
+}
+
+.delight-footer__eyebrow::before {
+    content: '';
+    width: 1.5rem;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.5;
+}
+
+.delight-footer__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2.75rem;
+}
+
+@media (min-width: 768px) {
+    .delight-footer__grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 2rem;
+    }
+
+    .delight-footer__col--brand {
+        grid-column: span 2;
+    }
+}
+
+.delight-footer__brand {
+    position: relative;
+    display: inline-flex;
+    padding: 0.25rem;
+    border-radius: var(--radius-sm);
+}
+
+.delight-footer__brand::before {
+    content: '';
+    position: absolute;
+    inset: -1.1rem;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(201, 162, 39, 0.22), transparent 70%);
+    pointer-events: none;
+}
+
+html:not(.dark) .delight-footer__brand::before {
+    background: radial-gradient(circle, rgba(201, 162, 39, 0.16), transparent 70%);
+}
+
+.delight-footer__logo {
+    position: relative;
+    height: 3.25rem;
+    width: auto;
+}
+
+html.dark .delight-footer__logo {
+    filter: brightness(1.15);
+}
+
+.delight-footer__desc {
+    max-width: 22rem;
+    margin-block-start: 1rem;
+    font-size: 0.95rem;
+    line-height: 1.75;
+    overflow-wrap: break-word;
+    color: rgba(248, 250, 252, 0.72);
+}
+
+html:not(.dark) .delight-footer__desc {
+    color: rgba(15, 14, 12, 0.72);
+}
+
+.delight-footer__social {
+    display: flex;
+    gap: 0.75rem;
+    margin-block-start: 1.5rem;
+}
+
+.delight-footer__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 9999px;
+    border: 1px solid rgba(212, 175, 55, 0.22);
+    color: rgba(248, 250, 252, 0.92);
+    transition: color 0.25s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.25s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s cubic-bezier(0.22, 1, 0.36, 1), transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html:not(.dark) .delight-footer__btn {
+    color: rgba(15, 14, 12, 0.92);
+}
+
+.delight-footer__btn:hover {
+    border-color: rgba(212, 175, 55, 0.4);
+    background-color: rgba(212, 175, 55, 0.09);
+    color: var(--color-primary);
+}
+
+.delight-footer__btn:active {
+    transform: scale(0.94);
+}
+
+.delight-footer__btn:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+.delight-footer__heading {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin-block-end: 1.1rem;
+    font-family: var(--font-body);
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--color-primary);
+}
+
+.delight-footer__heading::before {
+    content: '';
+    width: 1.5rem;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.5;
+}
+
+.delight-footer__nav-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.delight-footer__nav-list li {
+    border-block-end: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+html:not(.dark) .delight-footer__nav-list li {
+    border-block-end-color: rgba(15, 14, 12, 0.07);
+}
+
+.delight-footer__nav-list li:last-child {
+    border-block-end: none;
+}
+
+.delight-footer__nav-list a {
+    position: relative;
+    display: inline-block;
+    padding: 0.6rem 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: inherit;
+    overflow-wrap: break-word;
+    transition: color 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.delight-footer__nav-list a::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    inset-block-end: 0.35rem;
+    height: 1px;
+    background: var(--color-primary);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.delight-footer__nav-list a:dir(rtl)::after {
+    transform-origin: right;
+}
+
+.delight-footer__nav-list a:hover,
+.delight-footer__nav-list a:focus,
+.delight-footer__nav-list a[aria-current='page'] {
+    color: var(--color-primary);
+}
+
+.delight-footer__nav-list a:hover::after,
+.delight-footer__nav-list a:focus::after,
+.delight-footer__nav-list a[aria-current='page']::after {
+    transform: scaleX(1);
+}
+
+.delight-footer__nav-list a:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 4px;
+    border-radius: 2px;
+}
+
+.delight-footer__slate {
+    margin-block-start: 3.5rem;
+    padding-block-start: 1.5rem;
+    border-block-start: 1px solid rgba(212, 175, 55, 0.12);
+    font-size: 0.85rem;
+    color: rgba(248, 250, 252, 0.66);
+}
+
+html:not(.dark) .delight-footer__slate {
+    border-block-start-color: rgba(15, 14, 12, 0.08);
+    color: rgba(15, 14, 12, 0.66);
+}
+
+/* Credit-roll reveal: one authored staggered moment */
+html.toc-js .delight-footer__eyebrow,
+html.toc-js .delight-footer__grid > *,
+html.toc-js .delight-footer__slate {
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity 0.56s cubic-bezier(0.22, 1, 0.36, 1), transform 0.56s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html.toc-js .delight-footer--in .delight-footer__eyebrow,
+html.toc-js .delight-footer--in .delight-footer__grid > *,
+html.toc-js .delight-footer--in .delight-footer__slate {
+    opacity: 1;
+    transform: none;
+}
+
+html.toc-js .delight-footer--in .delight-footer__eyebrow {
+    transition-delay: 60ms;
+}
+
+html.toc-js .delight-footer--in .delight-footer__grid > *:nth-child(1) {
+    transition-delay: 140ms;
+}
+
+html.toc-js .delight-footer--in .delight-footer__grid > *:nth-child(2) {
+    transition-delay: 240ms;
+}
+
+html.toc-js .delight-footer--in .delight-footer__grid > *:nth-child(3) {
+    transition-delay: 340ms;
+}
+
+html.toc-js .delight-footer--in .delight-footer__slate {
+    transition-delay: 420ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .delight-footer__eyebrow,
+    .delight-footer__grid > *,
+    .delight-footer__slate,
+    .delight-footer__nav-list a,
+    .delight-footer__nav-list a::after,
+    .delight-footer__btn {
+        transition: none !important;
+    }
+
+    html.toc-js .delight-footer__eyebrow,
+    html.toc-js .delight-footer__grid > *,
+    html.toc-js .delight-footer__slate {
+        opacity: 1;
+        transform: none;
+    }
 }
 
 .delight-menu-overlay {
