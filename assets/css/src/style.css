@@ -5531,6 +5531,449 @@ html:not(.dark) .delight-search__close:hover {
     padding-inline: 1.1rem;
 }
 
+/* --- Archive Family: The Filing Cabinet --- */
+
+.archive-head {
+    padding-block: clamp(2.5rem, 5vw, 4rem) clamp(1.5rem, 3vw, 2.25rem);
+}
+
+.archive-head__body {
+    display: grid;
+    gap: clamp(1.25rem, 3vw, 2.5rem);
+}
+
+.archive-head__pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 2.25rem;
+    padding: 0.4rem 1rem;
+    border: 1px solid var(--color-celluloid);
+    border-radius: var(--radius-pill);
+    background: var(--color-paper-muted);
+    color: var(--color-charcoal);
+    font-size: var(--text-label);
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+.archive-head__tick {
+    inline-size: 0.5rem;
+    block-size: 0.5rem;
+    border-radius: 2px;
+    background: var(--color-primary);
+    flex: none;
+}
+
+.archive-head__title {
+    margin-block-start: 1.25rem;
+    color: var(--color-text-on-paper);
+    font-family: var(--font-display);
+    font-size: var(--type-display);
+    font-weight: 800;
+    line-height: 1.12;
+    letter-spacing: 0;
+    text-wrap: balance;
+    overflow-wrap: break-word;
+}
+
+.archive-head__desc {
+    margin-block-start: 0.9rem;
+    max-width: 62ch;
+    color: var(--color-text-on-paper-muted);
+    font-size: var(--text-lead);
+    line-height: 1.8;
+    text-wrap: pretty;
+}
+
+.archive-head__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.45rem 0.7rem;
+    margin-block-start: 1.25rem;
+    color: var(--color-text-on-paper-muted);
+    font-size: var(--text-label);
+    font-weight: 600;
+}
+
+.archive-head__count {
+    color: var(--color-text-on-paper);
+    font-weight: 800;
+}
+
+.archive-head__still {
+    margin-block-start: 1.5rem;
+    border: 1px solid var(--color-celluloid);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--color-paper-muted);
+    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12);
+}
+
+.archive-head__still img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+}
+
+.archive-head__avatar {
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid var(--color-celluloid);
+    background: var(--color-paper-muted);
+    aspect-ratio: 1;
+}
+
+.archive-head__avatar img {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.archive-head__avatar-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    color: var(--color-primary);
+    font-family: var(--font-display);
+    font-size: var(--type-display);
+    font-weight: 800;
+    line-height: 1;
+}
+
+.archive-head__sep {
+    inline-size: 0.25rem;
+    block-size: 0.25rem;
+    border-radius: 50%;
+    background: var(--color-celluloid);
+}
+
+.archive-head__link {
+    color: var(--color-text-on-paper);
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.archive-lead {
+    margin-block-start: 0.25rem;
+}
+
+.archive-groupbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem;
+    margin-block: clamp(1.75rem, 4vw, 3rem) 0.75rem;
+}
+
+.archive-groupbar__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    padding: 0.5rem 0.9rem;
+    border-radius: var(--radius-pill);
+    color: var(--color-text-on-paper-muted);
+    font-family: var(--font-body);
+    font-size: var(--text-label);
+    font-weight: 600;
+    line-height: 1.4;
+    transition: color 200ms ease, background-color 200ms ease;
+}
+
+.archive-groupbar__btn::before {
+    content: "";
+    inline-size: 0.5rem;
+    block-size: 0.5rem;
+    border-radius: 2px;
+    background: var(--color-primary);
+    opacity: 0;
+    transition: opacity 200ms ease;
+}
+
+.archive-groupbar__btn:hover {
+    color: var(--color-text-on-paper);
+    background: var(--color-paper-muted);
+}
+
+.archive-groupbar__btn.is-active {
+    color: var(--color-text-on-paper);
+    font-weight: 700;
+}
+
+.archive-groupbar__btn.is-active::before {
+    opacity: 1;
+}
+
+.archive-index {
+    margin-block-start: 0.25rem;
+}
+
+.archive-group__title {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding-block: 1.1rem 0.75rem;
+    color: var(--color-text-on-paper-muted);
+    font-size: var(--text-caption);
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+.archive-group__title::before {
+    content: "";
+    inline-size: 0.5rem;
+    block-size: 0.5rem;
+    border-radius: 2px;
+    background: var(--color-primary);
+}
+
+.archive-row {
+    display: grid;
+    grid-template-columns: minmax(0, 8.5rem) minmax(0, 1fr) minmax(0, max-content);
+    gap: 0.5rem 1.5rem;
+    align-items: baseline;
+    padding-block: 1rem;
+    border-bottom: 1px solid var(--color-celluloid);
+    transition: background-color 200ms ease;
+}
+
+.archive-row:hover,
+.archive-row:focus-within {
+    background: color-mix(in srgb, var(--color-paper-muted) 55%, transparent);
+}
+
+.archive-row__date {
+    color: var(--color-text-on-paper-muted);
+    font-size: var(--text-caption);
+    white-space: nowrap;
+}
+
+.archive-row__title {
+    min-width: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-title);
+    font-weight: 800;
+    line-height: 1.45;
+    text-wrap: balance;
+    overflow-wrap: break-word;
+}
+
+.archive-row__title a {
+    color: var(--color-text-on-paper);
+}
+
+.archive-row__title a:hover,
+.archive-row__title a:focus-visible {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.archive-row__meta {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    row-gap: 0.4rem;
+    min-width: 0;
+}
+
+.archive-row__chip {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2rem;
+    padding: 0.3rem 0.8rem;
+    border-radius: var(--radius-pill);
+    background: var(--color-paper-muted);
+    color: var(--color-charcoal);
+    font-size: var(--text-caption);
+    font-weight: 600;
+    line-height: 1.4;
+    max-width: 100%;
+    overflow-wrap: break-word;
+}
+
+.archive-row__chip:hover {
+    background: var(--color-paper-elevated);
+    color: var(--color-text-on-paper);
+}
+
+.archive-row__time {
+    color: var(--color-text-on-paper-muted);
+    font-size: var(--text-caption);
+    white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+    .archive-row {
+        grid-template-columns: 1fr;
+        gap: 0.35rem;
+    }
+
+    .archive-row__title {
+        font-size: var(--text-headline);
+    }
+}
+
+.archive-empty {
+    padding-block: clamp(3rem, 8vw, 5rem);
+    text-align: center;
+}
+
+.archive-empty__text {
+    color: var(--color-text-on-paper-muted);
+    font-size: var(--text-lead);
+}
+
+.archive-empty__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-block-start: 1rem;
+    color: var(--color-text-on-paper);
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.archive-collections {
+    margin-block: clamp(1.5rem, 3vw, 2.5rem) 0;
+}
+
+.archive-collections__title {
+    color: var(--color-text-on-paper);
+    font-family: var(--font-display);
+    font-size: var(--text-headline);
+    font-weight: 800;
+    line-height: 1.18;
+    text-wrap: balance;
+}
+
+.archive-collections__grid {
+    margin-block-start: 1rem;
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+}
+
+.archive-collections__empty {
+    margin-block-start: 1rem;
+    color: var(--color-text-on-paper-muted);
+}
+
+/* Dark room overrides */
+
+html.dark .archive-head__pill {
+    border-color: rgba(234, 230, 220, 0.12);
+    background: var(--color-ink-elevated);
+    color: var(--color-text-on-ink-muted);
+}
+
+html.dark .archive-head__title {
+    color: var(--color-text-on-ink);
+}
+
+html.dark .archive-head__desc {
+    color: var(--color-text-on-ink-muted);
+}
+
+html.dark .archive-head__meta {
+    color: var(--color-text-on-ink-muted);
+}
+
+html.dark .archive-head__count {
+    color: var(--color-text-on-ink);
+}
+
+html.dark .archive-head__still {
+    border-color: rgba(234, 230, 220, 0.12);
+    background: var(--color-ink-elevated);
+    box-shadow: var(--shadow-card);
+}
+
+html.dark .archive-head__avatar {
+    border-color: rgba(234, 230, 220, 0.12);
+    background: var(--color-ink-elevated);
+}
+
+html.dark .archive-head__sep {
+    background: rgba(234, 230, 220, 0.2);
+}
+
+html.dark .archive-head__link {
+    color: var(--color-text-on-ink);
+}
+
+html.dark .archive-groupbar__btn {
+    color: var(--color-text-on-ink-muted);
+}
+
+html.dark .archive-groupbar__btn:hover {
+    color: var(--color-text-on-ink);
+    background: var(--color-ink-elevated);
+}
+
+html.dark .archive-groupbar__btn.is-active {
+    color: var(--color-text-on-ink);
+}
+
+html.dark .archive-group__title {
+    color: var(--color-text-on-ink-muted);
+}
+
+html.dark .archive-row {
+    border-color: rgba(234, 230, 220, 0.12);
+}
+
+html.dark .archive-row:hover,
+html.dark .archive-row:focus-within {
+    background: color-mix(in srgb, var(--color-ink-elevated) 55%, transparent);
+}
+
+html.dark .archive-row__date {
+    color: var(--color-text-on-ink-muted);
+}
+
+html.dark .archive-row__title a {
+    color: var(--color-text-on-ink);
+}
+
+html.dark .archive-row__chip {
+    background: rgba(234, 230, 220, 0.08);
+    color: var(--color-text-on-ink-muted);
+}
+
+html.dark .archive-row__chip:hover {
+    background: rgba(234, 230, 220, 0.14);
+    color: var(--color-text-on-ink);
+}
+
+html.dark .archive-row__time {
+    color: var(--color-text-on-ink-muted);
+}
+
+html.dark .archive-empty__text {
+    color: var(--color-text-on-ink-muted);
+}
+
+html.dark .archive-empty__link {
+    color: var(--color-text-on-ink);
+}
+
+html.dark .archive-collections__title {
+    color: var(--color-text-on-ink);
+}
+
+html.dark .archive-collections__empty {
+    color: var(--color-text-on-ink-muted);
+}
+
 /* --- Theme Toggle Delight --- */
 #theme-toggle {
     position: relative;

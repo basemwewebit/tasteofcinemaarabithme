@@ -137,6 +137,17 @@ function mazaq_enqueue_assets(): void
         );
     }
 
+    // Archive family: filing-cabinet index grouping (archive, category, tag, author)
+    if (is_archive()) {
+        wp_enqueue_script(
+            'mazaq-archive-index',
+            $template_uri . '/assets/js/archive-index.js',
+            [],
+            file_exists($template_dir . '/assets/js/archive-index.js') ? (string) filemtime($template_dir . '/assets/js/archive-index.js') : $version,
+            true
+        );
+    }
+
     // Single post features: reading progress + font controls
     if (is_singular('post')) {
         wp_enqueue_script(

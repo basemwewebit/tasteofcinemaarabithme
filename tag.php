@@ -1,38 +1,35 @@
 <?php get_header(); ?>
+<?php global $wp_query; ?>
 
-<?php
-global $wp_query;
-$tag = get_queried_object();
-?>
-<div class="relative overflow-hidden bg-slate-950 text-white pt-20 pb-16 md:pt-28 md:pb-20 mb-12">
-    <div class="absolute inset-0 delight-404__grain" aria-hidden="true"></div>
-    <div class="max-w-7xl mx-auto px-4 relative z-10">
-        <div class="max-w-3xl">
-            <span class="inline-flex rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm font-bold text-primary"><?php esc_html_e('وسم سينمائي', 'mazaq'); ?></span>
-            <h1 class="text-display mt-6 mb-6 text-white break-words">#<?php single_tag_title(); ?></h1>
+<header class="archive-head">
+    <div class="archive-head__inner max-w-7xl mx-auto px-4">
+        <div class="archive-head__content">
+            <span class="archive-head__pill">
+                <span class="archive-head__tick" aria-hidden="true"></span>
+                <?php esc_html_e('وسم سينمائي', 'mazaq'); ?>
+            </span>
+            <h1 class="archive-head__title">#<?php single_tag_title(); ?></h1>
             <?php $tag_desc = tag_description(); if ($tag_desc) : ?>
-                <p class="text-lg md:text-xl text-slate-300 font-medium leading-relaxed"><?php echo esc_html(wp_strip_all_tags($tag_desc)); ?></p>
+                <p class="archive-head__desc"><?php echo (wp_strip_all_tags($tag_desc)); ?></p>
             <?php else : ?>
-                <p class="text-lg md:text-xl text-slate-300 font-medium leading-relaxed"><?php esc_html_e('مجموعة مقالات مرتبطة بنفس المزاج أو الفكرة السينمائية.', 'mazaq'); ?></p>
+                <p class="archive-head__desc"><?php esc_html_e('مجموعة مقالات مرتبطة بنفس المزاج أو الفكرة السينمائية.', 'mazaq'); ?></p>
             <?php endif; ?>
-            <p class="mt-6 text-sm font-bold text-slate-300"><span class="num"><?php echo esc_html((string) $wp_query->found_posts); ?></span> <?php esc_html_e('مقال ضمن هذا الوسم', 'mazaq'); ?></p>
+            <p class="archive-head__meta">
+                <span class="archive-head__count num"><?php echo esc_html((string) $wp_query->found_posts); ?></span>
+                <span><?php esc_html_e('مقال ضمن هذا الوسم', 'mazaq'); ?></span>
+            </p>
         </div>
     </div>
-</div>
+</header>
+
+<div class="max-w-7xl mx-auto px-4 mb-10"><?php mazaq_render_ad('ad_slot_archive_banner', 'horizontal'); ?></div>
 
 <main id="main-content" class="max-w-7xl mx-auto px-4 pb-20">
-    <?php if (have_posts()) : ?>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10">
-            <?php while (have_posts()) : the_post(); ?>
-                <?php get_template_part('template-parts/content/article-card', null, ['layout' => 'standard']); ?>
-            <?php endwhile; ?>
-        </div>
-    <?php else : ?>
-        <div class="text-center py-20">
-            <p class="text-slate-600 dark:text-slate-300 text-lg mb-4"><?php esc_html_e('لا توجد مقالات ضمن هذا الوسم حالياً.', 'mazaq'); ?></p>
-        </div>
-    <?php endif; ?>
-    <?php get_template_part('template-parts/navigation/pagination'); ?>
+    <?php get_template_part('template-parts/archive/archive-feed', null, [
+        'ad_context' => 'tag',
+        'empty_message' => __('لا توجد مقالات ضمن هذا الوسم حالياً.', 'mazaq'),
+        'empty_link' => false,
+    ]); ?>
 </main>
 
 <?php get_footer(); ?>
