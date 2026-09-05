@@ -162,16 +162,43 @@ document.addEventListener('DOMContentLoaded', function () {
 
         var form = searchOverlay.querySelector('[data-live-search-form]');
         var input = searchOverlay.querySelector('input[type="search"]');
+        var clearBtn = searchOverlay.querySelector('[data-search-clear]');
         var suggestions = document.getElementById('search-suggestions-list');
         var status = document.getElementById('search-suggestions-status');
+        var allWrap = searchOverlay.querySelector('[data-search-all]');
+        var allLink = searchOverlay.querySelector('[data-search-all-link]');
+        var allLabel = searchOverlay.querySelector('[data-search-all-label]');
         var recentGroup = searchOverlay.querySelector('[data-recent-searches]');
         var recentList = searchOverlay.querySelector('[data-recent-searches-list]');
+        var recentClear = searchOverlay.querySelector('[data-recent-searches-clear]');
+        var chipsWrap = searchOverlay.querySelector('.delight-search__chips');
         var settings = window.mazaq_ajax || {};
         var recentKey = 'mazaq_recent_searches';
         var debounceTimer = null;
         var latestRequest = 0;
+        var activeIndex = -1;
+        var errorBox = null;
+        var activeController = null;
 
         if (!form || !input || !suggestions || !settings.ajax_url || !settings.search_nonce) return;
+
+        if (!errorBox) {
+            errorBox = document.createElement('div');
+            errorBox.className = 'delight-search__error';
+            errorBox.hidden = true;
+            var errorText = document.createElement('p');
+            errorText.textContent = 'تعذر تحميل الاقتراحات الآن.';
+            var retryBtn = document.createElement('button');
+            retryBtn.type = 'button';
+            retryBtn.textContent = 'إعادة المحاولة';
+            retryBtn.addEventListener('click', function () {
+                errorBox.hidden = true;
+                requestSuggestions(input.value.trim());
+            });
+            errorBox.appendChild(errorText);
+            errorBox.appendChild(retryBtn);
+            suggestions.insertAdjacentElement('afterend', errorBox);
+        }
 
         function getRecentSearches() {
             try {
@@ -218,24 +245,116 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
 
-        function clearSuggestions(message) {
-            suggestions.innerHTML = '';
+        function setStatus(message) {
             if (status) status.textContent = message || '';
+        }
+
+        function getOptions() {
+            return suggestions.querySelectorAll('[role="option"]');
+        }
+
+        function setActiveOption(index) {
+            var options = getOptions();
+            if (!options.length) {
+                activeIndex = -1;
+                input.removeAttribute('aria-activedescendant');
+                return;
+            }
+            activeIndex = (index + options.length) % options.length;
+            options.forEach(function (option, i) {
+                option.classList.toggle('delight-search__suggestion--active', i === activeIndex);
+                option.setAttribute('aria-selected', i === activeIndex ? 'true' : 'false');
+            });
+            input.setAttribute('aria-activedescendant', options[activeIndex].id);
+            options[activeIndex].scrollIntoView({ block: 'nearest' });
+        }
+
+        function resetActiveOption() {
+            activeIndex = -1;
+            input.removeAttribute('aria-activedescendant');
+            getOptions().forEach(function (option) {
+                option.classList.remove('delight-search__suggestion--active');
+                option.setAttribute('aria-selected', 'false');
+            });
+        }
+
+        function setExpanded(open) {
+            input.setAttribute('aria-expanded', open ? 'true' : 'false');
+        }
+
+        function resetToIdle() {
+            suggestions.innerHTML = '';
+            errorBox.hidden = true;
+            if (allWrap) allWrap.hidden = true;
+            if (chipsWrap) chipsWrap.hidden = false;
+            setExpanded(false);
+            resetActiveOption();
+            setStatus('');
+        }
+
+        function showSkeleton() {
+            suggestions.innerHTML = '';
+            resetActiveOption();
+            setExpanded(true);
+            if (allWrap) allWrap.hidden = true;
+            if (chipsWrap) chipsWrap.hidden = true;
+            errorBox.hidden = true;
+            for (var i = 0; i < 3; i++) {
+                var row = document.createElement('div');
+                row.className = 'delight-search__skeleton';
+                row.setAttribute('aria-hidden', 'true');
+                var media = document.createElement('span');
+                var body = document.createElement('div');
+                body.appendChild(document.createElement('span'));
+                body.appendChild(document.createElement('span'));
+                row.appendChild(media);
+                row.appendChild(body);
+                suggestions.appendChild(row);
+            }
+        }
+
+        function highlightTitle(title, term) {
+            var strong = document.createElement('strong');
+            var lowerTitle = title.toLowerCase();
+            var lowerTerm = term.toLowerCase();
+            var cursor = 0;
+            var matchAt = lowerTitle.indexOf(lowerTerm);
+            while (matchAt !== -1) {
+                if (matchAt > cursor) strong.appendChild(document.createTextNode(title.slice(cursor, matchAt)));
+                var mark = document.createElement('mark');
+                mark.textContent = title.slice(matchAt, matchAt + term.length);
+                strong.appendChild(mark);
+                cursor = matchAt + term.length;
+                matchAt = lowerTitle.indexOf(lowerTerm, cursor);
+            }
+            if (cursor < title.length) strong.appendChild(document.createTextNode(title.slice(cursor)));
+            return strong;
         }
 
         function renderSuggestions(items, term) {
             suggestions.innerHTML = '';
-            if (!items.length) {
-                clearSuggestions(term.length >= 2 ? 'لا توجد اقتراحات مطابقة.' : '');
+            resetActiveOption();
+            setExpanded(items.length > 0);
+            if (chipsWrap) chipsWrap.hidden = items.length > 0;
+            errorBox.hidden = true;
+            if (allWrap) allWrap.hidden = term.length < 2;
+
+            var safeItems = (items || []).filter(function (item) {
+                return item && item.url && typeof item.url === 'string';
+            });
+            if (!safeItems.length) {
+                setStatus('لا توجد اقتراحات مطابقة. جرّب كلمة أقصر أو تصفح الاقتراحات أدناه.');
                 return;
             }
 
-            if (status) status.textContent = 'اقتراحات بحث جاهزة.';
-            items.forEach(function (item) {
+            setStatus('اقتراحات بحث جاهزة.');
+            safeItems.forEach(function (item, index) {
                 var link = document.createElement('a');
                 link.href = item.url;
                 link.className = 'delight-search__suggestion';
-                link.setAttribute('role', 'listitem');
+                link.setAttribute('role', 'option');
+                link.id = 'search-option-' + index;
+                link.setAttribute('aria-selected', 'false');
 
                 var media = document.createElement('span');
                 media.className = 'delight-search__suggestion-media';
@@ -245,54 +364,170 @@ document.addEventListener('DOMContentLoaded', function () {
                     image.alt = item.alt || '';
                     image.loading = 'lazy';
                     media.appendChild(image);
+                } else {
+                    media.classList.add('delight-search__suggestion-media--plate');
+                    media.setAttribute('data-letter', (item.title || '؟').trim().charAt(0));
                 }
 
                 var body = document.createElement('span');
                 body.className = 'delight-search__suggestion-body';
-                var title = document.createElement('strong');
-                title.textContent = item.title;
+                body.appendChild(highlightTitle(item.title || '', term));
+
                 var meta = document.createElement('span');
-                meta.textContent = [item.category, item.date].filter(Boolean).join(' • ');
-                body.appendChild(title);
+                meta.className = 'delight-search__suggestion-meta';
+                if (item.category) {
+                    var category = document.createElement('span');
+                    category.textContent = item.category;
+                    meta.appendChild(category);
+                }
+                if (item.category && item.date) {
+                    var dot = document.createElement('span');
+                    dot.className = 'delight-search__dot';
+                    dot.setAttribute('aria-hidden', 'true');
+                    meta.appendChild(dot);
+                }
+                if (item.date) {
+                    var date = document.createElement('span');
+                    date.className = 'delight-search__num';
+                    date.textContent = item.date;
+                    meta.appendChild(date);
+                }
                 body.appendChild(meta);
+
                 link.appendChild(media);
                 link.appendChild(body);
                 suggestions.appendChild(link);
             });
         }
 
+        function updateAllLink(term) {
+            if (!allWrap || !allLink || !allLabel) return;
+            if (term.length < 2) {
+                allWrap.hidden = true;
+                return;
+            }
+            allLabel.textContent = 'عرض كل نتائج «' + term + '»';
+            var base = form.getAttribute('action') || '/';
+            allLink.href = base + '?s=' + encodeURIComponent(term);
+            allWrap.hidden = false;
+        }
+
+        var REQUEST_TIMEOUT = 8000;
+
         function requestSuggestions(term) {
             var requestId = ++latestRequest;
             if (term.length < 2) {
-                clearSuggestions('');
+                resetToIdle();
                 return;
             }
-            if (status) status.textContent = 'جاري تحميل الاقتراحات...';
+
+            if (activeController) activeController.abort();
+
+            updateAllLink(term);
+            setStatus('جاري تحميل الاقتراحات...');
+            showSkeleton();
+
+            var controller = typeof AbortController === 'function' ? new AbortController() : null;
+            activeController = controller;
+            var timeoutId = controller ? window.setTimeout(function () { controller.abort(); }, REQUEST_TIMEOUT) : null;
 
             var url = settings.ajax_url + '?action=' + encodeURIComponent(settings.search_suggestions_action || 'mazaq_search_suggestions') +
                 '&nonce=' + encodeURIComponent(settings.search_nonce) +
                 '&query=' + encodeURIComponent(term);
 
-            fetch(url, { credentials: 'same-origin' })
+            fetch(url, { credentials: 'same-origin', signal: controller ? controller.signal : undefined })
                 .then(function (response) {
                     if (!response.ok) throw new Error('Search suggestions failed');
                     return response.json();
                 })
                 .then(function (payload) {
+                    window.clearTimeout(timeoutId);
                     if (requestId !== latestRequest) return;
-                    renderSuggestions((payload && payload.success && payload.data && payload.data.items) ? payload.data.items : [], term);
+                    var items = (payload && payload.success && payload.data && payload.data.items) ? payload.data.items : [];
+                    renderSuggestions(items, term);
                 })
                 .catch(function () {
+                    window.clearTimeout(timeoutId);
                     if (requestId !== latestRequest) return;
-                    clearSuggestions('تعذر تحميل الاقتراحات الآن.');
+                    suggestions.innerHTML = '';
+                    resetActiveOption();
+                    setExpanded(false);
+                    if (chipsWrap) chipsWrap.hidden = false;
+                    errorBox.hidden = false;
+                    setStatus('');
                 });
         }
 
         input.addEventListener('input', function () {
             var term = input.value.trim();
+            if (clearBtn) clearBtn.hidden = term.length === 0;
             window.clearTimeout(debounceTimer);
+            if (term.length < 2) {
+                debounceTimer = window.setTimeout(function () { requestSuggestions(term); }, 100);
+                return;
+            }
             debounceTimer = window.setTimeout(function () { requestSuggestions(term); }, 250);
         });
+
+        input.addEventListener('keydown', function (event) {
+            var options = getOptions();
+            if (!options.length) return;
+            if (event.key === 'ArrowDown') {
+                event.preventDefault();
+                setActiveOption(activeIndex + 1);
+            } else if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                setActiveOption(activeIndex <= 0 ? options.length - 1 : activeIndex - 1);
+            } else if (event.key === 'Home') {
+                event.preventDefault();
+                setActiveOption(0);
+            } else if (event.key === 'End') {
+                event.preventDefault();
+                setActiveOption(options.length - 1);
+            } else if (event.key === 'Enter' && activeIndex >= 0 && options[activeIndex]) {
+                event.preventDefault();
+                addRecentSearch(input.value);
+                window.location.href = options[activeIndex].href;
+            }
+        });
+
+        if (clearBtn) {
+            clearBtn.addEventListener('click', function () {
+                input.value = '';
+                clearBtn.hidden = true;
+                resetToIdle();
+                input.focus();
+            });
+        }
+
+        function resetSearchForOpen() {
+            if (activeController) {
+                latestRequest += 1;
+                activeController.abort();
+                activeController = null;
+            }
+            input.value = '';
+            if (clearBtn) clearBtn.hidden = true;
+            resetToIdle();
+            renderRecentSearches();
+        }
+
+        [document.getElementById('search-toggle'), document.getElementById('search-mobile-toggle')].forEach(function (toggle) {
+            if (toggle) toggle.addEventListener('click', resetSearchForOpen);
+        });
+
+        if (allLink) {
+            allLink.addEventListener('click', function () {
+                addRecentSearch(input.value);
+            });
+        }
+
+        if (recentClear) {
+            recentClear.addEventListener('click', function () {
+                setRecentSearches([]);
+                renderRecentSearches();
+            });
+        }
 
         form.addEventListener('submit', function () {
             addRecentSearch(input.value);
