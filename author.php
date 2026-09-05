@@ -29,7 +29,7 @@ $author_category_counts = array_slice($author_category_counts, 0, 3);
 
 <header class="archive-head">
     <div class="archive-head__inner max-w-7xl mx-auto px-4">
-        <div class="archive-head__body md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,10rem)] md:items-center md:gap-10">
+        <div class="archive-head__body archive-head__body--with-avatar">
             <div class="archive-head__content">
                 <span class="archive-head__pill">
                     <span class="archive-head__tick" aria-hidden="true"></span>
@@ -65,17 +65,17 @@ $author_category_counts = array_slice($author_category_counts, 0, 3);
     </div>
 </header>
 
-<div class="max-w-7xl mx-auto px-4 mb-10"><?php mazaq_render_ad('ad_slot_archive_banner', 'horizontal'); ?></div>
+<div class="archive-ad max-w-7xl mx-auto px-4"><?php mazaq_render_ad('ad_slot_archive_banner', 'horizontal'); ?></div>
 
-<main id="main-content" class="max-w-7xl mx-auto px-4 pb-20">
+<main id="main-content" class="archive-main max-w-7xl mx-auto px-4 pb-20">
     <section class="archive-collections" aria-labelledby="archive-collections-title">
         <h2 id="archive-collections-title" class="archive-collections__title"><?php esc_html_e('اهتمامات وسلاسل بارزة', 'mazaq'); ?></h2>
         <?php if (!empty($author_category_counts)) : ?>
             <div class="archive-collections__grid">
                 <?php foreach ($author_category_counts as $author_category_stat) : ?>
-                    <a href="<?php echo esc_url((string) $author_category_stat['url']); ?>" class="category-row__item">
-                        <span class="category-row__name"><?php echo esc_html((string) $author_category_stat['name']); ?></span>
-                        <span class="category-row__count num"><?php echo esc_html(sprintf(__('%d مقال', 'mazaq'), (int) $author_category_stat['count'])); ?></span>
+                    <a href="<?php echo esc_url((string) $author_category_stat['url']); ?>" class="archive-collections__item">
+                        <span class="archive-collections__name"><?php echo esc_html((string) $author_category_stat['name']); ?></span>
+                        <span class="archive-collections__count num"><?php echo esc_html(sprintf(__('%d مقال', 'mazaq'), (int) $author_category_stat['count'])); ?></span>
                     </a>
                 <?php endforeach; ?>
             </div>

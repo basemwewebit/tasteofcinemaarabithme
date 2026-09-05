@@ -10,7 +10,7 @@
             </span>
             <h1 class="archive-head__title"><?php the_archive_title(); ?></h1>
             <?php $archive_desc = get_the_archive_description(); if ($archive_desc) : ?>
-                <p class="archive-head__desc"><?php echo wp_kses_post($archive_desc); ?></p>
+                <div class="archive-head__desc"><?php echo wp_kses_post($archive_desc); ?></div>
             <?php endif; ?>
             <p class="archive-head__meta">
                 <span class="archive-head__count num"><?php echo esc_html((string) $wp_query->found_posts); ?></span>
@@ -20,9 +20,9 @@
     </div>
 </header>
 
-<div class="max-w-7xl mx-auto px-4 mb-10"><?php mazaq_render_ad('ad_slot_archive_banner', 'horizontal'); ?></div>
+<div class="archive-ad max-w-7xl mx-auto px-4"><?php mazaq_render_ad('ad_slot_archive_banner', 'horizontal'); ?></div>
 
-<main id="main-content" class="max-w-7xl mx-auto px-4 pb-20">
+<main id="main-content" class="archive-main max-w-7xl mx-auto px-4 pb-20">
     <?php get_template_part('template-parts/archive/archive-feed', null, [
         'ad_context' => 'archive',
         'empty_message' => __('لا توجد مقالات في هذا الأرشيف حالياً.', 'mazaq'),
