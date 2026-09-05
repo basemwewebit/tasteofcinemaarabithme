@@ -5692,6 +5692,14 @@ html:not(.dark) .delight-search__close:hover {
     }
 }
 
+.pagination-foot {
+    border-top: 1px solid var(--color-celluloid);
+}
+
+html.dark .pagination-foot {
+    border-top-color: rgba(234, 230, 220, 0.12);
+}
+
 .pagination-nav {
     display: flex;
     flex-wrap: wrap;
@@ -5701,13 +5709,13 @@ html:not(.dark) .delight-search__close:hover {
 }
 
 .pagination-nav__status {
-    color: var(--color-slate-600);
+    color: var(--color-charcoal);
     font-size: var(--text-caption);
     font-weight: 800;
 }
 
 .dark .pagination-nav__status {
-    color: var(--color-slate-300);
+    color: var(--color-pewter);
 }
 
 .pagination-nav__links {
@@ -5724,9 +5732,9 @@ html:not(.dark) .delight-search__close:hover {
     min-height: 2.75rem;
     align-items: center;
     justify-content: center;
-    border: 1px solid var(--color-mist);
+    border: 1px solid var(--color-celluloid);
     border-radius: var(--radius-pill);
-    color: var(--color-slate-700);
+    color: var(--color-charcoal);
     padding: 0.45rem 0.85rem;
     font-weight: 800;
     transition: border-color 200ms ease, color 200ms ease, background-color 200ms ease;
@@ -5734,7 +5742,7 @@ html:not(.dark) .delight-search__close:hover {
 
 .dark .pagination-nav__link {
     border-color: rgba(234, 230, 220, 0.1);
-    color: var(--color-slate-300);
+    color: var(--color-pewter);
 }
 
 .pagination-nav__link:hover,
@@ -5746,6 +5754,10 @@ html:not(.dark) .delight-search__close:hover {
 .pagination-nav__link--current {
     border-color: var(--color-primary);
     background: var(--color-primary);
+    color: var(--color-nocturnal-slate);
+}
+
+.dark .pagination-nav__link--current {
     color: var(--color-nocturnal-slate);
 }
 
@@ -8050,4 +8062,155 @@ html.toc-js .delight-footer--animate .delight-footer__grid > *,
 html.toc-js .delight-footer--animate .delight-footer__slate {
     opacity: 1;
     transform: none;
+}
+
+/* ============================================================
+   SEARCH ROOM: the archive's quiet operative sibling (Operate)
+   Best match leads; the rest file into ruled rows; emptiness
+   recovers like the 404. Gold is rare: tick, count, focus, active.
+   ============================================================ */
+
+.search-room ::selection {
+    background: rgba(201, 162, 39, 0.28);
+}
+
+.search-head__query {
+    overflow-wrap: break-word;
+}
+
+.search-head__field {
+    margin-block-start: 1.5rem;
+    max-width: 36rem;
+}
+
+/* Boxed operative field: shared everywhere get_search_form() renders. */
+.search-field {
+    position: relative;
+}
+
+.search-field__input {
+    width: 100%;
+    height: 3.5rem;
+    padding-inline-start: 3.5rem;
+    padding-inline-end: 1.1rem;
+    border: 1px solid var(--color-gold-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-paper-elevated);
+    color: var(--color-text-on-paper);
+    font-family: var(--font-body);
+    font-size: 1.05rem;
+    caret-color: var(--color-primary);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+html.dark .search-field__input {
+    border-color: rgba(234, 230, 220, 0.16);
+    background: var(--color-ink-elevated);
+    color: var(--color-text-on-ink);
+}
+
+.search-field__input::placeholder {
+    color: var(--color-text-on-paper-muted);
+    opacity: 1;
+}
+
+html.dark .search-field__input::placeholder {
+    color: var(--color-text-on-ink-muted);
+}
+
+.search-field__input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: var(--shadow-focus);
+}
+
+.search-field__btn {
+    position: absolute;
+    inset-inline-start: 0.35rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3rem;
+    height: 3rem;
+    display: grid;
+    place-items: center;
+    border: 0;
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--color-text-on-paper-muted);
+    cursor: pointer;
+    transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+html.dark .search-field__btn {
+    color: var(--color-text-on-ink-muted);
+}
+
+.search-field__btn svg {
+    width: 1.35rem;
+    height: 1.35rem;
+}
+
+.search-field__btn:hover {
+    color: var(--color-primary-hover);
+    background: rgba(201, 162, 39, 0.10);
+}
+
+html.dark .search-field__btn:hover {
+    color: var(--color-primary);
+    background: rgba(230, 203, 106, 0.10);
+}
+
+.search-field__btn:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+/* Empty state: recovery language borrowed from the 404 room. */
+.search-empty {
+    padding-block: clamp(1.5rem, 4vw, 3rem) 0;
+}
+
+.search-empty__title {
+    font-size: clamp(1.5rem, 3vw, 2.1rem);
+}
+
+.search-empty__sub {
+    margin: 0.75rem 0 1.5rem;
+    font-size: 1.0625rem;
+    line-height: 1.85;
+    color: var(--color-text-on-paper-muted);
+    text-wrap: pretty;
+}
+
+html.dark .search-empty__sub {
+    color: var(--color-text-on-ink-muted);
+}
+
+/* Brief-pinned: gold is the count, but only where it stays legible —
+   Lamp Gold on nocturnal ink; warm ink keeps the numeral on paper. */
+html.dark .search-head .archive-head__count {
+    color: var(--color-gold-tint);
+}
+
+/* Ledger meta inside the search recovery speaks in palette greys:
+   charcoal on paper, pewter on ink — never cold slate. */
+.search-empty .err-404__meta {
+    color: var(--color-charcoal);
+}
+
+html.dark .search-empty .err-404__meta {
+    color: var(--color-pewter);
+}
+
+/* An empty ruled index never renders a stray container. */
+.search-room .archive-index:empty {
+    display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .search-field__input,
+    .search-field__btn,
+    .pagination-nav__link {
+        transition: none;
+    }
 }

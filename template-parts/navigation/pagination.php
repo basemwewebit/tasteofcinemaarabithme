@@ -15,7 +15,7 @@ $links = paginate_links([
 ]);
 if ($total_pages > 1 && !empty($links)) :
 ?>
-<div class="mt-16 border-t border-slate-200 dark:border-slate-800 pt-8">
+<div class="pagination-foot mt-16 border-t pt-8">
     <nav class="pagination-nav" aria-label="<?php esc_attr_e('التنقل بين الصفحات', 'mazaq'); ?>">
         <span class="pagination-nav__status num">
             <?php echo esc_html(sprintf(__('صفحة %1$d من %2$d', 'mazaq'), $current_page, $total_pages)); ?>
