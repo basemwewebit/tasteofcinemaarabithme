@@ -1,300 +1,73 @@
 <?php get_header(); ?>
 
-<main id="main-content" class="delight-404 min-h-[80vh] flex items-center justify-center relative overflow-hidden">
-    <div class="absolute inset-0 bg-slate-950"></div>
-    <div class="absolute inset-0 delight-404__vignette"></div>
-    <div class="absolute inset-0 delight-404__grain" aria-hidden="true"></div>
-    <canvas id="projector-canvas" class="absolute inset-0 pointer-events-none z-0 opacity-60" aria-hidden="true"></canvas>
+<main id="main-content" class="err-404">
+    <div class="err-404__wrap">
+        <p class="err-404__code num" aria-hidden="true">404</p>
+        <h1 class="err-404__title"><?php esc_html_e('المخرج قرر استبعاد هذا المشهد من النسخة النهائية.', 'mazaq'); ?></h1>
+        <p class="err-404__sub"><?php esc_html_e('الصفحة غير موجودة في الأرشيف. ابحث في الأرشيف أو عُد إلى العرض.', 'mazaq'); ?></p>
 
-    <div class="relative z-10 w-full px-6 max-w-5xl mx-auto">
-        <div class="max-w-2xl mx-auto text-center">
-            <!-- Film perforation top -->
-            <div class="delight-404__sprocket" aria-hidden="true"></div>
-
-            <div class="delight-404__card">
-                <span class="delight-404__label">مشهد محذوف</span>
-                <h1 class="delight-404__code">404</h1>
-                <p class="delight-404__lead">المخرج قرر استبعاد هذا المشهد من النسخة النهائية.</p>
-                <p class="delight-404__sub">الصفحة غير موجودة في الأرشيف.</p>
-                <a href="<?php echo esc_url(home_url('/')); ?>" class="delight-404__cta">
-                    <span>العودة للعرض</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
-                    </svg>
-                </a>
-            </div>
-
-            <!-- Film perforation bottom -->
-            <div class="delight-404__sprocket delight-404__sprocket--bottom" aria-hidden="true"></div>
-
-            <?php get_template_part('template-parts/ads/ad-404'); ?>
-        </div>
+        <form role="search" method="get" class="err-404__search" action="<?php echo esc_url(home_url('/')); ?>" aria-label="<?php esc_attr_e('البحث في الأرشيف', 'mazaq'); ?>">
+            <label class="sr-only" for="err-404-search"><?php esc_attr_e('ابحث عن فيلم أو مقال', 'mazaq'); ?></label>
+            <input type="search" id="err-404-search" name="s" class="err-404__input" placeholder="<?php esc_attr_e('ابحث عن فيلم أو مقال...', 'mazaq'); ?>" autocomplete="off" />
+            <button type="submit" class="err-404__search-btn" aria-label="<?php esc_attr_e('بحث', 'mazaq'); ?>">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                </svg>
+            </button>
+        </form>
 
         <?php $popular = mazaq_get_most_read_posts(5); ?>
-        <?php if ($popular->have_posts()) : ?>
-            <section class="delight-404__popular" aria-labelledby="popular-404-title">
-                <h2 id="popular-404-title" class="sr-only">الأكثر قراءة هذا الأسبوع</h2>
-                <div class="popular-strip" tabindex="0" aria-label="<?php esc_attr_e('مقالات رائجة يمكن الانتقال إليها', 'mazaq'); ?>">
+        <?php $has_popular = $popular instanceof WP_Query && $popular->have_posts(); ?>
+
+        <div class="err-404__actions">
+            <a href="<?php echo esc_url(home_url('/')); ?>" class="err-404__primary">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75" />
+                </svg>
+                <span><?php esc_html_e('العودة للعرض', 'mazaq'); ?></span>
+            </a>
+            <?php if ($has_popular) : ?>
+                <a href="#err-404-popular" class="err-404__ghost">
+                    <span><?php esc_html_e('الأكثر قراءة', 'mazaq'); ?></span>
+                </a>
+            <?php endif; ?>
+        </div>
+
+        <?php $err_cats = get_categories(['orderby' => 'count', 'order' => 'DESC', 'number' => 3, 'hide_empty' => true]); ?>
+        <?php if (!empty($err_cats) && !is_wp_error($err_cats)) : ?>
+            <nav class="err-404__cats" aria-label="<?php esc_attr_e('تصفح حسب التصنيف', 'mazaq'); ?>">
+                <?php foreach ($err_cats as $err_cat) : ?>
+                    <?php $err_cat_link = get_category_link($err_cat->term_id); ?>
+                    <?php if (is_wp_error($err_cat_link)) { continue; } ?>
+                    <a class="err-404__chip" href="<?php echo esc_url($err_cat_link); ?>">
+                        <span><?php echo esc_html($err_cat->name); ?></span>
+                        <span class="num"><?php echo esc_html(number_format_i18n((int) $err_cat->count)); ?></span>
+                    </a>
+                <?php endforeach; ?>
+            </nav>
+        <?php endif; ?>
+
+        <?php if ($has_popular) : ?>
+            <section class="err-404__popular" aria-labelledby="err-404-popular">
+                <h2 id="err-404-popular" class="err-404__popular-title"><?php esc_html_e('تابع العرض: الأكثر قراءة هذا الأسبوع', 'mazaq'); ?></h2>
+                <ol class="err-404__list">
                     <?php $rank = 1; ?>
                     <?php while ($popular->have_posts()) : $popular->the_post(); ?>
-                        <article class="popular-strip__item">
-                            <a href="<?php the_permalink(); ?>" class="popular-strip__link group">
-                                <span class="popular-strip__rank num"><?php echo esc_html(sprintf('%02d', $rank)); ?></span>
-                                <h3 class="popular-strip__title"><?php the_title(); ?></h3>
-                                <span class="popular-strip__meta num"><?php echo esc_html(number_format_i18n(mazaq_get_post_views(get_the_ID()))); ?> مشاهدة</span>
+                        <li class="err-404__row">
+                            <a href="<?php the_permalink(); ?>" class="err-404__link">
+                                <span class="err-404__rank num" aria-hidden="true"><?php echo esc_html(sprintf('%02d', $rank)); ?></span>
+                                <span class="err-404__text">
+                                    <span class="err-404__post-title"><?php the_title(); ?></span>
+                                    <span class="err-404__meta num"><?php echo esc_html(number_format_i18n(mazaq_get_post_views(get_the_ID()))); ?> <?php esc_html_e('مشاهدة', 'mazaq'); ?></span>
+                                </span>
                             </a>
-                        </article>
+                        </li>
                         <?php $rank++; ?>
                     <?php endwhile; wp_reset_postdata(); ?>
-                </div>
+                </ol>
             </section>
         <?php endif; ?>
     </div>
 </main>
-
-<script>
-(function() {
-    // Respect user preference for reduced motion
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        return;
-    }
-
-    const canvas = document.getElementById('projector-canvas');
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const container = document.getElementById('main-content');
-    if (!container) return;
-
-    let width = canvas.width = container.clientWidth;
-    let height = canvas.height = container.clientHeight;
-
-    // Handle viewport resize dynamically
-    window.addEventListener('resize', () => {
-        width = canvas.width = container.clientWidth;
-        height = canvas.height = container.clientHeight;
-    });
-
-    // Tracking variables for smooth mouse parallax
-    let mouseX = width / 2;
-    let mouseY = height / 2;
-    let targetMouseX = width / 2;
-    let targetMouseY = height / 2;
-
-    container.addEventListener('mousemove', (e) => {
-        const rect = container.getBoundingClientRect();
-        targetMouseX = e.clientX - rect.left;
-        targetMouseY = e.clientY - rect.top;
-    });
-
-    container.addEventListener('mouseleave', () => {
-        targetMouseX = width / 2;
-        targetMouseY = height / 2;
-    });
-
-    // Dust particles system
-    const particleCount = 35;
-    const particles = [];
-
-    class Particle {
-        constructor() {
-            this.reset();
-            this.y = Math.random() * height; // Distribute vertically initially
-        }
-
-        reset() {
-            this.x = Math.random() * width;
-            this.y = -20;
-            this.vx = (Math.random() - 0.5) * 0.35;
-            this.vy = 0.4 + Math.random() * 0.55;
-            this.size = 0.5 + Math.random() * 1.5;
-            this.opacity = 0;
-            this.maxOpacity = 0.15 + Math.random() * 0.3;
-            this.flickerSpeed = 0.01 + Math.random() * 0.025;
-            this.flickerTime = Math.random() * 100;
-        }
-
-        update() {
-            this.x += this.vx;
-            this.y += this.vy;
-
-            // Add organic horizontal drifting turbulence
-            this.vx += (Math.random() - 0.5) * 0.04;
-            this.vx = Math.max(-0.5, Math.min(0.5, this.vx));
-
-            this.flickerTime += this.flickerSpeed;
-
-            if (this.y > height + 20 || this.x < -20 || this.x > width + 20) {
-                this.reset();
-            }
-        }
-
-        draw(beamIntensity) {
-            // Source coordinates of projection light source
-            const sourceX = width / 2 + (mouseX - width / 2) * 0.12;
-            const sourceY = -50;
-            
-            // Distance and angle metrics to source
-            const dx = this.x - sourceX;
-            const dy = this.y - sourceY;
-            const angle = Math.atan2(dy, dx);
-
-            // Target focal point of projection beam
-            const targetX = width / 2 + (mouseX - width / 2) * 0.55;
-            const targetY = height * 0.55 + (mouseY - height / 2) * 0.35;
-            const beamAngle = Math.atan2(targetY - sourceY, targetX - sourceX);
-
-            let angleDiff = angle - beamAngle;
-            angleDiff = Math.atan2(Math.sin(angleDiff), Math.cos(angleDiff));
-
-            const coneHalfAngle = 0.36;
-            let lightFactor = 0;
-
-            if (Math.abs(angleDiff) < coneHalfAngle) {
-                const edgeDecay = 1 - (Math.abs(angleDiff) / coneHalfAngle);
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                const distDecay = Math.max(0, 1 - (dist / (height * 1.4)));
-                lightFactor = edgeDecay * distDecay * beamIntensity;
-            }
-
-            if (lightFactor > 0.05) {
-                const currentOpacity = this.maxOpacity * lightFactor * (0.6 + 0.4 * Math.sin(this.flickerTime));
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(230, 203, 106, ${currentOpacity})`;
-                ctx.fill();
-            }
-        }
-    }
-
-    // Initialize particles
-    for (let i = 0; i < particleCount; i++) {
-        particles.push(new Particle());
-    }
-
-    // Classic film grain vertical scratches
-    const scratches = [];
-    const scratchCount = 2;
-
-    class Scratch {
-        constructor() {
-            this.reset();
-        }
-
-        reset() {
-            this.x = Math.random() * width;
-            this.width = 0.4 + Math.random() * 0.6;
-            this.opacity = 0.02 + Math.random() * 0.06;
-            this.life = 0;
-            this.maxLife = 8 + Math.random() * 12;
-        }
-
-        update() {
-            this.life++;
-            this.x += (Math.random() - 0.5) * 1.5;
-            if (this.life > this.maxLife) {
-                this.reset();
-            }
-        }
-
-        draw() {
-            ctx.beginPath();
-            ctx.moveTo(this.x, 0);
-            ctx.lineTo(this.x + (Math.random() - 0.5) * 4, height);
-            ctx.strokeStyle = `rgba(255, 255, 255, ${this.opacity})`;
-            ctx.lineWidth = this.width;
-            ctx.stroke();
-        }
-    }
-
-    for (let i = 0; i < scratchCount; i++) {
-        scratches.push(new Scratch());
-    }
-
-    let flickerVal = 1;
-    let time = 0;
-
-    function animate() {
-        ctx.clearRect(0, 0, width, height);
-
-        // Smooth cursor follow with lerp
-        mouseX += (targetMouseX - mouseX) * 0.08;
-        mouseY += (targetMouseY - mouseY) * 0.08;
-
-        time += 0.06;
-        flickerVal = 0.88 + Math.sin(time * 6.5) * 0.035 + Math.sin(time * 18.2) * 0.045 + Math.random() * 0.04;
-
-        // Projector light source location
-        const sourceX = width / 2 + (mouseX - width / 2) * 0.08;
-        const sourceY = -60;
-
-        // Center screen projection focus
-        const targetX = width / 2 + (mouseX - width / 2) * 0.45;
-        const targetY = height * 0.6 + (mouseY - height / 2) * 0.3;
-
-        // Radial beam gradient mimicking projector lens lamp
-        const grad = ctx.createRadialGradient(sourceX, sourceY, 15, targetX, targetY, height * 1.25);
-        const beamOpacity = 0.15 * flickerVal;
-        
-        grad.addColorStop(0, `rgba(230, 203, 106, ${beamOpacity * 1.6})`);
-        grad.addColorStop(0.15, `rgba(230, 203, 106, ${beamOpacity * 0.85})`);
-        grad.addColorStop(0.45, `rgba(230, 203, 106, ${beamOpacity * 0.35})`);
-        grad.addColorStop(0.8, `rgba(230, 203, 106, ${beamOpacity * 0.06})`);
-        grad.addColorStop(1, 'rgba(2, 6, 23, 0)');
-
-        ctx.fillStyle = grad;
-        ctx.beginPath();
-        
-        // Define cone bounding vectors
-        const angle = Math.atan2(targetY - sourceY, targetX - sourceX);
-        const halfCone = 0.38;
-        ctx.moveTo(sourceX, sourceY);
-        ctx.arc(sourceX, sourceY, height * 1.5, angle - halfCone, angle + halfCone);
-        ctx.closePath();
-        ctx.fill();
-
-        // Projector central hot spot/glow
-        const spotGrad = ctx.createRadialGradient(targetX, targetY, 0, targetX, targetY, width * 0.35);
-        spotGrad.addColorStop(0, `rgba(230, 203, 106, ${0.04 * flickerVal})`);
-        spotGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-        ctx.fillStyle = spotGrad;
-        ctx.beginPath();
-        ctx.arc(targetX, targetY, width * 0.35, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Render particles
-        particles.forEach(p => {
-            p.update();
-            p.draw(flickerVal);
-        });
-
-        // Dynamic film lines/scratches
-        if (Math.random() < 0.88) {
-            scratches.forEach(s => {
-                s.update();
-                s.draw();
-            });
-        }
-
-        // Projector gate hair artifact blinking for 1 frame
-        if (Math.random() < 0.045) {
-            ctx.beginPath();
-            const hx = Math.random() * width;
-            const hy = Math.random() * height;
-            ctx.moveTo(hx, hy);
-            ctx.bezierCurveTo(hx + 12, hy + 6, hx - 4, hy + 14, hx + 10, hy + 20);
-            ctx.strokeStyle = `rgba(255, 255, 255, ${0.12 + Math.random() * 0.2})`;
-            ctx.lineWidth = 0.7;
-            ctx.stroke();
-        }
-
-        requestAnimationFrame(animate);
-    }
-
-    animate();
-})();
-</script>
 
 <?php get_footer(); ?>
