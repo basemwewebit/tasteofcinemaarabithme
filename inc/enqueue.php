@@ -135,6 +135,15 @@ function mazaq_enqueue_assets(): void
             file_exists($template_dir . '/assets/js/app-archive.js') ? (string) filemtime($template_dir . '/assets/js/app-archive.js') : $version,
             true
         );
+
+        // The Continuous Programme: front-page hero paging + drift
+        wp_enqueue_script(
+            'mazaq-hero-programme',
+            $template_uri . '/assets/js/hero-programme.js',
+            ['mazaq-app'],
+            file_exists($template_dir . '/assets/js/hero-programme.js') ? (string) filemtime($template_dir . '/assets/js/hero-programme.js') : $version,
+            true
+        );
     }
 
     // Archive family: filing-cabinet index grouping (archive, category, tag, author)

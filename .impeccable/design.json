@@ -1,61 +1,55 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-04T21:32:51+03:00",
+  "generatedAt": "2026-09-05T00:00:00Z",
   "title": "Design System: Mazaq Cinema",
   "extensions": {
     "colorMeta": {
-      "primary": {
-        "role": "primary",
-        "displayName": "Projector Gold",
-        "canonical": "#C9A227",
-        "tonalRamp": ["oklch(18% 0.035 86)", "oklch(28% 0.055 86)", "oklch(40% 0.075 86)", "oklch(54% 0.095 86)", "oklch(66% 0.11 86)", "oklch(77% 0.095 86)", "oklch(87% 0.06 86)", "oklch(95% 0.025 86)"]
-      },
-      "claret": {
-        "role": "secondary",
-        "displayName": "Censor Claret",
-        "canonical": "#8E2A2A",
-        "tonalRamp": ["oklch(16% 0.04 28)", "oklch(25% 0.07 28)", "oklch(35% 0.1 28)", "oklch(45% 0.13 28)", "oklch(57% 0.12 28)", "oklch(70% 0.085 28)", "oklch(84% 0.045 28)", "oklch(94% 0.02 28)"]
-      },
-      "celluloid": {
-        "role": "secondary",
-        "displayName": "Celluloid Beige",
-        "canonical": "#D4C9A8",
-        "tonalRamp": ["oklch(18% 0.018 88)", "oklch(28% 0.025 88)", "oklch(40% 0.032 88)", "oklch(53% 0.038 88)", "oklch(66% 0.042 88)", "oklch(77% 0.038 88)", "oklch(87% 0.025 88)", "oklch(95% 0.012 88)"]
-      },
-      "ink": {
-        "role": "neutral",
-        "displayName": "Nocturnal Ink",
-        "canonical": "#0B0B0E",
-        "tonalRamp": ["#020617", "#0B0B0E", "#16161B", "#1E1E25", "#334155", "#64748B", "#94A3B8", "#EAE6DC"]
-      },
-      "paper": {
-        "role": "neutral",
-        "displayName": "Warm Paper",
-        "canonical": "#F7F4ED",
-        "tonalRamp": ["#0F0E0C", "#4E4A40", "#9C988E", "#D4C9A8", "#ECE7DC", "#F7F4ED", "#FFFFFF", "#FFFFFF"]
-      }
+      "primary": { "role": "primary", "displayName": "Projector Gold", "canonical": "#C9A227", "tonalRamp": ["#3D3208", "#5C4B0D", "#7A6412", "#997D17", "#B8961C", "#C9A227", "#DDBB4E", "#F2DCA0"] },
+      "gold-tint": { "role": "primary", "displayName": "Lamp Gold", "canonical": "#E6CB6A", "tonalRamp": ["#4A3F1B", "#6B5C27", "#8C7933", "#AD9640", "#CEB34D", "#E6CB6A", "#EFDCA0", "#F8EED2"] },
+      "claret": { "role": "secondary", "displayName": "Censor Claret", "canonical": "#8E2A2A", "tonalRamp": ["#2E0E0E", "#451515", "#5C1C1C", "#732323", "#8E2A2A", "#A95050", "#C48484", "#E0C0C0"] },
+      "celluloid": { "role": "secondary", "displayName": "Celluloid Beige", "canonical": "#D4C9A8", "tonalRamp": ["#403B2E", "#5F5846", "#7E755E", "#9E9377", "#BEAF8E", "#D4C9A8", "#E4DCC6", "#F4F0E4"] },
+      "celluloid-strong": { "role": "secondary", "displayName": "Celluloid Strong", "canonical": "#C9B98F", "tonalRamp": ["#3C3626", "#59503A", "#766A4E", "#938461", "#B09D75", "#C9B98F", "#DCCFAE", "#F0E8D2"] },
+      "ink": { "role": "neutral", "displayName": "Nocturnal Ink", "canonical": "#0B0B0E", "tonalRamp": ["#0B0B0E", "#16161B", "#2A2A32", "#41414B", "#5C5C67", "#7E7E88", "#ABABB2", "#DCDCE0"] },
+      "ink-elevated": { "role": "neutral", "displayName": "Midnight Surface", "canonical": "#16161B", "tonalRamp": ["#0B0B0E", "#16161B", "#2A2A32", "#41414B", "#5C5C67", "#7E7E88", "#ABABB2", "#DCDCE0"] },
+      "paper": { "role": "neutral", "displayName": "Warm Paper", "canonical": "#F7F4ED", "tonalRamp": ["#2C2A24", "#454238", "#605C4E", "#7F7A68", "#A29C88", "#C8C2B0", "#E2DDCF", "#F7F4ED"] },
+      "paper-elevated": { "role": "neutral", "displayName": "Paper Elevated", "canonical": "#FFFFFF", "tonalRamp": ["#333330", "#4D4D4A", "#6B6B67", "#8E8E8A", "#B3B3AF", "#D6D6D2", "#EDEDEA", "#FFFFFF"] },
+      "paper-muted": { "role": "neutral", "displayName": "Warm Ash", "canonical": "#ECE7DC", "tonalRamp": ["#332F27", "#4C473B", "#68624F", "#8A8269", "#AEA691", "#D0C9B8", "#ECE7DC", "#F8F5EE"] },
+      "pewter": { "role": "neutral", "displayName": "Pewter", "canonical": "#94A3B8", "tonalRamp": ["#232C38", "#34404F", "#465566", "#5C6E82", "#77899E", "#94A3B8", "#B6C2D0", "#DCE3EB"] },
+      "charcoal": { "role": "neutral", "displayName": "Charcoal", "canonical": "#475569", "tonalRamp": ["#141A22", "#1E2733", "#293545", "#374659", "#475569", "#64748B", "#94A3B8", "#CBD5E1"] },
+      "text-on-ink": { "role": "neutral", "displayName": "Text Cream", "canonical": "#EAE6DC", "tonalRamp": ["#2E2C27", "#45423B", "#5F5B51", "#7E7869", "#A29B87", "#C6BFA9", "#EAE6DC", "#F8F6F0"] },
+      "text-on-ink-muted": { "role": "neutral", "displayName": "Muted Cream", "canonical": "#9C988E", "tonalRamp": ["#2B2A26", "#3F3E38", "#55534B", "#6E6B61", "#9C988E", "#B4B1A8", "#CFCCC4", "#EAE8E2"] },
+      "text-on-paper": { "role": "neutral", "displayName": "Ink Text", "canonical": "#0F0E0C", "tonalRamp": ["#0F0E0C", "#26241F", "#3D3A33", "#57534A", "#4E4A40", "#75705F", "#A29B85", "#D6D0C0"] },
+      "text-on-paper-muted": { "role": "neutral", "displayName": "Muted Ink", "canonical": "#4E4A40", "tonalRamp": ["#1B1A16", "#282620", "#37342C", "#4E4A40", "#6A6555", "#8A8471", "#B0AA97", "#DBD6C8"] }
     },
     "typographyMeta": {
-      "display": {"displayName": "Arabic Poster Display", "purpose": "Strong editorial entry points and section moments."},
-      "editorial": {"displayName": "Long-form Editorial", "purpose": "Article titles and deliberate magazine moments."},
-      "body": {"displayName": "Arabic Reading Body", "purpose": "Prose, summaries, descriptions, and UI copy."},
-      "label": {"displayName": "Arabic Interface Label", "purpose": "Controls, categories, eyebrows, and status labels without tracking."},
-      "numeric": {"displayName": "Isolated Numeric", "purpose": "Dates, ranks, views, and reading time."}
+      "display": { "displayName": "Tajawal Display", "purpose": "Strongest editorial entry points; rare by doctrine. Lead programme titles run up to 4rem at 1.12." },
+      "headline": { "displayName": "Headline", "purpose": "Section titles and feature headings." },
+      "title": { "displayName": "Title", "purpose": "Cards and compact editorial modules." },
+      "editorial": { "displayName": "Amiri Editorial", "purpose": "Long-form article titles and deliberate magazine moments; article standfirsts at reading size." },
+      "body": { "displayName": "Body", "purpose": "Prose, decks, UI copy; ~1.8 line-height, 65–75ch measure long-form." },
+      "label": { "displayName": "Label", "purpose": "Arabic labels, eyebrows, chips, actions; zero tracking, no uppercase." },
+      "numeric": { "displayName": "Mono Numerals", "purpose": "Dates, ranks, reading time, programme spine numerals ٠١–٠٤; tabular and bidi-isolated." }
     },
     "shadows": [
-      {"name": "card-shadow", "value": "0 1px 0 rgba(255,255,255,0.04) inset, 0 8px 24px rgba(0,0,0,0.4)", "purpose": "Dark elevated cards and panels."},
-      {"name": "editorial-card-lift", "value": "0 18px 45px rgba(15,23,42,0.14)", "purpose": "Selected light-mode features and image-led editorial containers."},
-      {"name": "focus-glow", "value": "0 0 0 3px rgba(230,203,106,0.42)", "purpose": "Keyboard focus on both theme surfaces."}
+      { "name": "card", "value": "0 1px 0 rgba(255,255,255,0.04) inset, 0 8px 24px rgba(0,0,0,0.4)", "purpose": "Dark elevated cards and panels." },
+      { "name": "stage-ambient", "value": "0 24px 48px -24px rgba(11,11,14,0.5)", "purpose": "Programme panels and spines floating over imagery; dark room uses rgba(0,0,0,0.7)." },
+      { "name": "editorial-card-lift", "value": "0 18px 45px rgba(15,23,42,0.14)", "purpose": "Selected light-mode image-led features." },
+      { "name": "focus-glow", "value": "0 0 0 3px rgba(230,203,106,0.42)", "purpose": "Keyboard focus ring on both theme surfaces; hero uses scoped rgba(201,162,39,0.45) / rgba(230,203,106,0.5)." },
+      { "name": "inset-hairline", "value": "inset 0 0 0 1px rgba(212,201,168,1)", "purpose": "::after frame over full-bleed imagery; alpha 0.24–0.42 over ink." }
     ],
     "motion": [
-      {"name": "ease-editorial", "value": "cubic-bezier(0.22, 1, 0.36, 1)", "purpose": "Card lift, reveals, and polished state movement."},
-      {"name": "quick-state", "value": "200ms ease", "purpose": "Button, chip, field, and status feedback."},
-      {"name": "image-reveal", "value": "520ms cubic-bezier(0.22, 1, 0.36, 1)", "purpose": "Image scale and treatment changes on editorial cards."}
+      { "name": "ease-programme", "value": "cubic-bezier(0.22, 1, 0.36, 1)", "purpose": "Signature easing for paging, progress, hover, and panel transitions." },
+      { "name": "duration-panel", "value": "0.4s", "purpose": "Panel border and surface transitions." },
+      { "name": "duration-progress", "value": "0.5s", "purpose": "Progress fill scaleX steps between pages." },
+      { "name": "duration-icon", "value": "0.35s", "purpose": "Action icon slide toward the reading direction on hover." },
+      { "name": "drift-image", "value": "1.4s", "purpose": "Image scale/drift settling; disabled under prefers-reduced-motion and ≤760px." }
     ],
     "breakpoints": [
-      {"name": "mobile", "value": "640px"},
-      {"name": "tablet", "value": "768px"},
-      {"name": "desktop", "value": "1024px"}
+      { "name": "sm", "value": "640px" },
+      { "name": "stacked", "value": "760px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "density", "value": "1180px" },
+      { "name": "programme-margin", "value": "1360px" }
     ]
   },
   "components": [
@@ -63,69 +57,83 @@
       "name": "Primary Button",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "Rare gold editorial action with a distinct keyboard focus state.",
-      "html": "<button class=\"ds-button-primary\">اشترك</button>",
-      "css": ".ds-button-primary { min-height: 3rem; border: 0; border-radius: var(--radius-md, 8px); background: var(--color-primary, #C9A227); color: var(--color-text-on-paper, #0F0E0C); padding: .85rem 1rem; font-family: var(--font-body, system-ui); font-size: .9375rem; font-weight: 800; cursor: pointer; transition: filter 200ms ease, transform 200ms ease; } .ds-button-primary:hover { filter: brightness(.94); transform: translateY(-1px); } .ds-button-primary:focus-visible { outline: 3px solid var(--color-gold-tint, #E6CB6A); outline-offset: 2px; box-shadow: var(--shadow-focus, 0 0 0 3px rgba(230,203,106,.42)); } .ds-button-primary:disabled { cursor: wait; opacity: .68; transform: none; }"
+      "description": "The one solid gold action per group; dark ink text on Projector Gold.",
+      "html": "<button class=\"ds-btn-primary\">اقرأ المقال</button>",
+      "css": ".ds-btn-primary { background: #C9A227; color: #0B0B0E; padding: 0.85rem 1rem; height: 3rem; border: none; border-radius: 8px; font-family: 'IBM Plex Sans Arabic', system-ui, sans-serif; font-size: 0.9375rem; font-weight: 600; cursor: pointer; transition: background 0.2s cubic-bezier(0.22,1,0.36,1); } .ds-btn-primary:hover { background: #B88F1E; } .ds-btn-primary:focus-visible { outline: 3px solid rgba(201,162,39,0.45); outline-offset: 2px; }"
+    },
+    {
+      "name": "Programme Action",
+      "kind": "button",
+      "refersTo": "button-programme",
+      "description": "Lead-spread action of the Continuous Programme; icon slides toward the RTL reading direction on hover.",
+      "html": "<a class=\"ds-btn-programme\" dir=\"rtl\">اقرأ المقال <svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" width=\"18\" height=\"18\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M19 12H5m6-6-6 6 6 6\"></path></svg></a>",
+      "css": ".ds-btn-programme { display: inline-flex; align-items: center; gap: 0.6rem; width: fit-content; padding: 0.78rem 1.5rem; color: #0B0B0E; background: #C9A227; border-radius: 8px; font-family: 'IBM Plex Sans Arabic', system-ui, sans-serif; font-size: 0.95rem; font-weight: 700; text-decoration: none; cursor: pointer; } .ds-btn-programme svg { transition: transform 0.35s cubic-bezier(0.22,1,0.36,1); } .ds-btn-programme:hover { background: #B88F1E; } .ds-btn-programme:hover svg { transform: translateX(-4px); } .ds-btn-programme:focus-visible { outline: 3px solid rgba(201,162,39,0.45); outline-offset: 2px; }"
+    },
+    {
+      "name": "Programme Spread Panel",
+      "kind": "custom",
+      "refersTo": "card-editorial",
+      "description": "Signature: solid theme copy panel pinned to the RTL start edge of a full-stage still, with hairline frame, Stage Ambient shadow, and gold focus.",
+      "html": "<article class=\"ds-spread\" dir=\"rtl\"><span class=\"ds-spread__media\" aria-hidden=\"true\"></span><span class=\"ds-spread__panel\"><span class=\"ds-spread__title\">العنوان الرئيسي</span><span class=\"ds-spread__deck\">ملخص من سطرين يقدم المقال بأسلوب هادئ وواضح.</span><a class=\"ds-spread__more\" href=\"#\">تابع القراءة</a><span class=\"ds-spread__credit\"><span>ثقافة سينمائية</span> • <span class=\"ds-spread__num\">٥ دقائق</span> • <span>١٢ آب ٢٠٢٦</span></span></span></article>",
+      "css": ".ds-spread { position: relative; display: block; min-height: 28rem; background: #F7F4ED; overflow: hidden; border-radius: 12px; } .ds-spread__media { position: absolute; inset: 0; display: block; background: #0B0B0E; } .ds-spread__media::after { content: \"\"; position: absolute; inset: 0; box-shadow: inset 0 0 0 1px #D4C9A8; pointer-events: none; } .ds-spread__panel { position: absolute; inset-inline-start: clamp(1.25rem, 4.5vw, 4rem); inset-block-end: clamp(3rem, 9vh, 5rem); display: flex; flex-direction: column; align-items: flex-start; gap: 1rem; width: min(30rem, 46%); padding: clamp(1.5rem, 2.6vw, 2.4rem); color: #0F0E0C; background: #FFFFFF; border: 1px solid #D4C9A8; border-radius: 12px; box-shadow: 0 24px 48px -24px rgba(11,11,14,0.5); transition: border-color 0.4s cubic-bezier(0.22,1,0.36,1); } .ds-spread__panel:hover { border-color: #C9B98F; } .ds-spread__title { font-family: 'Tajawal', system-ui, sans-serif; font-size: clamp(1.45rem, 2vw, 2rem); font-weight: 800; line-height: 1.2; } .ds-spread__deck { color: #4E4A40; font-family: 'IBM Plex Sans Arabic', system-ui, sans-serif; font-size: 1rem; line-height: 1.8; } .ds-spread__more { display: inline-flex; align-items: center; gap: 0.5rem; color: #0F0E0C; font-family: 'IBM Plex Sans Arabic', system-ui, sans-serif; font-size: 0.95rem; font-weight: 700; text-decoration: none; border-block-end: 2px solid transparent; transition: border-color 0.35s cubic-bezier(0.22,1,0.36,1); } .ds-spread__more:hover { border-color: #C9A227; } .ds-spread__credit { display: flex; align-items: center; flex-wrap: wrap; gap: 0.55rem; margin-top: auto; padding-top: 0.95rem; color: #4E4A40; border-top: 1px solid #D4C9A8; font-family: 'IBM Plex Sans Arabic', system-ui, sans-serif; font-size: 0.78rem; font-weight: 500; } .ds-spread__num { font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 0.74rem; }"
+    },
+    {
+      "name": "Programme Spine",
+      "kind": "custom",
+      "refersTo": "spine-page-active",
+      "description": "Numbered pager ٠١–٠٤ with a gold scaleX progress fill growing from the RTL inline-start edge.",
+      "html": "<nav class=\"ds-spine\" dir=\"rtl\" aria-label=\"التنقل بين الشرائح\"><ol class=\"ds-spine__pager\"><li><button class=\"ds-spine__page\" aria-current=\"true\"><span class=\"ds-spine__num\">٠١</span></button></li><li><button class=\"ds-spine__page\"><span class=\"ds-spine__num\">٠٢</span></button></li><li><button class=\"ds-spine__page\"><span class=\"ds-spine__num\">٠٣</span></button></li></ol><span class=\"ds-spine__progress\" aria-hidden=\"true\"><span class=\"ds-spine__fill\" style=\"transform: scaleX(0.3333)\"></span></span></nav>",
+      "css": ".ds-spine { display: flex; flex-direction: column; gap: 0.6rem; width: fit-content; padding: 0.45rem 0.55rem 0.55rem; background: #FFFFFF; border: 1px solid #D4C9A8; border-radius: 8px; box-shadow: 0 24px 48px -24px rgba(11,11,14,0.5); } .ds-spine__pager { display: flex; gap: 0.2rem; margin: 0; padding: 0; list-style: none; } .ds-spine__page { min-width: 2.4rem; padding: 0.42rem 0.3rem; color: #4E4A40; background: transparent; border: 1px solid transparent; border-radius: 8px; cursor: pointer; transition: color 0.3s cubic-bezier(0.22,1,0.36,1), background-color 0.3s cubic-bezier(0.22,1,0.36,1); } .ds-spine__page:hover { color: #0F0E0C; border-color: #D4C9A8; } .ds-spine__page[aria-current=\"true\"] { color: #0B0B0E; background: #C9A227; } .ds-spine__page:focus-visible { outline: 3px solid rgba(201,162,39,0.45); outline-offset: 1px; } .ds-spine__num { font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 0.82rem; } .ds-spine__progress { display: block; height: 3px; background: rgba(15,14,12,0.14); border-radius: 999px; } .ds-spine__fill { display: block; width: 100%; height: 100%; background: #C9A227; border-radius: inherit; transform-origin: 100% 50%; transition: transform 0.5s cubic-bezier(0.22,1,0.36,1); }"
     },
     {
       "name": "Category Chip",
       "kind": "chip",
       "refersTo": "chip-category",
-      "description": "Theme-aware pill label for categories, tags, and suggestions.",
-      "html": "<a class=\"ds-chip\" href=\"#\">قوائم</a>",
-      "css": ".ds-chip { display: inline-flex; min-height: 2.5rem; align-items: center; padding: .45rem .9rem; border: 1px solid var(--color-mist, #E2E8F0); border-radius: var(--radius-pill, 9999px); background: var(--color-paper-muted, #ECE7DC); color: var(--color-charcoal, #475569); font-family: var(--font-body, system-ui); font-size: .9375rem; font-weight: 700; text-decoration: none; transition: border-color 200ms ease, color 200ms ease; } .ds-chip:hover, .ds-chip:focus-visible { border-color: rgba(201,162,39,.45); color: var(--color-primary-hover, #B88F1E); outline: 2px solid transparent; }"
+      "description": "Pill category label in Warm Ash with Charcoal text.",
+      "html": "<span class=\"ds-chip\">مقالات</span>",
+      "css": ".ds-chip { display: inline-flex; align-items: center; height: 2.5rem; padding: 0.45rem 0.9rem; background: #ECE7DC; color: #475569; border-radius: 9999px; font-family: 'IBM Plex Sans Arabic', system-ui, sans-serif; font-size: 0.9375rem; font-weight: 600; }"
     },
     {
-      "name": "Editorial Card with Image Fallback",
-      "kind": "card",
-      "refersTo": "card-editorial",
-      "description": "Image-led article card whose branded initial plate preserves the frame when imagery is unavailable.",
-      "html": "<article class=\"ds-card\"><a class=\"ds-card-media\" href=\"#\"><span class=\"ds-card-fallback\">ر</span></a><div class=\"ds-card-body\"><span class=\"ds-card-category\">اختيارات التحرير</span><h3><a href=\"#\">رحلة داخل عالم الفيلم</a></h3><p>قراءة سينمائية بهدوء المجلة ووضوح الشاشة.</p></div></article>",
-      "css": ".ds-card { overflow: hidden; border: 1px solid rgba(212,201,168,.5); border-radius: var(--radius-lg, 12px); background: rgba(247,244,237,.72); color: var(--color-text-on-paper, #0F0E0C); transition: transform 250ms cubic-bezier(.22,1,.36,1), border-color 250ms ease; } .ds-card:hover, .ds-card:focus-within { transform: translateY(-3px); border-color: rgba(201,162,39,.56); } .ds-card-media { display: grid; min-height: 13rem; place-items: center; background: radial-gradient(circle at 28% 20%, rgba(201,162,39,.18), transparent 34%), linear-gradient(135deg, var(--color-ink-elevated, #16161B), var(--color-ink, #0B0B0E)); text-decoration: none; } .ds-card-fallback { color: rgba(230,203,106,.28); font-family: var(--font-display, system-ui); font-size: 5rem; font-weight: 800; } .ds-card-body { padding: 1.15rem; } .ds-card-category { color: var(--color-primary, #C9A227); font-size: .8125rem; font-weight: 800; } .ds-card h3 { margin: .65rem 0 0; font-family: var(--font-display, system-ui); font-size: 1.35rem; line-height: 1.4; } .ds-card h3 a { color: inherit; text-decoration: none; } .ds-card p { margin: .75rem 0 0; color: var(--color-text-on-paper-muted, #4E4A40); line-height: 1.8; }"
-    },
-    {
-      "name": "Editorial Email Field",
+      "name": "Editorial Input",
       "kind": "input",
       "refersTo": "input-editorial",
-      "description": "High-contrast email field with a warm border and visible gold focus.",
-      "html": "<label class=\"ds-field\"><span>البريد الإلكتروني</span><input type=\"email\" dir=\"ltr\" placeholder=\"you@example.com\"></label>",
-      "css": ".ds-field { display: grid; gap: .5rem; color: var(--color-text-on-paper, #0F0E0C); font-family: var(--font-body, system-ui); font-weight: 700; } .ds-field input { min-height: 3rem; border: 1px solid var(--color-celluloid, #D4C9A8); border-radius: var(--radius-lg, 12px); background: var(--color-paper, #F7F4ED); color: var(--color-text-on-paper, #0F0E0C); padding: .9rem 1rem; font: inherit; font-weight: 400; } .ds-field input:focus-visible { outline: 3px solid var(--color-gold-tint, #E6CB6A); outline-offset: 2px; box-shadow: var(--shadow-focus, 0 0 0 3px rgba(230,203,106,.42)); }"
+      "description": "Warm hairline field with gold focus ring; theme-aware surface.",
+      "html": "<input class=\"ds-input\" type=\"email\" placeholder=\"بريدك الإلكتروني\">",
+      "css": ".ds-input { width: 100%; height: 3rem; padding: 0.9rem 1rem; color: #0F0E0C; background: #F7F4ED; border: 1px solid #D4C9A8; border-radius: 12px; font-family: 'IBM Plex Sans Arabic', system-ui, sans-serif; font-size: 1.125rem; } .ds-input::placeholder { color: #8A8471; } .ds-input:focus-visible { outline: none; border-color: #C9A227; box-shadow: 0 0 0 3px rgba(230,203,106,0.42); }"
     },
     {
-      "name": "Load More Control",
-      "kind": "button",
-      "description": "Explicit continuation action with understandable busy and completed behavior.",
-      "html": "<button class=\"ds-load-more\" type=\"button\" aria-busy=\"false\">تحميل المزيد</button>",
-      "css": ".ds-load-more { min-height: 3rem; border: 1px solid var(--color-celluloid, #D4C9A8); border-radius: var(--radius-md, 8px); background: transparent; color: var(--color-text-on-paper, #0F0E0C); padding: .8rem 1.25rem; font-family: var(--font-body, system-ui); font-weight: 800; cursor: pointer; transition: border-color 200ms ease, color 200ms ease, background-color 200ms ease; } .ds-load-more:hover { border-color: var(--color-primary, #C9A227); color: var(--color-primary-hover, #B88F1E); background: rgba(201,162,39,.08); } .ds-load-more:focus-visible { outline: 3px solid var(--color-gold-tint, #E6CB6A); outline-offset: 2px; } .ds-load-more[aria-busy=\"true\"], .ds-load-more:disabled { cursor: wait; opacity: .66; }"
-    },
-    {
-      "name": "Resilient Footer Navigation",
-      "kind": "nav",
-      "description": "Optional footer links enhance a brand-and-copyright baseline that remains complete without them.",
-      "html": "<footer class=\"ds-footer\"><strong>مذاق السينما</strong><p>مجلة رقمية تهتم بشؤون الفن السابع.</p><nav aria-label=\"الأقسام\"><a href=\"#\">مراجعات</a><a href=\"#\">قوائم</a></nav><small>© مذاق السينما</small></footer>",
-      "css": ".ds-footer { display: grid; gap: 1rem; border-top: 1px solid rgba(212,201,168,.2); background: var(--color-ink, #0B0B0E); color: var(--color-text-on-ink, #EAE6DC); padding: 2rem; font-family: var(--font-body, system-ui); } .ds-footer strong { font-family: var(--font-display, system-ui); font-size: 1.5rem; } .ds-footer p, .ds-footer small { margin: 0; color: var(--color-text-on-ink-muted, #9C988E); } .ds-footer nav { display: flex; flex-wrap: wrap; gap: .75rem 1.25rem; } .ds-footer a { min-height: 44px; display: inline-flex; align-items: center; color: inherit; text-decoration: none; } .ds-footer a:hover { color: var(--color-primary, #C9A227); } .ds-footer a:focus-visible { outline: 3px solid var(--color-gold-tint, #E6CB6A); outline-offset: 2px; }"
+      "name": "Dark Editorial Card",
+      "kind": "card",
+      "refersTo": "card-editorial",
+      "description": "Midnight Surface card with the inset highlight and Card Shadow for dark-stage modules.",
+      "html": "<article class=\"ds-card\" dir=\"rtl\"><h3 class=\"ds-card__title\">من بطاقة الأسبوع</h3><p class=\"ds-card__meta\">٥ دقائق قراءة</p></article>",
+      "css": ".ds-card { background: #16161B; color: #EAE6DC; border-radius: 12px; padding: 1.15rem; box-shadow: 0 1px 0 rgba(255,255,255,0.04) inset, 0 8px 24px rgba(0,0,0,0.4); } .ds-card__title { margin: 0 0 0.4rem; font-family: 'Tajawal', system-ui, sans-serif; font-size: 1.2rem; font-weight: 700; line-height: 1.4; } .ds-card__meta { margin: 0; color: #9C988E; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 0.8125rem; }"
     }
   ],
   "narrative": {
     "northStar": "The Critic's Screening Room",
-    "overview": "Mazaq Cinema is an Arabic-first editorial system built as a pair of cinematic rooms: warm paper for open, readable discovery and nocturnal ink for atmospheric focus. Cream text, disciplined Arabic type, and photographic material create the sense of a film-literate publication without turning every surface into a dark spectacle.\n\nThe system uses magazine pacing rather than a uniform content grid. Large and small image-led modules may sit asymmetrically to express editorial judgment, then collapse into an intentional single-column reading sequence. The exact composition of any one hero belongs to its surface brief; the durable rule is that hierarchy and imagery reveal what the editors value.",
+    "overview": "Mazaq Cinema is an Arabic-first editorial system built as a pair of cinematic rooms: warm paper for open, readable discovery and nocturnal ink for atmospheric focus. Cream text, disciplined Arabic type, and photographic material create the sense of a film-literate publication without turning every surface into a dark spectacle.\n\nThe system uses magazine pacing rather than a uniform content grid. Large and small image-led modules may sit asymmetrically to express editorial judgment, then collapse into an intentional single-column reading sequence. The exact composition of any one hero belongs to its surface brief; the durable rule is that hierarchy and imagery reveal what the editors value.\n\nThemed components are built as scoped room token sets: one variable per role at the component root, one html.dark override to change rooms, and descendants that resolve only through variables. Interactive choreography is progressive enhancement — content ships as real links first, and paging controls materialize only when script runs.",
     "keyCharacteristics": [
       "Warm-paper and nocturnal-ink themes are equal expressions of one system.",
       "Film stills and posters are editorial material; branded initial plates preserve composition when imagery fails or is absent.",
       "Tajawal carries display hierarchy, while IBM Plex Sans Arabic keeps body copy and controls clear.",
       "Projector Gold is a rare signal for actions, focus, ranks, and selected editorial emphasis.",
       "Editorial frames use restrained 8px to 12px corners; pill shapes are reserved for labels and circular controls.",
+      "Interactive choreography is progressive enhancement: content ships as real links first, and paging controls materialize only when script runs.",
       "Every asynchronous interaction exposes understandable loading, success, error, retry, empty, and end states as applicable."
     ],
     "rules": [
-      {"name": "The Paired Rooms Rule", "body": "A component is not complete until its hierarchy, contrast, borders, and states work on both Warm Paper and Nocturnal Ink.", "section": "colors"},
-      {"name": "The Gold Is Rare Rule", "body": "Gold is a signal, not trim. If every card, heading, and icon is gold, nothing is important.", "section": "colors"},
-      {"name": "The No Netflix Costume Rule", "body": "Claret may create editorial tension, but never combine it with black as a red-streaming-service costume.", "section": "colors"},
-      {"name": "The Arabic Letterforms Rule", "body": "Arabic labels do not get tracked uppercase treatment. Preserve connected forms, contextual alternates, ligatures, and RTL-aware spacing.", "section": "typography"},
-      {"name": "The Reading Room Rule", "body": "Long-form pages prioritize measure, line-height, and quiet hierarchy over decorative flourishes.", "section": "typography"},
-      {"name": "The Composition Is Local Rule", "body": "Reuse asymmetric hierarchy and editorial pacing, but keep exact hero splits, rails, section order, and first-viewport choreography in each surface brief.", "section": "layout"},
-      {"name": "The Screen Depth Rule", "body": "Depth comes from imagery, tonal layers, and controlled shadows; do not stack nested cards to manufacture hierarchy.", "section": "elevation"},
-      {"name": "The Focus Is Not Optional Rule", "body": "Focus rings remain visible on both Warm Paper and Nocturnal Ink and are never removed without an equivalent replacement.", "section": "elevation"}
+      { "name": "The Paired Rooms Rule", "body": "A component is not complete until its hierarchy, contrast, borders, and states work on both Warm Paper and Nocturnal Ink.", "section": "colors" },
+      { "name": "The Scoped Room Tokens Rule", "body": "A themed component declares its whole paired-room palette as scoped custom properties at its own root (one variable per role: surface, ink, muted ink, hairline, gold, focus, shadow) and flips the room with a single html.dark override at that same root. Descendants resolve only through the variables; they never re-declare theme colors, so a new themed surface needs exactly two declarations of each value.", "section": "colors" },
+      { "name": "The Gold Is Rare Rule", "body": "Gold is a signal, not trim. If every card, heading, and icon is gold, nothing is important.", "section": "colors" },
+      { "name": "The No Netflix Costume Rule", "body": "Claret may create editorial tension, but never combine it with black as a red-streaming-service costume.", "section": "colors" },
+      { "name": "The Arabic Letterforms Rule", "body": "Arabic labels do not get tracked uppercase treatment. Preserve connected forms, contextual alternates, ligatures, and RTL-aware spacing.", "section": "typography" },
+      { "name": "The Reading Room Rule", "body": "Long-form pages prioritize measure, line-height, and quiet hierarchy over decorative flourishes.", "section": "typography" },
+      { "name": "The Numbered Programme Rule", "body": "Programme wayfinding uses zero-padded two-digit Eastern Arabic numerals (٠١–٠٤) in the mono numeral voice — pager buttons, slide positions, and live announcements alike. The zero pad keeps the spine column visually level in RTL.", "section": "typography" },
+      { "name": "The Composition Is Local Rule", "body": "Reuse asymmetric hierarchy and editorial pacing, but keep exact hero splits, rails, section order, and first-viewport choreography in each surface brief.", "section": "layout" },
+      { "name": "The Screen Depth Rule", "body": "Depth comes from imagery, tonal layers, and controlled shadows; do not stack nested cards to manufacture hierarchy.", "section": "elevation" },
+      { "name": "The Focus Is Not Optional Rule", "body": "Focus rings remain visible on both Warm Paper and Nocturnal Ink and are never removed without an equivalent replacement.", "section": "elevation" },
+      { "name": "The Gold Needs a Dark Room Rule", "body": "On Warm Paper, small gold text falls to roughly 2:1 contrast. Small text on light paper uses warm muted ink; gold survives as borders, dots, and fills, and gold text is reserved for dark rooms and solid signal elements like the active tick.", "section": "components" }
     ],
     "dos": [
       "Do treat Warm Paper and Nocturnal Ink as a matched system, not primary and afterthought themes.",
@@ -134,7 +142,10 @@
       "Do use Projector Gold sparingly for primary actions, ranks, focus, and selected emphasis.",
       "Do preserve Arabic typography with zero tracking, generous line-height, and RTL-aware layout.",
       "Do make loading, success, error, retry, empty, and end states explicit and accessible.",
-      "Do keep reduced-motion support for loaders, image movement, overlays, and entrance effects."
+      "Do keep reduced-motion support for loaders, image movement, overlays, and entrance effects.",
+      "Do implement themed surfaces as scoped component-root token sets flipped by a single html.dark override.",
+      "Do draw paged progress with transform: scaleX anchored to the inline-start edge, and ship the server-rendered initial fill.",
+      "Do layer interactivity as progressive enhancement: real links and native scrolling first, controls only when script runs."
     ],
     "donts": [
       "Don't turn a surface-specific hero split, rail, or story sequence into a site-wide template.",
@@ -142,7 +153,10 @@
       "Don't use weak Arabic typography, tracked Arabic labels, or cramped reading measures.",
       "Don't treat film imagery as decoration or let a failed image collapse an editorial module.",
       "Don't add side-stripe borders, gradient text, default glassmorphism, identical card grids everywhere, or nested cards.",
-      "Don't hide content continuation or asynchronous progress behind unreliable implicit behavior."
+      "Don't hide content continuation or asynchronous progress behind unreliable implicit behavior.",
+      "Don't give secondary \"read on\" actions a solid gold fill; quiet text links with a hover gold hairline are the ceiling below the lead action.",
+      "Don't run scroll-linked image drift or movement under reduced motion or on the stacked ≤760px layout.",
+      "Don't animate layout properties (width, top, inline offsets) for progress or paging where a transform does the work."
     ]
   }
 }

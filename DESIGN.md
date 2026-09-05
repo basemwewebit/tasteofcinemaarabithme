@@ -7,6 +7,7 @@ colors:
   gold-tint: "#E6CB6A"
   claret: "#8E2A2A"
   celluloid: "#D4C9A8"
+  celluloid-strong: "#C9B98F"
   ink: "#0B0B0E"
   ink-elevated: "#16161B"
   ink-overlay: "#1E1E25"
@@ -85,6 +86,19 @@ components:
     rounded: "{rounded.md}"
     padding: "0.85rem 1rem"
     height: "3rem"
+  button-programme:
+    backgroundColor: "{colors.primary}"
+    textColor: "{colors.ink}"
+    typography: "{typography.label}"
+    rounded: "{rounded.md}"
+    padding: "0.78rem 1.5rem"
+  spine-page-active:
+    backgroundColor: "{colors.primary}"
+    textColor: "{colors.ink}"
+    typography: "{typography.numeric}"
+    rounded: "{rounded.md}"
+    width: "2.4rem"
+    padding: "0.42rem 0.3rem"
   card-editorial:
     backgroundColor: "{colors.ink-elevated}"
     textColor: "{colors.text-on-ink}"
@@ -122,6 +136,7 @@ The system uses magazine pacing rather than a uniform content grid. Large and sm
 - Tajawal carries display hierarchy, while IBM Plex Sans Arabic keeps body copy and controls clear.
 - Projector Gold is a rare signal for actions, focus, ranks, and selected editorial emphasis.
 - Editorial frames use restrained 8px to 12px corners; pill shapes are reserved for labels and circular controls.
+- Interactive choreography is progressive enhancement: content ships as real links first, and paging controls materialize only when script runs.
 - Every asynchronous interaction exposes understandable loading, success, error, retry, empty, and end states as applicable.
 
 ## Colors
@@ -134,7 +149,7 @@ The palette pairs warm paper with nocturnal ink; both modes retain cream, cellul
 
 ### Secondary
 - **Censor Claret:** reserved for warnings, destructive states, and rare editorial tension; it is not a general brand accent.
-- **Celluloid Beige:** a quiet framing tone for borders, separators, and image-adjacent surfaces.
+- **Celluloid Beige:** a quiet framing tone for borders, separators, and image-adjacent surfaces; its stronger press (**Celluloid Strong**, #C9B98F at rest on paper, 42% celluloid over ink at night) confirms hover on framed panels.
 
 ### Neutral
 - **Nocturnal Ink and Midnight Surface:** dark-stage foundations and raised dark panels.
@@ -144,6 +159,8 @@ The palette pairs warm paper with nocturnal ink; both modes retain cream, cellul
 
 ### Named Rules
 **The Paired Rooms Rule.** A component is not complete until its hierarchy, contrast, borders, and states work on both Warm Paper and Nocturnal Ink.
+
+**The Scoped Room Tokens Rule.** A themed component declares its whole paired-room palette as scoped custom properties at its own root (one variable per role: surface, ink, muted ink, hairline, gold, focus, shadow) and flips the room with a single `html.dark` override at that same root. Descendants resolve only through the variables; they never re-declare theme colors, so a new themed surface needs exactly two declarations of each value.
 
 **The Gold Is Rare Rule.** Gold is a signal, not trim. If every card, heading, and icon is gold, nothing is important.
 
@@ -172,11 +189,15 @@ The palette pairs warm paper with nocturnal ink; both modes retain cream, cellul
 
 **The Reading Room Rule.** Long-form pages prioritize measure, line-height, and quiet hierarchy over decorative flourishes.
 
+**The Numbered Programme Rule.** Programme wayfinding uses zero-padded two-digit Eastern Arabic numerals (٠١–٠٤) in the mono numeral voice — pager buttons, slide positions, and live announcements alike. The zero pad keeps the spine column visually level in RTL.
+
 ## Layout
 
 Use an image-led editorial grid with deliberate changes in scale: one lead item may span columns while supporting items remain compact. Asymmetry communicates curation, but alignment, reading order, and whitespace remain disciplined. Use the established spacing rhythm from tight inline gaps through generous section spacing; do not fill every open area with another module.
 
 At narrower widths, multi-column compositions collapse to one clear RTL sequence, actions become comfortably full-width when needed, and interactive targets remain at least 44px. Photography keeps purposeful aspect ratios and responsive sources rather than being stretched to fit arbitrary boxes.
+
+Stage-height components use fluid viewport math with hard floors and ceilings (`clamp`), and their intermediate density steps at 1180px before the stacked layout takes over at 760px. Horizontal paging, where a surface calls for it, is a native RTL scroll-snap track — the browser owns the swipe; script only adds controls and sync. Progress over paged content is drawn with a transform (`scaleX`) anchored to the RTL inline-start edge, never by animating width.
 
 **The Composition Is Local Rule.** Reuse asymmetric hierarchy and editorial pacing, but keep exact hero splits, rails, section order, and first-viewport choreography in each surface brief.
 
@@ -186,6 +207,7 @@ Depth is hybrid and restrained. Dark surfaces rely on tonal layering, image grad
 
 ### Shadow Vocabulary
 - **Card Shadow** (`0 1px 0 rgba(255,255,255,0.04) inset, 0 8px 24px rgba(0,0,0,0.4)`): dark elevated cards and panels.
+- **Stage Ambient** (`0 24px 48px -24px rgba(11,11,14,0.5)` light, `0 24px 48px -24px rgba(0,0,0,0.7)` dark): floating programme panels, spines, and pagers that sit over imagery.
 - **Editorial Card Lift** (`0 18px 45px rgba(15,23,42,0.14)`): selected light-mode features and image-led editorial containers.
 - **Focus Glow** (`0 0 0 3px rgba(230,203,106,0.42)`): visible keyboard focus on both theme surfaces.
 
@@ -200,13 +222,15 @@ The core form language is a restrained editorial frame: small utility details ma
 
 Borders are hairline and warm or softly translucent. Gold borders appear in active, hover, or focus states rather than outlining every object at rest. Image crops inherit their container shape and keep a consistent silhouette even while a fallback is showing.
 
+Full-bleed imagery is framed, not clipped: a non-interactive `::after` overlay draws a 1px inset hairline (`box-shadow: inset 0 0 0 1px`) in the celluloid tone, so stills read as mounted plates on both themes. Linear progress and tracks are 3px pills (999px radius) riding over a low-opacity ink or cream hairline track.
+
 ## Components
 
 ### Buttons
 - **Shape:** restrained editorial controls with 8px to 12px corners and a minimum 44px touch target.
 - **Primary:** Projector Gold with dark ink text, heavy label weight, and one clear action per group.
-- **Hover / Focus:** a slight brightness or 1px lift may confirm hover; a separate gold focus outline remains unmistakable.
-- **Secondary / Ghost:** warm hairline borders and theme-aware text for lower-priority actions.
+- **Hover / Focus:** a slight brightness shift (gold deepens toward #B88F1E) and the leading icon slides 3–4px toward the reading direction confirm hover; a separate gold focus outline or 3px gold ring remains unmistakable.
+- **Secondary / Ghost:** warm hairline borders and theme-aware text for lower-priority actions; the quietest tier is a plain text link whose 2px bottom border turns gold on hover — it never takes a solid gold fill.
 - **State:** loading disables duplicate submission without erasing the label's meaning; errors offer a clear retry path.
 
 ### Chips
@@ -230,8 +254,22 @@ Borders are hairline and warm or softly translucent. Gold borders appear in acti
 
 ### Navigation
 - **Style:** compact Arabic type, robust focus states, and a strong brand anchor. Translucency may soften the header, but must not become decorative glass.
+- **Floating masthead veil:** when the masthead overlays a stage, the transparent "lobby" state stays backdrop-filter-free and theme-matched. On Nocturnal Ink it floats on cream text alone; on Warm Paper it wears a paper veil — a top-down gradient of Warm Paper (`rgba(247,244,237,0.9)` → 52% → transparent) with warm ink text (`rgba(15,14,12,0.78)`) and a faint gold hairline — so the bar never sits as gray glass on paper.
 - **Responsive:** mobile navigation preserves logical focus, clear close affordances, and 44px targets.
 - **Footer:** brand description and copyright form the resilient baseline. Optional menus and social links enhance it only when configured; their absence never leaves an empty or broken footer.
+
+### The Continuous Programme (front-page hero)
+The signature paged programme: a full-stage RTL scroll-snap track of article spreads — one pinned lead spread followed by three reads — with a numbered spine and progress line as the wayfinding furniture. It is the reference implementation of the system's room, motion, and enhancement patterns:
+
+- **Paired-room tokens:** the hero declares its full palette as scoped `--ph-*` custom properties at the component root and flips the entire room with one `html.dark` override there (see The Scoped Room Tokens Rule).
+- **Spread anatomy:** edge-to-edge still with the inset celluloid hairline frame, a solid theme panel pinned to the RTL start edge (12px corners, hairline border, Stage Ambient shadow) carrying display title, line-clamped deck, one action, and a hairline-topped credit line of category • mono reading time • date.
+- **Enhancement, never a gate:** every article is a real link in a natively swipeable, keyboard-scrollable snap track; the spine ships `hidden` and script reveals it, adds arrow-key paging, and announces slide changes in a polite live region.
+- **Spine and progress:** zero-padded mono numerals ٠١–٠٤ as pager buttons (active = solid gold with ink text); beneath them a 3px gold progress fill driven by `transform: scaleX((index+1)/count)` with `transform-origin: 100% 50%` so it grows from the RTL inline-start edge; the server-rendered initial fill is `1/count`.
+- **Multiplane drift:** slide imagery carries a rAF-synced `--drift` translate plus a fixed 1.07 scale, giving the track depth as it moves; drift and image transitions are disabled under reduced motion and below 760px.
+- **Focus and hover:** panel border warms to Celluloid Strong on hover; keyboard focus turns the border gold and adds the 3px gold ring over the shadow.
+- **Category tint wayfinding:** each spread carries its article's category tint (`--ph-tint` from `mazaq_get_category_tint()`), mirroring the article-card family: a square drawer marker in the credit line, tinted meta dots, and the title resolving into the 62% tint mix on hover/focus. Gold stays the only action and spine color.
+- **Projector grade:** the spread's imagery is graded by its category tint like projector light anchored at the panel edge — a tint wash fades from the RTL start edge across the still (30% at rest, 38% on Nocturnal Ink, 44% and deeper on the pinned lead spread), layered over a bottom ink gradient that keeps the frame's lower edge seated. The celluloid frame and the panel's hairline border each take a whisper of the same tint at rest (34% / 22%) and warm further on hover (panel border to 42% toward Celluloid Strong), so tint, frame, and panel read as one graded room. The wash lives on `--ph-tint` alone — gold is never a grade color except as the fallback tint.
+- **Stacked mobile (≤760px):** the spread becomes a column, the panel raises over the media's lower edge with a −2.25rem overlap, and the spine collapses to a full-width progress-only strip (pager hidden).
 
 ### Load More and Asynchronous States
 - **Action:** use an explicit load-more control when content continues; do not rely on invisible infinite-scroll behavior.
@@ -265,6 +303,9 @@ The article is a festival programme page: criticism holds the main column at a 6
 - **Do** preserve Arabic typography with zero tracking, generous line-height, and RTL-aware layout.
 - **Do** make loading, success, error, retry, empty, and end states explicit and accessible.
 - **Do** keep reduced-motion support for loaders, image movement, overlays, and entrance effects.
+- **Do** implement themed surfaces as scoped component-root token sets flipped by a single `html.dark` override.
+- **Do** draw paged progress with `transform: scaleX` anchored to the inline-start edge, and ship the server-rendered initial fill.
+- **Do** layer interactivity as progressive enhancement: real links and native scrolling first, controls only when script runs.
 
 ### Don't:
 - **Don't** turn a surface-specific hero split, rail, or story sequence into a site-wide template.
@@ -273,3 +314,6 @@ The article is a festival programme page: criticism holds the main column at a 6
 - **Don't** treat film imagery as decoration or let a failed image collapse an editorial module.
 - **Don't** add side-stripe borders, gradient text, default glassmorphism, identical card grids everywhere, or nested cards.
 - **Don't** hide content continuation or asynchronous progress behind unreliable implicit behavior.
+- **Don't** give secondary "read on" actions a solid gold fill; quiet text links with a hover gold hairline are the ceiling below the lead action.
+- **Don't** run scroll-linked image drift or movement under reduced motion or on the stacked ≤760px layout.
+- **Don't** animate layout properties (width, top, inline offsets) for progress or paging where a transform does the work.

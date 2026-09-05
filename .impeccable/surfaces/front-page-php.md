@@ -5,25 +5,32 @@ primary_target: "front-page.php"
 related_targets: ["template-parts/content/hero.php","assets/css/src/style.css","assets/js/src/app.js"]
 ---
 
+---
+version: 1
+slug: "front-page-php"
+primary_target: "front-page.php"
+related_targets: ["template-parts/content/hero.php","assets/css/src/style.css","assets/js/src/app.js"]
+---
+
 # Homepage surface brief
 
 Mode: Experience. Arabic-speaking film readers arrive to discover one worthwhile article or viewing path through visible editorial judgment.
 
 The homepage prioritizes a manually curated hero, related editor picks, and a themed weekly collection. Existing WordPress content remains truthful; recent posts provide resilient fallbacks. Random discovery, categories, advertising, newsletter, and recent coverage remain, but none interrupts the opening editorial sequence.
 
-Approved comp: `.impeccable/mocks/decision/critics-screening-room.png`.
+Superseded comp: `.impeccable/mocks/decision/critics-screening-room.png` (user explicitly replaced this world for the hero, 2026-09-05).
 
 ## Direction contract
 
-THESIS: A critic-led screening programme guides one strong choice at a time; it refuses the generic WordPress stack of equal cards and traffic-led modules.
+THESIS: The front page opens as a paged screening programme — one pinned lead spread, then the three related reads as the spreads after it; it refuses the overlay-hero-with-side-rail and any equal-card carousel.
 
-OWN-WORLD: Nocturnal ink, warm paper, cream Arabic type, rare projector gold, film stills, hairline programme rules, and restrained 8–12px editorial frames.
+OWN-WORLD: Theme-following Mazaq rooms; Warm Paper and Nocturnal Ink carry the stage equally. Tajawal display, cream/ink text, mono programme numerals ٠١–٠٤, celluloid hairlines, and rare Projector Gold reserved for the single action and the active spine position. Category tints run as quiet wayfinding in each spread's credit line, echoing the article-card family.
 
-STORY: The visitor meets today’s essential feature, sees why it matters, follows three related reads, explores a weekly collection, then chooses discovery, recency, or subscription.
+STORY: The visitor reads today's essential article, pages RTL through the programme to three related reads, then continues into the weekly selection below.
 
-FIRST VIEWPORT: A slim header crowns a split stage: a dominant feature image and RTL headline occupy the main field; a narrow three-item programme rail sits opposite; the warm weekly selection enters at the fold. The gold action sits beneath the feature rationale.
+FIRST VIEWPORT: A full-stage lead spread: the feature still fills the stage; a solid theme copy panel at the RTL start carries display headline, deck, gold action, and credit-line meta; the numbered programme spine with progress sits beneath; the next spread peeks at the left edge.
 
-FORM: “The Critic’s Screening Room,” fifth in the ordered surface list and the assigned lead from seed `1bd2b61a`.
+FORM: "The Continuous Programme," sixth in the ordered surface list, assigned lead from seed `bf31d456`.
 
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
 
