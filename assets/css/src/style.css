@@ -3732,39 +3732,11 @@ html.dark .screening-home__ad-label {
     position: relative;
     max-height: min(50vh, 28rem);
     overflow: hidden;
-    padding-inline-start: 0.95rem;
 }
 
 .programme-index__reel.is-scrollable {
     -webkit-mask-image: linear-gradient(to bottom, transparent 0, #0B0B0E 1.6rem, #0B0B0E calc(100% - 1.6rem), transparent 100%);
     mask-image: linear-gradient(to bottom, transparent 0, #0B0B0E 1.6rem, #0B0B0E calc(100% - 1.6rem), transparent 100%);
-}
-
-.programme-index__track {
-    position: absolute;
-    inset-inline-start: 0;
-    top: 0.4rem;
-    bottom: 0.4rem;
-    width: 2px;
-    border-radius: var(--radius-pill);
-    background: rgba(148, 163, 184, 0.3);
-    overflow: hidden;
-}
-
-.dark .programme-index__track {
-    background: rgba(148, 163, 184, 0.22);
-}
-
-.programme-index__fill {
-    position: absolute;
-    inset-inline: 0;
-    top: 0;
-    height: 100%;
-    border-radius: inherit;
-    background: linear-gradient(to bottom, var(--color-primary), var(--color-gold-tint));
-    transform: scaleY(var(--rail-progress, 0));
-    transform-origin: top;
-    transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .programme-index__list {
@@ -3774,20 +3746,54 @@ html.dark .screening-home__ad-label {
     gap: 0.1rem;
     margin: 0;
     padding: 0;
+    padding-inline-start: 0.95rem;
     list-style: none;
+}
+
+/* The hairline is drawn on the list itself so it is as tall as the full
+   25-item content, not just the reel window. A window-tall track saturates
+   the fill halfway down a long listicle (gold completes ~item 14, then
+   nothing moves for 14→1). Content-tall, the tip rides the active tick
+   for the whole journey. */
+.programme-index__list::before,
+.programme-index__list::after {
+    content: "";
+    position: absolute;
+    z-index: 1;
+    inset-inline-start: 0;
+    top: 0.4rem;
+    bottom: 0.4rem;
+    width: 2px;
+    border-radius: var(--radius-pill);
+    pointer-events: none;
+}
+
+.programme-index__list::before {
+    background: rgba(148, 163, 184, 0.3);
+}
+
+.dark .programme-index__list::before {
+    background: rgba(148, 163, 184, 0.22);
+}
+
+.programme-index__list::after {
+    background: linear-gradient(to bottom, var(--color-primary), var(--color-gold-tint));
+    transform: scaleY(var(--rail-progress, 0));
+    transform-origin: top;
+    transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .programme-index__link {
     display: flex;
-    align-items: baseline;
-    gap: 0.5rem;
+    align-items: flex-start;
+    gap: 0.55rem;
     margin-inline: -0.55rem;
     padding: 0.4rem 0.55rem;
     border-radius: var(--radius-sm);
     color: var(--color-slate-600);
     font-size: var(--text-caption);
     font-weight: 600;
-    line-height: 1.65;
+    line-height: 1.6;
     text-decoration: none;
     transition: color 200ms ease, background-color 200ms ease;
 }
@@ -3813,7 +3819,8 @@ html.dark .screening-home__ad-label {
    you are in, and tints for the ones already read. */
 .programme-index__marker {
     flex: 0 0 auto;
-    align-self: center;
+    align-self: flex-start;
+    margin-top: 0.42em;
     width: 0.55rem;
     height: 0.55rem;
     border: 1.5px solid rgba(148, 163, 184, 0.65);
@@ -3851,9 +3858,14 @@ html.dark .screening-home__ad-label {
 
 .programme-index__index {
     flex: 0 0 auto;
+    min-width: 2ch;
     color: var(--color-text-on-paper-muted);
+    font-family: var(--font-numeric);
     font-size: var(--text-caption);
     font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    text-align: end;
+    unicode-bidi: isolate;
 }
 
 .dark .programme-index__index {
@@ -3861,12 +3873,25 @@ html.dark .screening-home__ad-label {
 }
 
 .programme-index__label {
+    flex: 1 1 auto;
     min-width: 0;
+    overflow-wrap: break-word;
+    text-align: start;
+    text-wrap: pretty;
+    unicode-bidi: isolate;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
 }
 
 .programme-index__item.is-active .programme-index__link {
     color: var(--text-heading);
-    font-weight: 800;
+    background: rgba(201, 162, 39, 0.12);
+}
+
+.dark .programme-index__item.is-active .programme-index__link {
+    background: rgba(230, 203, 106, 0.12);
 }
 
 /* --- Film card: the programme note for the screened film --- */
@@ -7029,7 +7054,7 @@ html:not(.dark) .delight-menu__footer {
 
 .reading-sheet__link {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 0.6rem;
     min-height: 44px;
     padding: 0.45rem 0.6rem;
@@ -7046,9 +7071,24 @@ html:not(.dark) .delight-menu__footer {
 
 .reading-sheet__index {
     flex: 0 0 auto;
+    min-width: 2ch;
+    padding-top: 0.15em;
     color: var(--color-primary-hover);
+    font-family: var(--font-numeric);
     font-size: 0.72rem;
     font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    text-align: end;
+    unicode-bidi: isolate;
+}
+
+.reading-sheet__label {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-wrap: break-word;
+    text-align: start;
+    text-wrap: pretty;
+    unicode-bidi: isolate;
 }
 
 .dark .reading-sheet__index {
@@ -7068,7 +7108,7 @@ html:not(.dark) .delight-menu__footer {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .programme-index__fill,
+    .programme-index__list::after,
     .programme-index__marker,
     .programme-index__link,
     .reading-sheet {

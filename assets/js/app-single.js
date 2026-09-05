@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var railItems = rail ? Array.prototype.slice.call(rail.querySelectorAll('[data-rail-item]')) : [];
     var railReel = rail ? rail.querySelector('.programme-index__reel') : null;
-    var railTrack = rail ? rail.querySelector('.programme-index__track') : null;
+    var railList = rail ? rail.querySelector('.programme-index__list') : null;
     var sheetItems = sheet ? Array.prototype.slice.call(sheet.querySelectorAll('[data-sheet-item]')) : [];
 
     // The puck and the font buttons are JS-only controls: keep them out of the
@@ -93,13 +93,30 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Terminate the fill at the active tick. Page progress counts the hero, the
         // related-posts block and the footer, so it never agreed with the index.
-        if (railTrack) {
+        // NOTE: measured in list-content coordinates against the list's full
+        // scrollHeight. The hairline is drawn on the list itself (content-tall);
+        // a reel-window-tall track saturates the fill halfway down a long
+        // listicle (gold completes ~item 14, then 14→1 never move), and viewport
+        // rects are scroll-coupled because the track scrolls with the reel.
+        if (railList) {
             var tick = railItems[index].querySelector('.programme-index__marker');
-            var trackRect = railTrack.getBoundingClientRect();
-            if (tick && trackRect.height > 0) {
-                var tickRect = tick.getBoundingClientRect();
-                var filled = (tickRect.top + tickRect.height / 2 - trackRect.top) / trackRect.height;
-                rail.style.setProperty('--rail-progress', Math.min(1, Math.max(0, filled)));
+            var listH = railList.scrollHeight;
+            if (tick && listH > 0) {
+                var center = tick.offsetTop + tick.offsetHeight / 2;
+                // offsetParent chain guard: if an ancestor between tick and list ever
+                // becomes positioned, offsetTop stops being list-relative — walk up.
+                var node = tick.offsetParent;
+                while (node && node !== railList && node !== railReel && node !== rail) {
+                    center += node.offsetTop;
+                    node = node.offsetParent;
+                }
+                var inset = 0;
+                try {
+                    inset = parseFloat(window.getComputedStyle(railList, '::after').top) || 0;
+                } catch (e) {}
+                var span = listH - inset * 2;
+                var ratio = span > 0 ? (center - inset) / span : 0;
+                rail.style.setProperty('--rail-progress', Math.min(1, Math.max(0, ratio)));
             }
         }
 
