@@ -1413,6 +1413,13 @@ html:not(.dark) .back-to-top:hover {
     }
 }
 
+    /* --- The programme note card --------------------------------------
+       A card is a note pulled from the critic's filing cabinet: the still,
+       the headline, and one mono programme line. The category is a drawer
+       label led by a gold marker; hover resolves the whole note as one
+       gesture — the still sharpens, the shade deepens, the marker fills,
+       the title takes the tint. No lift, no float. */
+
     .article-card {
         --article-card-tint: var(--color-primary);
         position: relative;
@@ -1420,23 +1427,29 @@ html:not(.dark) .back-to-top:hover {
         overflow: hidden;
         display: flex;
         flex-direction: column;
-        border: 1px solid rgba(212, 201, 168, 0.5);
+        border: 1px solid rgba(212, 201, 168, 0.55);
         border-radius: var(--radius-lg);
-        background: rgba(247, 244, 237, 0.72);
-        box-shadow: 0 1px 0 rgba(247, 244, 237, 0.62) inset;
-        transition: transform 250ms cubic-bezier(0.22, 1, 0.36, 1), border-color 250ms ease, box-shadow 250ms ease;
+        background: var(--color-paper-elevated);
+        box-shadow: 0 1px 2px rgba(15, 14, 12, 0.04), 0 14px 36px -20px rgba(15, 14, 12, 0.18);
+        transition: border-color 260ms ease, box-shadow 260ms ease;
     }
 
     .dark .article-card {
-        border-color: rgba(234, 230, 220, 0.08);
+        border-color: rgba(234, 230, 220, 0.09);
         background: var(--color-ink-elevated);
         box-shadow: var(--shadow-card);
     }
 
     .article-card:hover,
     .article-card:focus-within {
-        transform: translateY(-3px);
-        border-color: color-mix(in srgb, var(--article-card-tint) 56%, transparent);
+        border-color: color-mix(in srgb, var(--article-card-tint) 38%, var(--color-celluloid));
+        box-shadow: 0 1px 2px rgba(15, 14, 12, 0.05), 0 18px 44px -20px rgba(15, 14, 12, 0.26);
+    }
+
+    .dark .article-card:hover,
+    .dark .article-card:focus-within {
+        border-color: color-mix(in srgb, var(--article-card-tint) 48%, transparent);
+        box-shadow: var(--shadow-card);
     }
 
     .article-card--wide {
@@ -1445,7 +1458,7 @@ html:not(.dark) .back-to-top:hover {
 
     @media (min-width: 768px) {
         .article-card--wide {
-            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
             grid-column: span 2 / span 2;
         }
     }
@@ -1455,6 +1468,11 @@ html:not(.dark) .back-to-top:hover {
         display: block;
         flex: 0 0 auto;
         min-height: 44px;
+    }
+
+    .article-card__media-link:focus-visible,
+    .article-card__poster-link:focus-visible {
+        outline-offset: -3px;
     }
 
     .article-card__media {
@@ -1487,55 +1505,116 @@ html:not(.dark) .back-to-top:hover {
     .article-card__image--fallback {
         display: grid;
         place-items: center;
-        color: rgba(230, 203, 106, 0.28);
+        color: color-mix(in srgb, var(--article-card-tint) 42%, var(--color-gold-tint));
         font-family: var(--font-display);
         font-size: clamp(3rem, 12vw, 7rem);
         font-weight: 800;
         background:
-            radial-gradient(circle at 28% 20%, rgba(201, 162, 39, 0.18), transparent 34%),
+            radial-gradient(circle at 28% 20%, color-mix(in srgb, var(--article-card-tint) 20%, transparent), transparent 34%),
             linear-gradient(135deg, var(--color-ink-elevated), var(--color-ink));
+    }
+
+    .article-card__media-fallback {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        display: grid;
+        place-items: center;
+        color: color-mix(in srgb, var(--article-card-tint) 42%, var(--color-gold-tint));
+        font-family: var(--font-display);
+        font-size: clamp(3rem, 12vw, 7rem);
+        font-weight: 800;
+        background:
+            radial-gradient(circle at 28% 20%, color-mix(in srgb, var(--article-card-tint) 20%, transparent), transparent 34%),
+            linear-gradient(135deg, var(--color-ink-elevated), var(--color-ink));
+    }
+
+    .article-card__media .article-card__image {
+        position: relative;
+        z-index: 1;
     }
 
     .article-card__media-shade {
         position: absolute;
         inset: 0;
-        background: linear-gradient(0deg, rgba(2, 6, 23, 0.72), transparent 56%);
+        z-index: 2;
+        background: linear-gradient(0deg, rgba(15, 14, 12, 0.66), transparent 52%);
         opacity: 0;
-        transition: opacity 250ms ease;
+        transition: opacity 260ms ease;
     }
 
     .article-card:hover .article-card__media-shade,
-    .article-card:focus-within .article-card__media-shade,
-    .article-card--poster .article-card__media-shade {
+    .article-card:focus-within .article-card__media-shade {
         opacity: 1;
     }
 
-    .article-card__category {
-        color: var(--article-card-tint);
-        font-size: var(--text-caption);
-        font-weight: 800;
-        line-height: 1.45;
+    /* The poster keeps its shade committed: the title lives on the still. */
+    .article-card--poster .article-card__media-shade {
+        opacity: 1;
+        background: linear-gradient(0deg, rgba(15, 14, 12, 0.82), rgba(15, 14, 12, 0.16) 52%, transparent 78%);
     }
 
-    .article-card__category--overlay {
-        position: absolute;
-        inset-block-start: 1rem;
-        inset-inline-end: 1rem;
-        z-index: 2;
-        display: inline-flex;
-        min-height: 2rem;
+    /* --- The drawer label: gold marker, then the category ------------- */
+
+    .article-card__kicker {
+        display: flex;
         align-items: center;
-        padding: 0.35rem 0.75rem;
-        border: 1px solid color-mix(in srgb, var(--article-card-tint) 42%, transparent);
-        border-radius: var(--radius-pill);
-        background: rgba(11, 11, 14, 0.78);
+        margin-block-end: 0.7rem;
+    }
+
+    .article-card__category {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--color-text-on-paper-muted);
+        font-size: var(--text-caption);
+        font-weight: 700;
+        line-height: 1.5;
+        transition: color 200ms ease;
+    }
+
+    .dark .article-card__category {
+        color: var(--color-text-on-ink-muted);
+    }
+
+    .article-card__category:hover,
+    .article-card__category:focus-visible {
+        color: var(--color-text-on-paper);
+    }
+
+    .dark .article-card__category:hover,
+    .dark .article-card__category:focus-visible {
         color: var(--color-text-on-ink);
     }
 
-    .article-card__category--inline {
-        display: inline-flex;
-        margin-bottom: 0.8rem;
+    .article-card__marker {
+        flex: 0 0 auto;
+        width: 0.55rem;
+        height: 0.55rem;
+        border: 1.5px solid color-mix(in srgb, var(--article-card-tint) 70%, var(--color-ink));
+        transition: border-color 240ms ease, background-color 240ms ease, box-shadow 280ms ease;
     }
+
+    .dark .article-card__marker {
+        border-color: color-mix(in srgb, var(--article-card-tint) 68%, var(--color-gold-tint));
+    }
+
+    /* The drawer tab ignites in its own color, not the house gold. */
+    .article-card:hover .article-card__marker,
+    .article-card:focus-within .article-card__marker {
+        border-color: var(--article-card-tint);
+        background: var(--article-card-tint);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--article-card-tint) 18%, transparent);
+    }
+
+    .dark .article-card:hover .article-card__marker,
+    .dark .article-card:focus-within .article-card__marker {
+        border-color: color-mix(in srgb, var(--article-card-tint) 62%, var(--color-gold-tint));
+        background: color-mix(in srgb, var(--article-card-tint) 62%, var(--color-gold-tint));
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--article-card-tint) 22%, transparent);
+    }
+
+    /* --- The note: title, standfirst, programme line ------------------ */
 
     .article-card__body {
         display: flex;
@@ -1550,8 +1629,13 @@ html:not(.dark) .back-to-top:hover {
         padding: clamp(1.25rem, 3vw, 2rem);
     }
 
+    .article-card--wide .article-card__meta {
+        margin-block-start: 1.25rem;
+        padding-block-start: 0;
+    }
+
     .article-card__title {
-        color: var(--color-nocturnal-slate);
+        color: var(--color-text-on-paper);
         font-family: var(--font-display);
         font-size: var(--text-title);
         font-weight: 800;
@@ -1560,7 +1644,7 @@ html:not(.dark) .back-to-top:hover {
     }
 
     .article-card--wide .article-card__title {
-        font-size: clamp(1.65rem, 2.65vw, 2.35rem);
+        font-size: clamp(1.75rem, 2.8vw, 2.5rem);
         line-height: 1.25;
     }
 
@@ -1574,7 +1658,12 @@ html:not(.dark) .back-to-top:hover {
 
     .article-card:hover .article-card__title a,
     .article-card:focus-within .article-card__title a {
-        color: var(--article-card-tint);
+        color: color-mix(in srgb, var(--article-card-tint) 62%, var(--color-ink));
+    }
+
+    .dark .article-card:hover .article-card__title a,
+    .dark .article-card:focus-within .article-card__title a {
+        color: color-mix(in srgb, var(--article-card-tint) 62%, var(--color-gold-tint));
     }
 
     .article-card__excerpt {
@@ -1593,22 +1682,46 @@ html:not(.dark) .back-to-top:hover {
         color: var(--color-text-on-ink-muted);
     }
 
-    .article-card__footer {
+    /* The programme line: reading time and date in one bidi-isolated mono
+       line, entries parted by a gold micro-dot. */
+
+    .article-card__meta {
         display: flex;
         flex-wrap: wrap;
-        gap: 0.75rem;
-        justify-content: space-between;
-        margin-top: auto;
-        padding-top: 1rem;
+        align-items: center;
+        gap: 0.4rem 0;
+        margin-block-start: auto;
+        padding-block-start: 1rem;
         color: var(--color-text-on-paper-muted);
+        font-family: var(--font-numeric);
         font-size: var(--text-caption);
-        line-height: 1.45;
+        font-variant-numeric: tabular-nums;
+        line-height: 1.5;
     }
 
-    .dark .article-card__footer,
-    .dark .article-card__date {
+    .dark .article-card__meta {
         color: var(--color-text-on-ink-muted);
     }
+
+    .article-card__meta-item {
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .article-card__meta > *:not(:last-child)::after {
+        content: "";
+        width: 0.3rem;
+        height: 0.3rem;
+        margin-inline-start: 0.9rem;
+        border-radius: var(--radius-pill);
+        background: color-mix(in srgb, var(--article-card-tint) 60%, transparent);
+    }
+
+    .dark .article-card__meta > *:not(:last-child)::after {
+        background: color-mix(in srgb, var(--article-card-tint) 55%, var(--color-gold-tint) 45%);
+    }
+
+    /* --- The poster: title over the committed still ------------------- */
 
     .article-card__poster-link {
         display: flex;
@@ -1617,36 +1730,64 @@ html:not(.dark) .back-to-top:hover {
     }
 
     .article-card--poster .article-card__body {
-        justify-content: space-between;
-        gap: 1rem;
+        position: absolute;
+        inset-inline: 0;
+        inset-block-end: 0;
+        z-index: 3;
+        padding: clamp(0.9rem, 2vw, 1.25rem);
     }
 
-    .article-card__date {
-        display: block;
-        margin-top: 0.8rem;
-        color: var(--color-text-on-paper-muted);
-        font-size: var(--text-caption);
-        line-height: 1.45;
+    .article-card--poster .article-card__title {
+        color: var(--color-screen-light);
     }
+
+    .article-card--poster .article-card__category,
+    .article-card--poster .article-card__category:hover,
+    .article-card--poster .article-card__category:focus-visible {
+        color: var(--color-gold-tint);
+    }
+
+    /* On the committed still the tab keeps its lightened drawer hue. */
+    .article-card--poster .article-card__marker {
+        border-color: color-mix(in srgb, var(--article-card-tint) 62%, var(--color-gold-tint));
+    }
+
+    .article-card--poster .article-card__meta,
+    .article-card--poster .article-card__meta > .num {
+        color: rgba(234, 230, 220, 0.82);
+    }
+
+    .article-card--poster .article-card__kicker {
+        margin-block-end: 0.5rem;
+    }
+
+    .article-card--poster .article-card__meta {
+        padding-block-start: 0.7rem;
+    }
+
+    /* --- The index rows: compact and related are ruled entries of the
+       filing cabinet, not shrunken cards ------------------------------ */
 
     .article-card--compact,
     .article-card--related {
+        overflow: visible;
         border: 0;
+        border-block-start: 1px solid rgba(212, 201, 168, 0.55);
+        border-radius: 0;
         background: transparent;
         box-shadow: none;
     }
 
-    .article-card--compact:hover,
-    .article-card--related:hover,
-    .article-card--compact:focus-within,
-    .article-card--related:focus-within {
-        transform: none;
+    .dark .article-card--compact,
+    .dark .article-card--related {
+        border-block-start-color: rgba(234, 230, 220, 0.09);
     }
 
     .article-card__compact-link {
         display: flex;
         min-height: 44px;
         gap: 1rem;
+        padding-block: 1rem;
     }
 
     .article-card__compact-media {
@@ -1660,7 +1801,14 @@ html:not(.dark) .back-to-top:hover {
     }
 
     .article-card__compact-body {
+        display: flex;
         min-width: 0;
+        flex-direction: column;
+    }
+
+    .article-card--compact .article-card__kicker,
+    .article-card--related .article-card__kicker {
+        margin-block-end: 0.35rem;
     }
 
     .article-card__compact-body .article-card__title {
@@ -1671,6 +1819,27 @@ html:not(.dark) .back-to-top:hover {
         font-size: 1rem;
     }
 
+    /* The row's title is not its own link; the row resolves through tint. */
+    .article-card--compact:hover .article-card__title,
+    .article-card--compact:focus-within .article-card__title,
+    .article-card--related:hover .article-card__title,
+    .article-card--related:focus-within .article-card__title {
+        color: color-mix(in srgb, var(--article-card-tint) 62%, var(--color-ink));
+    }
+
+    .dark .article-card--compact:hover .article-card__title,
+    .dark .article-card--compact:focus-within .article-card__title,
+    .dark .article-card--related:hover .article-card__title,
+    .dark .article-card--related:focus-within .article-card__title {
+        color: color-mix(in srgb, var(--article-card-tint) 62%, var(--color-gold-tint));
+    }
+
+    .article-card--compact .article-card__meta,
+    .article-card--related .article-card__meta {
+        margin-block-start: 0.45rem;
+        padding-block-start: 0;
+        font-size: 0.75rem;
+    }
 @media (max-width: 640px) {
     .back-to-top svg {
         width: 1rem;
@@ -2068,20 +2237,8 @@ body::before {
     }
 }
 
-.screening-home .latest-feed > .article-card {
-    overflow: hidden;
-    border: 1px solid rgb(78 74 64 / 0.16);
-    border-radius: 10px;
-    background: #fbf8f1;
-    box-shadow: none;
-    transition: transform 420ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 420ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.screening-home .latest-feed > .article-card:hover,
-.screening-home .latest-feed > .article-card:focus-within {
-    transform: translateY(-4px);
-    box-shadow: 0 1.2rem 2.8rem rgb(15 14 12 / 0.1);
-}
+/* The feed cards inherit the programme-note component whole; only the
+   stage geometry (spans, media heights, lead scale) is set here. */
 
 .screening-home .latest-feed__lead {
     display: grid;
@@ -2102,61 +2259,9 @@ body::before {
     object-fit: cover;
 }
 
-.screening-home .latest-feed .article-card__body {
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
-    padding: 1.25rem;
-}
-
-.screening-home .latest-feed .article-card__title {
-    color: #0f0e0c;
-    font-family: "Tajawal", sans-serif;
-    font-size: clamp(1.2rem, 1.5vw, 1.5rem);
-    font-weight: 800;
-    line-height: 1.4;
-}
-
 .screening-home .latest-feed__lead .article-card__title {
     font-size: clamp(1.75rem, 2.5vw, 2.4rem);
     line-height: 1.25;
-}
-
-.screening-home .latest-feed .article-card__excerpt {
-    color: #4e4a40;
-    line-height: 1.75;
-}
-
-.screening-home .latest-feed .article-card__footer {
-    display: flex;
-    justify-content: space-between;
-    gap: 1rem;
-    margin-block-start: auto;
-    padding-block-start: 0.75rem;
-    color: #777167;
-    font-size: 0.75rem;
-}
-
-html.dark .screening-home .category-row,
-html.dark .screening-home .popular-rail,
-html.dark .screening-home .category-row__item,
-html.dark .screening-home .popular-rail__item {
-    border-color: rgb(212 201 168 / 0.16);
-}
-
-html.dark .screening-home .latest-feed > .article-card {
-    border-color: rgb(212 201 168 / 0.14);
-    background: #16161b;
-}
-
-html.dark .screening-home .latest-feed .article-card__title,
-html.dark .screening-home .latest-feed .article-card__title a {
-    color: #eae6dc;
-}
-
-html.dark .screening-home .latest-feed .article-card__excerpt,
-html.dark .screening-home .latest-feed .article-card__footer {
-    color: #9c988e;
 }
 
 @media (max-width: 980px) {
@@ -2536,27 +2641,13 @@ html.dark .screening-selection {
     background: #111114;
 }
 
-html.dark .screening-home .home-section__title,
-html.dark .screening-home .article-card__title,
-html.dark .screening-home .article-card__title a {
+html.dark .screening-home .home-section__title {
     color: #eae6dc;
 }
 
 html.dark .screening-home .home-section__summary,
-html.dark .screening-home .home-section__promise,
-html.dark .screening-home .article-card__excerpt,
-html.dark .screening-home .article-card__date,
-html.dark .screening-home .article-card__footer {
+html.dark .screening-home .home-section__promise {
     color: #9c988e;
-}
-
-html.dark .screening-selection__lead.article-card--wide {
-    background: #16161b;
-    box-shadow: 0 1.4rem 4rem rgb(0 0 0 / 0.34);
-}
-
-html.dark .screening-selection__support {
-    border-block-color: rgb(212 201 168 / 0.18);
 }
 
 html.dark .screening-home .category-row__item,
@@ -2593,7 +2684,6 @@ html.dark .screening-home__ad-label {
 
 .screening-selection__support {
     grid-column: 2;
-    border-block-start: 1px solid rgb(78 74 64 / 0.22);
 }
 
 .screening-selection__support .article-card__compact-link {
@@ -2605,9 +2695,6 @@ html.dark .screening-home__ad-label {
     display: grid;
     grid-template-columns: minmax(0, 1.3fr) minmax(16rem, 0.9fr);
     min-height: 24rem;
-    border-radius: 10px;
-    background: #ece7dc;
-    box-shadow: 0 1.2rem 3.5rem rgb(15 14 12 / 0.1);
 }
 
 .screening-selection__lead .article-card__media-link,
@@ -8353,19 +8440,6 @@ html:not(.dark) .delight-menu__footer {
 .article-card__media,
 .article-card__compact-media {
     position: relative;
-}
-
-.article-card__media-fallback {
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    display: grid;
-    place-items: center;
-    color: #d4c9a8;
-    background: #16161b;
-    font-family: "Tajawal", sans-serif;
-    font-size: clamp(2rem, 6vw, 4rem);
-    font-weight: 800;
 }
 
 .article-card__image {

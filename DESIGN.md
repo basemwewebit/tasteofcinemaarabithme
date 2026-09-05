@@ -218,6 +218,9 @@ Borders are hairline and warm or softly translucent. Gold borders appear in acti
 - **Background:** paired translucent warm surfaces and Midnight Surface treatments.
 - **Image:** use a real poster or still whenever available. Keep a branded, title-derived initial plate beneath remote or lazy imagery and as the final no-image fallback.
 - **Hierarchy:** standard, wide, poster, compact, and related variants share type, tint, and state behavior while changing composition.
+- **Category tint (`--article-card-tint`):** every card carries its category's tint (assigned in `mazaq_get_category_tint()`). The tint is wayfinding, not chrome: at rest it lives only in the drawer marker — light: `color-mix(tint 70%, ink)` border, dark: `mix(tint 68%, gold-tint)`. On hover/focus the note resolves in its own hue: marker fills the tint (dark: 62% gold-tint mix) inside a 3px 18–22% ring, the title takes the tint, meta dots warm.
+- **Hover-title tint constant:** hover title color is `color-mix(in srgb, var(--article-card-tint) 62%, …)` in both modes — light mixes toward ink, dark toward gold-tint. This 62% ratio is the contrast-checked constant (≥3.89:1 on white paper, ≥4.17:1 on ink-elevated for all six tints). Do not raise the tint share; a 76% mix was measured failing at 2.76:1.
+- **Media fallback plate:** the title-initial loading/failure plate is tint-aware — letter `color-mix(tint 42%, gold-tint)`, radial glow `mix(tint 20%, transparent)` — on world ink, not hardcoded Celluloid Beige.
 - **State:** image failure reveals the prepared fallback without collapsing the card or exposing broken-image chrome.
 
 ### Inputs / Fields
