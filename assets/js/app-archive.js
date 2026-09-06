@@ -14,11 +14,50 @@ document.addEventListener('DOMContentLoaded', function () {
     const randomFilmTitle = document.getElementById('random-film-title');
     const randomFilmExcerpt = document.getElementById('random-film-excerpt');
     const randomFilmReadLink = document.getElementById('random-film-read-link');
+    const randomFilmStatus = document.getElementById('random-film-status');
+    const randomFilmButtonText = document.querySelector('.random-film-button-text');
 
-    if (randomFilmResult && randomFilmOpen) {
+    if (randomFilmResult && randomFilmOpen && randomFilmContent && randomFilmLoading && randomFilmError && randomFilmErrorText && randomFilmImage && randomFilmCategory && randomFilmTitle && randomFilmExcerpt && randomFilmReadLink) {
         const shownFilmIds = [];
         let isRandomFilmLoading = false;
         let isResultOpen = false;
+        let announceTimer = null;
+        const idleButtonLabel = randomFilmButtonText
+            ? (randomFilmButtonText.getAttribute('data-idle-label') || randomFilmButtonText.textContent || '')
+            : '';
+        const loadingButtonLabel = randomFilmButtonText
+            ? (randomFilmButtonText.getAttribute('data-loading-label') || 'جاري الاختيار...')
+            : '';
+
+        function announce(message) {
+            if (!randomFilmStatus) return;
+            randomFilmStatus.textContent = '';
+            if (announceTimer) {
+                window.clearTimeout(announceTimer);
+            }
+            announceTimer = window.setTimeout(function () {
+                randomFilmStatus.textContent = message || '';
+                announceTimer = null;
+            }, 20);
+        }
+
+        function focusDynamicContent(target) {
+            if (!target || typeof target.focus !== 'function') return;
+            window.requestAnimationFrame(function () {
+                const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                if (typeof randomFilmResult.scrollIntoView === 'function') {
+                    randomFilmResult.scrollIntoView({
+                        behavior: prefersReducedMotion ? 'auto' : 'smooth',
+                        block: 'nearest'
+                    });
+                }
+                try {
+                    target.focus({ preventScroll: true });
+                } catch (error) {
+                    target.focus();
+                }
+            });
+        }
 
         function showRandomFilmImageFallback(title) {
             if (!randomFilmImageFallback) return;
@@ -36,78 +75,137 @@ document.addEventListener('DOMContentLoaded', function () {
         if (randomFilmImage) {
             randomFilmImage.addEventListener('error', function () {
                 randomFilmImage.style.display = 'none';
+                randomFilmImage.style.opacity = '';
+                randomFilmImage.classList.add('is-unavailable');
                 showRandomFilmImageFallback(randomFilmTitle ? randomFilmTitle.textContent : '');
+            });
+            randomFilmImage.addEventListener('load', function () {
+                randomFilmImage.classList.remove('is-unavailable');
+                randomFilmImage.style.display = '';
+                randomFilmImage.style.opacity = '1';
+                hideRandomFilmImageFallback();
             });
         }
 
         function setRandomFilmLoading(isLoading) {
             isRandomFilmLoading = isLoading;
+            randomFilmResult.setAttribute('aria-busy', isLoading ? 'true' : 'false');
+            randomFilmOpen.disabled = isLoading;
+            randomFilmOpen.classList.toggle('is-loading', isLoading);
+            if (randomFilmCategorySelect) randomFilmCategorySelect.disabled = isLoading;
+            if (randomFilmButtonText) {
+                randomFilmButtonText.textContent = isLoading ? loadingButtonLabel : idleButtonLabel;
+            }
+            if (randomFilmNext) randomFilmNext.disabled = isLoading;
+            if (randomFilmRetry) randomFilmRetry.disabled = isLoading;
             if (isLoading) {
                 randomFilmLoading.classList.remove('hidden');
-                randomFilmLoading.classList.add('flex');
                 randomFilmError.classList.add('hidden');
+                randomFilmResult.dataset.state = 'loading';
+                announce('نفتّش في الأرشيف عن بداية مناسبة.');
                 return;
             }
             randomFilmLoading.classList.add('hidden');
-            randomFilmLoading.classList.remove('flex');
         }
 
         function renderRandomFilm(film) {
-            randomFilmTitle.textContent = film.title || '';
-            randomFilmExcerpt.textContent = film.excerpt || '';
-            if (film.category) {
-                randomFilmCategory.textContent = film.category;
+            const title = film && film.title ? String(film.title) : '';
+            const excerpt = film && film.excerpt ? String(film.excerpt) : '';
+            const imageSrc = film && film.image ? String(film.image) : '';
+            randomFilmTitle.textContent = title;
+            randomFilmExcerpt.textContent = excerpt;
+            if (film && film.category) {
+                randomFilmCategory.textContent = String(film.category);
                 randomFilmCategory.classList.remove('hidden');
             } else {
                 randomFilmCategory.textContent = '';
                 randomFilmCategory.classList.add('hidden');
             }
-            randomFilmReadLink.setAttribute('href', film.permalink || '#');
-            const imageSrc = film.image || '';
-            const imageAlt = film.title ? 'بوستر ' + film.title : 'بوستر الفيلم';
+            randomFilmReadLink.setAttribute('href', (film && film.permalink) || '#');
+            const imageAlt = title ? 'بوستر ' + title : 'بوستر الفيلم';
             randomFilmImage.setAttribute('alt', imageAlt);
             if (imageSrc) {
                 hideRandomFilmImageFallback();
-                randomFilmImage.setAttribute('src', imageSrc);
+                randomFilmImage.classList.remove('is-unavailable');
                 randomFilmImage.style.display = '';
+                randomFilmImage.style.opacity = '0';
+                randomFilmImage.setAttribute('src', imageSrc);
+                if (randomFilmImage.complete && randomFilmImage.naturalWidth > 0) {
+                    randomFilmImage.style.opacity = '1';
+                }
             } else {
                 randomFilmImage.removeAttribute('src');
                 randomFilmImage.style.display = 'none';
-                showRandomFilmImageFallback(film.title || '');
+                randomFilmImage.style.opacity = '';
+                showRandomFilmImageFallback(title);
             }
             randomFilmError.classList.add('hidden');
             randomFilmContent.classList.remove('hidden');
-            const filmId = parseInt(film.id, 10);
+            randomFilmResult.dataset.state = 'ready';
+            const filmId = parseInt(film && film.id, 10);
             if (Number.isFinite(filmId) && filmId > 0 && shownFilmIds.indexOf(filmId) === -1) {
                 shownFilmIds.push(filmId);
                 if (shownFilmIds.length > 15) {
                     shownFilmIds.shift();
                 }
             }
+            announce(title ? 'تم العثور على اقتراح: ' + title : 'تم العثور على اقتراح من الأرشيف.');
+            focusDynamicContent(randomFilmTitle);
         }
 
         function showRandomFilmError(message) {
             randomFilmErrorText.textContent = message || 'تعذر تحميل الاقتراح حالياً.';
             randomFilmContent.classList.add('hidden');
             randomFilmError.classList.remove('hidden');
+            randomFilmResult.dataset.state = 'error';
+            announce(randomFilmErrorText.textContent);
+            focusDynamicContent(randomFilmRetry || randomFilmErrorText);
         }
 
         function postRandomFilm() {
+            const settings = window.mazaq_ajax || {};
+            if (!settings.ajax_url || !settings.random_film_nonce) {
+                return Promise.reject(new Error('Random film settings are unavailable.'));
+            }
             const formData = new FormData();
             const selectedCategoryId = randomFilmCategorySelect
                 ? parseInt(randomFilmCategorySelect.value, 10) || 0
                 : 0;
-            formData.append('action', window.mazaq_ajax.random_film_action || 'mazaq_get_random_film');
-            formData.append('nonce', window.mazaq_ajax.random_film_nonce);
+            formData.append('action', settings.random_film_action || 'mazaq_get_random_film');
+            formData.append('nonce', settings.random_film_nonce);
             formData.append('category_id', selectedCategoryId);
             shownFilmIds.forEach(function (id) {
                 formData.append('exclude_ids[]', id);
             });
-            return fetch(window.mazaq_ajax.ajax_url, {
+            const controller = typeof AbortController === 'function' ? new AbortController() : null;
+            const requestOptions = {
                 method: 'POST',
                 body: formData
-            }).then(function (response) {
-                return response.json();
+            };
+            let timeoutId = null;
+            if (controller) {
+                requestOptions.signal = controller.signal;
+                timeoutId = window.setTimeout(function () {
+                    controller.abort();
+                }, 12000);
+            }
+            return fetch(settings.ajax_url, requestOptions).then(function (response) {
+                return response.json().then(function (payload) {
+                    if (!response.ok && response.status !== 404) {
+                        const requestError = new Error(
+                            payload && payload.data && payload.data.message
+                                ? payload.data.message
+                                : 'Random film request failed.'
+                        );
+                        requestError.status = response.status;
+                        throw requestError;
+                    }
+                    return payload;
+                });
+            }).finally(function () {
+                if (timeoutId) {
+                    window.clearTimeout(timeoutId);
+                }
             });
         }
 
@@ -117,9 +215,12 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             if (!isResultOpen) {
                 randomFilmResult.classList.add('is-open');
+                randomFilmResult.setAttribute('aria-hidden', 'false');
+                randomFilmOpen.setAttribute('aria-expanded', 'true');
                 isResultOpen = true;
             }
             randomFilmContent.classList.add('hidden');
+            randomFilmError.classList.add('hidden');
             setRandomFilmLoading(true);
             postRandomFilm().then(function (response) {
                 if (response.success && response.data && response.data.film) {
@@ -130,7 +231,19 @@ document.addEventListener('DOMContentLoaded', function () {
                     ? response.data.message
                     : 'تعذر تحميل الاقتراح حالياً.';
                 showRandomFilmError(message);
-            }).catch(function () {
+            }).catch(function (error) {
+                if (error && error.name === 'AbortError') {
+                    showRandomFilmError('استغرق الاتصال وقتاً أطول من المتوقع. حاول مرة أخرى.');
+                    return;
+                }
+                if (error && error.status === 429) {
+                    showRandomFilmError('ازدحمت الطلبات قليلاً. انتظر لحظة ثم حاول مرة أخرى.');
+                    return;
+                }
+                if (error && error.status >= 500) {
+                    showRandomFilmError('يتعذر الوصول إلى الأرشيف حالياً. حاول مرة أخرى بعد قليل.');
+                    return;
+                }
                 showRandomFilmError('حدث خطأ في الاتصال. حاول مرة أخرى.');
             }).finally(function () {
                 setRandomFilmLoading(false);
@@ -141,14 +254,18 @@ document.addEventListener('DOMContentLoaded', function () {
             e.preventDefault();
             requestRandomFilm();
         });
-        randomFilmNext.addEventListener('click', function (e) {
-            e.preventDefault();
-            requestRandomFilm();
-        });
-        randomFilmRetry.addEventListener('click', function (e) {
-            e.preventDefault();
-            requestRandomFilm();
-        });
+        if (randomFilmNext) {
+            randomFilmNext.addEventListener('click', function (e) {
+                e.preventDefault();
+                requestRandomFilm();
+            });
+        }
+        if (randomFilmRetry) {
+            randomFilmRetry.addEventListener('click', function (e) {
+                e.preventDefault();
+                requestRandomFilm();
+            });
+        }
         if (randomFilmCategorySelect) {
             randomFilmCategorySelect.addEventListener('change', function () {
                 shownFilmIds.length = 0;
@@ -157,6 +274,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             });
         }
+
+        randomFilmResult.setAttribute('aria-hidden', 'true');
+        randomFilmResult.setAttribute('aria-busy', 'false');
     }
 
     const container = document.getElementById('infinite-scroll-container');
