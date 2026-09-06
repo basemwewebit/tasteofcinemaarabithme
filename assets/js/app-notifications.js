@@ -28,6 +28,8 @@
     var engagementTriggered = false;
     var promptTimerId = null;
     var fallbackQueue = [];
+    var subscriptionInFlight = false;
+    var fetchTimeoutMs = 12000;
 
     function storageGet(key, fallbackValue) {
         try {
@@ -53,7 +55,9 @@
     function getSeenNotificationIds() {
         try {
             var parsed = JSON.parse(storageGet(seenNotificationsKey, '[]'));
-            return Array.isArray(parsed) ? parsed : [];
+            return Array.isArray(parsed)
+                ? parsed.map(normalizeNotificationId).filter(function (id) { return id !== ''; })
+                : [];
         } catch (e) {
             return [];
         }
@@ -63,15 +67,21 @@
         storageSet(seenNotificationsKey, JSON.stringify(ids.slice(-20)));
     }
 
+    function normalizeNotificationId(id) {
+        return id === null || typeof id === 'undefined' ? '' : String(id);
+    }
+
     function hasSeenNotification(id) {
-        if (!id) return false;
-        return getSeenNotificationIds().indexOf(id) !== -1;
+        var normalizedId = normalizeNotificationId(id);
+        if (!normalizedId) return false;
+        return getSeenNotificationIds().indexOf(normalizedId) !== -1;
     }
 
     function markNotificationSeen(id) {
-        if (!id || hasSeenNotification(id)) return;
+        var normalizedId = normalizeNotificationId(id);
+        if (!normalizedId || hasSeenNotification(normalizedId)) return;
         var seenIds = getSeenNotificationIds();
-        seenIds.push(id);
+        seenIds.push(normalizedId);
         setSeenNotificationIds(seenIds);
     }
 
@@ -89,7 +99,42 @@
     }
 
     function supportsPushNotifications() {
-        return 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
+        return 'Notification' in window
+            && typeof Notification.requestPermission === 'function'
+            && 'serviceWorker' in navigator
+            && 'PushManager' in window;
+    }
+
+    function isUsableNotification(notification) {
+        return !!notification
+            && typeof notification === 'object'
+            && normalizeNotificationId(notification.id) !== ''
+            && typeof notification.title === 'string'
+            && notification.title.trim() !== ''
+            && typeof notification.body === 'string'
+            && typeof notification.url === 'string';
+    }
+
+    function safeNotificationUrl(value) {
+        var fallbackUrl = (window.mazaq_ajax && window.mazaq_ajax.home_url) || '/';
+        if (!value || typeof window.URL !== 'function') return fallbackUrl;
+
+        try {
+            var parsedUrl = new window.URL(value, window.location.origin);
+            if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') return fallbackUrl;
+            if (parsedUrl.origin !== window.location.origin) return fallbackUrl;
+            if (parsedUrl.username || parsedUrl.password) return fallbackUrl;
+            return parsedUrl.href;
+        } catch (e) {
+            return fallbackUrl;
+        }
+    }
+
+    function releaseFocusWithin(element) {
+        if (!element || !element.contains(document.activeElement)) return;
+        if (document.activeElement && typeof document.activeElement.blur === 'function') {
+            document.activeElement.blur();
+        }
     }
 
     function shouldOfferPrompt() {
@@ -103,22 +148,26 @@
     function showPromptStatus(message, isError) {
         if (!notificationPromptStatus) return;
         notificationPromptStatus.textContent = message || '';
-        notificationPromptStatus.classList.remove('hidden', 'text-slate-600', 'text-red-600', 'dark:text-slate-200', 'dark:text-red-300');
+        notificationPromptStatus.classList.remove('hidden', 'is-error', 'is-success');
         if (isError) {
-            notificationPromptStatus.classList.add('text-red-600', 'dark:text-red-300');
+            notificationPromptStatus.classList.add('is-error');
         } else {
-            notificationPromptStatus.classList.add('text-slate-600', 'dark:text-slate-200');
+            notificationPromptStatus.classList.add('is-success');
         }
     }
 
     function clearPromptStatus() {
         if (!notificationPromptStatus) return;
         notificationPromptStatus.classList.add('hidden');
+        notificationPromptStatus.classList.remove('is-error', 'is-success');
         notificationPromptStatus.textContent = '';
     }
 
     function hidePrompt() {
-        if (notificationPrompt) notificationPrompt.classList.add('hidden');
+        if (!notificationPrompt) return;
+        releaseFocusWithin(notificationPrompt);
+        notificationPrompt.classList.add('hidden');
+        notificationPrompt.setAttribute('aria-busy', 'false');
     }
 
     function showPrompt() {
@@ -129,13 +178,15 @@
     }
 
     function hideToast() {
-        if (notificationToast) notificationToast.classList.add('hidden');
+        if (!notificationToast) return;
+        releaseFocusWithin(notificationToast);
+        notificationToast.classList.add('hidden');
     }
 
     function nextUnseenNotification() {
         for (var index = 0; index < fallbackQueue.length; index += 1) {
             var item = fallbackQueue[index];
-            if (item && item.id && !hasSeenNotification(item.id)) return item;
+            if (isUsableNotification(item) && !hasSeenNotification(item.id)) return item;
         }
         return null;
     }
@@ -144,11 +195,13 @@
         if (isSubscribed) { hideToast(); return; }
         var notification = nextUnseenNotification();
         if (!notification) { hideToast(); return; }
-        if (notificationToast) notificationToast.dataset.notificationId = notification.id || '';
-        if (notificationToastKicker) notificationToastKicker.textContent = notification.type === 'new_post' ? 'مقال جديد' : 'اقتراح اليوم';
-        if (notificationToastTitle) notificationToastTitle.textContent = notification.title || '';
-        if (notificationToastBody) notificationToastBody.textContent = notification.body || '';
-        if (notificationToastLink) notificationToastLink.setAttribute('href', notification.url || (window.mazaq_ajax && window.mazaq_ajax.home_url) || '/');
+        var notificationType = notification.type === 'new_post' ? 'new_post' : 'daily_random';
+        if (notificationToast) notificationToast.dataset.notificationId = normalizeNotificationId(notification.id);
+        if (notificationToast) notificationToast.dataset.notificationType = notificationType;
+        if (notificationToastKicker) notificationToastKicker.textContent = notificationType === 'new_post' ? 'مقال جديد' : 'اقتراح اليوم';
+        if (notificationToastTitle) notificationToastTitle.textContent = notification.title;
+        if (notificationToastBody) notificationToastBody.textContent = notification.body;
+        if (notificationToastLink) notificationToastLink.setAttribute('href', safeNotificationUrl(notification.url));
         if (notificationToast) notificationToast.classList.remove('hidden');
     }
 
@@ -173,8 +226,25 @@
     }
 
     function fetchJson(url, options) {
-        return fetch(url, options).then(function (response) {
-            return response.json().then(function (data) { return { ok: response.ok, status: response.status, data: data }; });
+        var requestOptions = Object.assign({}, options || {});
+        var controller = typeof window.AbortController === 'function' ? new window.AbortController() : null;
+        var timeoutId = null;
+
+        if (controller) {
+            requestOptions.signal = controller.signal;
+            timeoutId = window.setTimeout(function () { controller.abort(); }, fetchTimeoutMs);
+        }
+
+        return fetch(url, requestOptions).then(function (response) {
+            return response.text().then(function (body) {
+                var data = {};
+                if (body) {
+                    try { data = JSON.parse(body); } catch (e) { data = {}; }
+                }
+                return { ok: response.ok, status: response.status, data: data };
+            });
+        }).finally(function () {
+            if (timeoutId) window.clearTimeout(timeoutId);
         });
     }
 
@@ -207,6 +277,7 @@
     }
 
     function subscribeToNotifications() {
+        if (subscriptionInFlight) return;
         if (!notificationBootstrap || !notificationBootstrap.publicVapidKey) {
             showPromptStatus('التنبيهات غير جاهزة حالياً. أضف مفاتيح VAPID من لوحة التحكم.', true);
             return;
@@ -215,10 +286,13 @@
             showPromptStatus('متصفحك لا يدعم تنبيهات الويب.', true);
             return;
         }
+        subscriptionInFlight = true;
         if (notificationPromptSubscribe) {
             notificationPromptSubscribe.disabled = true;
+            notificationPromptSubscribe.classList.remove('is-complete');
             notificationPromptSubscribe.textContent = 'جارٍ التفعيل...';
         }
+        if (notificationPrompt) notificationPrompt.setAttribute('aria-busy', 'true');
         clearPromptStatus();
         ensureServiceWorker().then(function (registration) {
             if (!registration || !registration.pushManager) throw new Error('service-worker');
@@ -245,6 +319,7 @@
         }).then(function (response) {
             if (!response.ok || !response.data || !response.data.success) throw new Error('subscription-save');
             setSubscribedState(true);
+            if (notificationPrompt) notificationPrompt.classList.remove('hidden');
             showPromptStatus('تم تفعيل التنبيهات بنجاح.', false);
             window.setTimeout(hidePrompt, 900);
         }).catch(function (error) {
@@ -260,24 +335,39 @@
             }
             showPromptStatus('تعذر تفعيل التنبيهات الآن. حاول لاحقاً.', true);
         }).finally(function () {
+            subscriptionInFlight = false;
+            if (notificationPrompt) notificationPrompt.setAttribute('aria-busy', 'false');
             if (notificationPromptSubscribe) {
-                notificationPromptSubscribe.disabled = false;
-                notificationPromptSubscribe.textContent = 'اشترك الآن';
+                if (isSubscribed) {
+                    notificationPromptSubscribe.disabled = true;
+                    notificationPromptSubscribe.classList.add('is-complete');
+                    notificationPromptSubscribe.textContent = 'تم التفعيل';
+                } else {
+                    notificationPromptSubscribe.disabled = false;
+                    notificationPromptSubscribe.classList.remove('is-complete');
+                    notificationPromptSubscribe.textContent = 'اشترك الآن';
+                }
             }
         });
     }
 
     function dismissPromptForLater() {
         mutePromptForDays(7);
+        stopPromptEngagementWatchers();
         hidePrompt();
+    }
+
+    function stopPromptEngagementWatchers() {
+        if (promptTimerId) window.clearTimeout(promptTimerId);
+        promptTimerId = null;
+        window.removeEventListener('scroll', handleScrollEngagement);
     }
 
     function revealPromptAfterEngagement() {
         if (engagementTriggered) return;
         engagementTriggered = true;
-        if (promptTimerId) window.clearTimeout(promptTimerId);
+        stopPromptEngagementWatchers();
         showPrompt();
-        window.removeEventListener('scroll', handleScrollEngagement);
     }
 
     function handleScrollEngagement() {
@@ -296,7 +386,7 @@
     function hydrateNotificationBootstrap() {
         if (!window.mazaq_ajax.notifications_bootstrap_url) return;
         fetchJson(window.mazaq_ajax.notifications_bootstrap_url, { credentials: 'same-origin' }).then(function (response) {
-            if (!response.ok || !response.data) return;
+            if (!response.ok || !response.data || typeof response.data !== 'object' || Array.isArray(response.data)) return;
             notificationBootstrap = response.data;
             fallbackQueue = Array.isArray(notificationBootstrap.fallbackNotifications)
                 ? notificationBootstrap.fallbackNotifications : [];

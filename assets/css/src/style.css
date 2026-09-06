@@ -9287,6 +9287,392 @@ html.dark .search-empty .err-404__meta {
     display: none;
 }
 
+/* ============================================================
+   NOTIFICATION BULLETINS: a quiet cinema signal for the reader
+   The surface is intentionally solid and compact: paper by day,
+   nocturnal ink by night, with gold reserved for action and focus.
+   ============================================================ */
+
+.mazaq-notification-suite {
+    position: fixed;
+    inset-inline-end: clamp(0.75rem, 2vw, 1.5rem);
+    inset-block-end: 0.75rem;
+    inset-block-end: calc(0.75rem + env(safe-area-inset-bottom));
+    z-index: 70;
+    display: flex;
+    width: min(calc(100vw - 1.5rem), 25rem);
+    max-block-size: calc(100vh - 1.5rem);
+    max-block-size: calc(100dvh - 1.5rem);
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-tight);
+    min-width: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    pointer-events: auto;
+    font-family: var(--font-body);
+    scrollbar-color: var(--color-gold-border) transparent;
+    scrollbar-width: thin;
+}
+
+.mazaq-notification {
+    --mn-surface: var(--color-paper-elevated);
+    --mn-surface-muted: var(--color-paper-muted);
+    --mn-text: var(--color-text-on-paper);
+    --mn-muted: var(--color-text-on-paper-muted);
+    --mn-border: color-mix(in srgb, var(--color-gold-border) 78%, transparent);
+    --mn-accent: var(--color-primary);
+    --mn-accent-hover: var(--color-primary-hover);
+    --mn-on-accent: var(--color-text-on-paper);
+    --mn-signal: var(--color-primary);
+    --mn-signal-surface: color-mix(in srgb, var(--mn-signal) 9%, var(--mn-surface));
+    --mn-error: var(--color-claret);
+    --mn-error-surface: color-mix(in srgb, var(--mn-error) 9%, var(--mn-surface));
+    --mn-success: rgb(33 110 74);
+    --mn-success-surface: color-mix(in srgb, var(--mn-success) 9%, var(--mn-surface));
+    position: relative;
+    overflow: hidden;
+    flex: 0 0 auto;
+    min-width: 0;
+    padding: var(--space-md);
+    border: 1px solid var(--mn-border);
+    border-radius: var(--radius-lg);
+    background: var(--mn-surface);
+    color: var(--mn-text);
+    box-shadow: 0 20px 48px color-mix(in srgb, var(--color-deep-shadow) 18%, transparent);
+    pointer-events: auto;
+}
+
+html.dark .mazaq-notification {
+    --mn-surface: var(--color-ink-elevated);
+    --mn-surface-muted: var(--color-ink-overlay);
+    --mn-text: var(--color-text-on-ink);
+    --mn-muted: var(--color-text-on-ink-muted);
+    --mn-border: color-mix(in srgb, var(--color-gold-border) 28%, transparent);
+    --mn-accent: var(--color-gold-tint);
+    --mn-accent-hover: var(--color-primary);
+    --mn-on-accent: var(--color-ink);
+    --mn-signal: var(--color-gold-tint);
+    --mn-error: color-mix(in srgb, var(--color-claret) 34%, var(--color-gold-tint));
+    --mn-error-surface: color-mix(in srgb, var(--mn-error) 20%, var(--mn-surface));
+    --mn-success: rgb(155 217 181);
+    --mn-success-surface: color-mix(in srgb, var(--mn-success) 12%, var(--mn-surface));
+    box-shadow: 0 20px 52px color-mix(in srgb, var(--color-deep-shadow) 48%, transparent);
+}
+
+.mazaq-notification--toast[data-notification-type="new_post"] {
+    --mn-signal: var(--color-secondary);
+}
+
+html.dark .mazaq-notification--toast[data-notification-type="new_post"] {
+    --mn-signal: color-mix(in srgb, var(--color-secondary) 52%, var(--color-gold-tint));
+}
+
+.mazaq-notification::before {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline: var(--space-md);
+    height: 1px;
+    background: var(--mn-signal);
+    content: '';
+    opacity: 0.72;
+}
+
+.mazaq-notification:not(.hidden) {
+    animation: mazaq-notification-rise 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.mazaq-notification__topline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.mazaq-notification__emblem {
+    display: grid;
+    width: 2.75rem;
+    height: 2.75rem;
+    place-items: center;
+    border: 1px solid color-mix(in srgb, var(--mn-signal) 72%, var(--mn-border));
+    border-radius: var(--radius-md);
+    background: var(--mn-signal-surface);
+    color: var(--mn-signal);
+}
+
+.mazaq-notification__emblem svg {
+    width: 1.55rem;
+    height: 1.55rem;
+}
+
+.mazaq-notification__close {
+    display: grid;
+    width: 2.75rem;
+    height: 2.75rem;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--mn-muted);
+    cursor: pointer;
+    transition: border-color 180ms ease, background-color 180ms ease, color 180ms ease;
+}
+
+.mazaq-notification__close svg {
+    width: 1.15rem;
+    height: 1.15rem;
+}
+
+.mazaq-notification__close:hover {
+    border-color: var(--mn-border);
+    background: var(--mn-surface-muted);
+    color: var(--mn-text);
+}
+
+.mazaq-notification__content {
+    padding-block: var(--space-sm) var(--space-tight);
+}
+
+.mazaq-notification__title {
+    margin: 0;
+    color: var(--mn-text);
+    font-family: var(--font-display);
+    font-size: var(--type-title);
+    font-weight: var(--font-weight-title);
+    line-height: var(--line-height-title);
+    letter-spacing: 0;
+    overflow-wrap: anywhere;
+}
+
+.mazaq-notification__body {
+    margin: var(--space-tight) 0 0;
+    color: var(--mn-muted);
+    font-size: max(var(--type-label), 1rem);
+    line-height: 1.8;
+    overflow-wrap: anywhere;
+}
+
+.mazaq-notification__meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0.65rem 0 0;
+    color: var(--mn-signal);
+    font-size: var(--type-label);
+    font-weight: var(--font-weight-label);
+    line-height: var(--line-height-label);
+}
+
+.mazaq-notification__meta::before {
+    width: 0.42rem;
+    height: 0.42rem;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    background: var(--mn-signal);
+    content: '';
+}
+
+.mazaq-notification__status {
+    margin: var(--space-sm) 0 0;
+    padding: 0.7rem 0.8rem;
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    color: var(--mn-muted);
+    background: var(--mn-surface-muted);
+    font-size: var(--type-label);
+    font-weight: var(--font-weight-label);
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+
+.mazaq-notification__status.is-error {
+    border-color: color-mix(in srgb, var(--mn-error) 30%, transparent);
+    color: var(--mn-error);
+    background: var(--mn-error-surface);
+}
+
+.mazaq-notification__status.is-success {
+    border-color: color-mix(in srgb, var(--mn-success) 30%, transparent);
+    color: var(--mn-success);
+    background: var(--mn-success-surface);
+}
+
+.mazaq-notification__actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: var(--space-tight);
+    margin-block-start: var(--space-sm);
+    padding-block-start: var(--space-sm);
+    border-block-start: 1px solid color-mix(in srgb, var(--mn-border) 74%, transparent);
+}
+
+.mazaq-notification__button {
+    display: inline-flex;
+    min-height: 2.75rem;
+    min-width: 0;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    padding: var(--space-tight) var(--space-sm);
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    font-family: var(--font-body);
+    font-size: var(--type-label);
+    font-weight: var(--font-weight-label);
+    line-height: 1.35;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease, opacity 180ms ease;
+}
+
+.mazaq-notification__button--primary {
+    border-color: var(--mn-accent);
+    background: var(--mn-accent);
+    color: var(--mn-on-accent);
+    font-weight: 700;
+}
+
+.mazaq-notification__button--primary:hover {
+    border-color: var(--mn-accent-hover);
+    background: var(--mn-accent-hover);
+}
+
+.mazaq-notification__button--primary svg {
+    width: 1.05rem;
+    height: 1.05rem;
+    transition: transform 180ms ease;
+}
+
+.mazaq-notification__button--primary:hover svg {
+    transform: translateX(-0.18rem);
+}
+
+.mazaq-notification__button--quiet {
+    padding-inline: 0.55rem;
+    color: var(--mn-muted);
+}
+
+.mazaq-notification__button--quiet:hover {
+    color: var(--mn-text);
+    text-decoration: underline;
+    text-decoration-color: var(--mn-accent);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.25rem;
+}
+
+.mazaq-notification__button--primary:disabled {
+    cursor: wait;
+    opacity: 0.7;
+}
+
+.mazaq-notification__button--primary:disabled::after {
+    display: inline-block;
+    width: 0.85rem;
+    height: 0.85rem;
+    border: 2px solid currentColor;
+    border-block-start-color: transparent;
+    border-radius: 50%;
+    content: '';
+    animation: mazaq-notification-spin 720ms linear infinite;
+}
+
+.mazaq-notification__button--primary.is-complete:disabled::after {
+    display: none;
+}
+
+.mazaq-notification__button:focus-visible,
+.mazaq-notification__close:focus-visible {
+    outline: 3px solid var(--color-gold-tint);
+    outline-offset: 2px;
+    box-shadow: var(--shadow-focus);
+}
+
+@keyframes mazaq-notification-rise {
+    from {
+        opacity: 0;
+        transform: translateY(0.75rem) scale(0.985);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes mazaq-notification-spin {
+    to { transform: rotate(360deg); }
+}
+
+@media (max-width: 480px) {
+    .mazaq-notification-suite {
+        inset-inline-end: 0.5rem;
+        width: calc(100vw - 1rem);
+    }
+
+    .mazaq-notification {
+        padding: var(--space-sm);
+    }
+
+    .mazaq-notification::before {
+        inset-inline: var(--space-sm);
+    }
+
+    .mazaq-notification__actions {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+
+    .mazaq-notification__button {
+        width: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .mazaq-notification:not(.hidden),
+    .mazaq-notification__close,
+    .mazaq-notification__button,
+    .mazaq-notification__button--primary svg {
+        animation: none;
+        transition: none;
+    }
+
+    .mazaq-notification__button--primary:disabled::after {
+        animation: none;
+    }
+}
+
+@media (forced-colors: active) {
+    .mazaq-notification {
+        border-color: CanvasText;
+        box-shadow: none;
+    }
+
+    .mazaq-notification__emblem,
+    .mazaq-notification__close,
+    .mazaq-notification__button {
+        border-color: ButtonText;
+    }
+
+    .mazaq-notification__button--primary {
+        background: ButtonText;
+        color: ButtonFace;
+    }
+
+    .mazaq-notification__button--quiet,
+    .mazaq-notification__meta,
+    .mazaq-notification__status {
+        color: ButtonText;
+    }
+
+    .mazaq-notification__button:focus-visible,
+    .mazaq-notification__close:focus-visible {
+        outline: 2px solid Highlight;
+        box-shadow: none;
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     .search-field__input,
     .search-field__btn,

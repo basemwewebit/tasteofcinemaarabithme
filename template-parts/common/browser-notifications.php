@@ -10,89 +10,125 @@ $args = wp_parse_args(
 );
 
 $settings = is_array($args['settings']) ? $args['settings'] : [];
-$prompt_title = (string) ($settings['prompt_title'] ?? __('اشترك في تنبيهات مذاق السينما', 'mazaq'));
-$prompt_body = (string) ($settings['prompt_body'] ?? __('سنرسل لك مقالاً يومياً مختاراً ومقالات جديدة فور نشرها.', 'mazaq'));
+$default_prompt_title = __('اشترك في تنبيهات مذاق السينما', 'mazaq');
+$default_prompt_body = __('سنرسل لك مقالاً يومياً مختاراً ومقالات جديدة فور نشرها.', 'mazaq');
+$prompt_title = trim((string) ($settings['prompt_title'] ?? '')) ?: $default_prompt_title;
+$prompt_body = trim((string) ($settings['prompt_body'] ?? '')) ?: $default_prompt_body;
 ?>
 <div
     id="mazaq-notification-root"
-    class="pointer-events-none fixed inset-x-4 bottom-4 z-[70] flex flex-col items-end gap-3 sm:inset-x-auto sm:end-4 sm:bottom-6"
-    data-prompt-title="<?php echo esc_attr($prompt_title); ?>"
-    data-prompt-body="<?php echo esc_attr($prompt_body); ?>"
+    class="mazaq-notification-suite"
+    dir="rtl"
 >
     <section
         id="mazaq-notification-prompt"
-        class="pointer-events-auto hidden w-full max-w-sm overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white/95 p-5 text-start shadow-2xl dark:border-slate-700 dark:bg-slate-900/95"
+        class="mazaq-notification mazaq-notification--prompt hidden"
+        aria-labelledby="mazaq-notification-prompt-title"
+        aria-describedby="mazaq-notification-prompt-body"
         aria-live="polite"
+        aria-busy="false"
     >
-        <div class="mb-4 flex items-start justify-between gap-4">
-            <div>
-                <p class="mb-2 text-xs font-bold text-primary"><?php esc_html_e('تنبيهات المتصفح', 'mazaq'); ?></p>
-                <h3 id="mazaq-notification-prompt-title" class="text-lg font-bold text-slate-900 dark:text-white"><?php echo esc_html($prompt_title); ?></h3>
-            </div>
+        <div class="mazaq-notification__topline">
+            <span class="mazaq-notification__emblem" aria-hidden="true">
+                <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 27.5V20a8 8 0 0 1 16 0v7.5l2.5 3H13.5l2.5-3Z"></path>
+                    <path stroke-linecap="round" d="M21.5 34a3 3 0 0 0 5 0"></path>
+                </svg>
+            </span>
             <button
                 id="mazaq-notification-prompt-close"
                 type="button"
-                class="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-500 dark:hover:text-white"
+                class="mazaq-notification__close"
                 aria-label="<?php esc_attr_e('إغلاق طلب الاشتراك', 'mazaq'); ?>"
             >
-                <span aria-hidden="true">&times;</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                    <path stroke-linecap="round" d="M6 6l12 12M18 6 6 18"></path>
+                </svg>
             </button>
         </div>
-        <p id="mazaq-notification-prompt-body" class="mb-4 text-sm leading-7 text-slate-600 dark:text-slate-300"><?php echo esc_html($prompt_body); ?></p>
-        <p id="mazaq-notification-prompt-status" class="mb-4 hidden rounded-lg bg-slate-100 px-3 py-2 text-sm font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-200"></p>
-        <div class="flex flex-wrap items-center justify-end gap-3">
+
+        <div class="mazaq-notification__content">
+            <h2 id="mazaq-notification-prompt-title" class="mazaq-notification__title"><?php echo esc_html($prompt_title); ?></h2>
+            <p id="mazaq-notification-prompt-body" class="mazaq-notification__body"><?php echo esc_html($prompt_body); ?></p>
+        </div>
+
+        <p
+            id="mazaq-notification-prompt-status"
+            class="mazaq-notification__status hidden"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+        ></p>
+
+        <div class="mazaq-notification__actions">
+            <button
+                id="mazaq-notification-prompt-subscribe"
+                type="button"
+                class="mazaq-notification__button mazaq-notification__button--primary"
+            >
+                <?php esc_html_e('اشترك الآن', 'mazaq'); ?>
+            </button>
             <button
                 id="mazaq-notification-dismiss"
                 type="button"
-                class="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-500 dark:hover:text-white"
+                class="mazaq-notification__button mazaq-notification__button--quiet"
             >
                 <?php esc_html_e('لاحقاً', 'mazaq'); ?>
-            </button>
-            <button
-                id="mazaq-notification-subscribe"
-                type="button"
-                class="rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-slate-900 transition hover:brightness-95"
-            >
-                <?php esc_html_e('اشترك الآن', 'mazaq'); ?>
             </button>
         </div>
     </section>
 
     <section
         id="mazaq-notification-toast"
-        class="pointer-events-auto hidden w-full max-w-sm overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white/95 p-5 text-start shadow-2xl dark:border-slate-700 dark:bg-slate-900/95"
+        class="mazaq-notification mazaq-notification--toast hidden"
+        aria-labelledby="mazaq-notification-toast-title"
+        aria-describedby="mazaq-notification-toast-body"
         aria-live="polite"
+        aria-atomic="true"
     >
-        <div class="mb-4 flex items-start justify-between gap-4">
-            <div>
-                <p id="mazaq-notification-toast-kicker" class="mb-2 text-xs font-bold text-primary"></p>
-                <h3 id="mazaq-notification-toast-title" class="text-lg font-bold text-slate-900 dark:text-white"></h3>
-            </div>
+        <div class="mazaq-notification__topline">
+            <span class="mazaq-notification__emblem" aria-hidden="true">
+                <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 16.5h28v22H10z"></path>
+                    <path stroke-linecap="round" d="M10 22h28M13 11l4 5.5M22 11l4 5.5M31 11l4 5.5"></path>
+                </svg>
+            </span>
             <button
                 id="mazaq-notification-toast-close"
                 type="button"
-                class="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-500 dark:hover:text-white"
+                class="mazaq-notification__close"
                 aria-label="<?php esc_attr_e('إغلاق التنبيه', 'mazaq'); ?>"
             >
-                <span aria-hidden="true">&times;</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                    <path stroke-linecap="round" d="M6 6l12 12M18 6 6 18"></path>
+                </svg>
             </button>
         </div>
-        <p id="mazaq-notification-toast-body" class="mb-4 text-sm leading-7 text-slate-600 dark:text-slate-300"></p>
-        <div class="flex items-center justify-end gap-3">
-            <button
-                id="mazaq-notification-toast-dismiss"
-                type="button"
-                class="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-500 dark:hover:text-white"
-            >
-                <?php esc_html_e('إخفاء', 'mazaq'); ?>
-            </button>
+
+        <div class="mazaq-notification__content">
+            <h2 id="mazaq-notification-toast-title" class="mazaq-notification__title"></h2>
+            <p id="mazaq-notification-toast-kicker" class="mazaq-notification__meta"></p>
+            <p id="mazaq-notification-toast-body" class="mazaq-notification__body"></p>
+        </div>
+
+        <div class="mazaq-notification__actions">
             <a
                 id="mazaq-notification-toast-link"
                 href="<?php echo esc_url(home_url('/')); ?>"
-                class="rounded-full bg-slate-900 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
+                class="mazaq-notification__button mazaq-notification__button--primary"
             >
-                <?php esc_html_e('اقرأ الآن', 'mazaq'); ?>
+                <span><?php esc_html_e('اقرأ الآن', 'mazaq'); ?></span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5m6-6-6 6 6 6"></path>
+                </svg>
             </a>
+            <button
+                id="mazaq-notification-toast-dismiss"
+                type="button"
+                class="mazaq-notification__button mazaq-notification__button--quiet"
+            >
+                <?php esc_html_e('إخفاء', 'mazaq'); ?>
+            </button>
         </div>
     </section>
 </div>
