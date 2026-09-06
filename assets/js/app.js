@@ -545,42 +545,93 @@ document.addEventListener('DOMContentLoaded', function () {
     (function initNewsletterForms() {
         var forms = document.querySelectorAll('[data-newsletter-form]');
         var settings = window.mazaq_ajax || {};
+        var newsletterRequestTimeoutMs = 12000;
         if (!forms.length || !settings.ajax_url || !settings.newsletter_nonce) return;
 
         forms.forEach(function (form) {
             var input = form.querySelector('input[type="email"]');
             var status = form.querySelector('[data-newsletter-status]');
             var button = form.querySelector('button[type="submit"]');
+
+            function setStatus(message, state) {
+                if (!status) return;
+                status.textContent = message || '';
+                status.classList.remove('is-pending', 'is-success', 'is-error');
+                if (state) status.classList.add('is-' + state);
+            }
+
+            if (input) {
+                input.addEventListener('input', function () {
+                    input.setAttribute('aria-invalid', 'false');
+                    if (button && !button.disabled && status && status.textContent) setStatus('', '');
+                });
+            }
+
             form.addEventListener('submit', function (event) {
                 event.preventDefault();
                 if (!input || !button) return;
                 var email = input.value.trim();
                 if (!email || (input.validity && !input.validity.valid)) {
-                    if (status) status.textContent = 'أدخل بريدًا إلكترونيًا صحيحًا.';
+                    input.setAttribute('aria-invalid', 'true');
+                    setStatus('أدخل بريدًا إلكترونيًا صحيحًا.', 'error');
                     if (typeof input.reportValidity === 'function') input.reportValidity();
                     return;
                 }
+                if (typeof window.fetch !== 'function' || typeof window.URLSearchParams !== 'function') {
+                    setStatus('لا يمكن تسجيل الاشتراك من هذا المتصفح. حاول استخدام متصفح أحدث.', 'error');
+                    return;
+                }
+                input.setAttribute('aria-invalid', 'false');
                 button.disabled = true;
-                if (status) status.textContent = 'جاري تسجيل الاشتراك...';
+                form.setAttribute('aria-busy', 'true');
+                setStatus('جاري تسجيل الاشتراك...', 'pending');
                 var body = new URLSearchParams();
                 body.set('action', settings.newsletter_action || 'mazaq_newsletter_signup');
                 body.set('nonce', settings.newsletter_nonce);
                 body.set('email', email);
-                fetch(settings.ajax_url, {
+                var requestController = typeof window.AbortController === 'function' ? new window.AbortController() : null;
+                var requestTimeoutId = requestController
+                    ? window.setTimeout(function () { requestController.abort(); }, newsletterRequestTimeoutMs)
+                    : null;
+                var requestOptions = {
                     method: 'POST',
                     credentials: 'same-origin',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
                     body: body.toString()
-                })
-                    .then(function (response) { return response.json(); })
-                    .then(function (payload) {
-                        if (status) status.textContent = payload && payload.data && payload.data.message ? payload.data.message : 'تم استلام طلبك.';
-                        if (payload && payload.success) input.value = '';
+                };
+                if (requestController) requestOptions.signal = requestController.signal;
+                window.fetch(settings.ajax_url, requestOptions)
+                    .then(function (response) {
+                        return response.json().then(function (payload) {
+                            return { ok: response.ok, status: response.status, payload: payload };
+                        });
                     })
-                    .catch(function () {
-                        if (status) status.textContent = 'تعذر تسجيل الاشتراك الآن. حاول لاحقًا.';
+                    .then(function (result) {
+                        var payload = result.payload;
+                        var succeeded = result.ok && !!(payload && payload.success);
+                        var message = payload && payload.data && payload.data.message
+                            ? payload.data.message
+                            : result.status === 429
+                                ? 'تم إرسال طلبات كثيرة. انتظر قليلاً ثم حاول مرة أخرى.'
+                                : succeeded
+                                    ? 'تم استلام طلبك.'
+                                    : 'تعذر تسجيل الاشتراك الآن. حاول لاحقًا.';
+                        setStatus(message, succeeded ? 'success' : 'error');
+                        input.setAttribute('aria-invalid', succeeded ? 'false' : 'true');
+                        if (succeeded) input.value = '';
+                    })
+                    .catch(function (error) {
+                        input.setAttribute('aria-invalid', 'true');
+                        setStatus(
+                            error && error.name === 'AbortError'
+                                ? 'استغرق الاتصال وقتاً طويلاً. حاول مرة أخرى.'
+                                : 'تعذر تسجيل الاشتراك الآن. حاول لاحقًا.',
+                            'error'
+                        );
                     })
                     .finally(function () {
+                        if (requestTimeoutId !== null) window.clearTimeout(requestTimeoutId);
+                        form.setAttribute('aria-busy', 'false');
                         button.disabled = false;
                     });
             });
