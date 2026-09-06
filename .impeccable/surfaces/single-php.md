@@ -26,3 +26,8 @@ Proof: calm honest slots, working controls, WCAG 2.2 AA, robust RTL, graceful ab
 Memorable moment: the margin as a living programme — scroll-spy ticks the current section like a "now showing" marker.
 
 Open at build: exact margin breakpoint; author-box placement (margin note vs below body); finale treatment.
+
+## Resolved decisions (2026-09-06)
+- **Author-box placement:** main column, directly after the delight-finale stub — it is the article's *closing credit*, not a margin note. Pure credit only: avatar + "بقلم" label + name + optional role line (existing ACF user field `author_role_title`) + bio + quiet archive link (2px hairline → gold on hover). The "latest 3 posts" grid and its WP_Query are removed; inline-related and more-from-category own discovery. Renders only when an author exists; role/bio/avatar each degrade cleanly.
+- **Film-infobox = "the screening ticket":** keeps the shared programme-note skin; film title set in Amiri (the programme's editorial voice); year/director as mono-numeral hairline rows; star rating moved to a perforated foot (2px dashed tear line + punched holes filled with `--surface-body`) echoing the ticket-stub finale; gold appears only in the rating. Field guards unchanged: early return when all four ACF fields empty; stars → numeric grade fallback. Redesigned in place — no ACF/backend changes.
+- **Card wrappers:** `card-author.php` deleted (was unreferenced dead code). `card-category.php` kept — live sole call site is taxonomy-film.php.

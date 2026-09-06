@@ -1,14 +1,31 @@
 <?php
-$author_id = get_the_author_meta('ID');
-$author_name = get_the_author_meta('display_name');
-$author_bio = get_the_author_meta('description');
-$author_link = get_author_posts_url($author_id);
+$author_id = (int) get_the_author_meta('ID');
 
 if (empty($author_id)) {
     return;
 }
 
-if (empty($author_bio)) {
+$author_name = (string) get_the_author_meta('display_name');
+
+if ($author_name === '') {
+    $author_name = (string) get_the_author_meta('user_login');
+}
+
+// A credit without a name cannot render.
+if ($author_name === '') {
+    return;
+}
+
+$author_bio  = (string) get_the_author_meta('description');
+$author_link = get_author_posts_url($author_id);
+
+$author_role = '';
+if (function_exists('get_field')) {
+    $role_field  = get_field('author_role_title', 'user_' . $author_id);
+    $author_role = is_scalar($role_field) ? trim((string) $role_field) : '';
+}
+
+if ($author_bio === '') {
     $author_bio = sprintf(
         /* translators: %s: Author name */
         esc_html__('محرر في منصة Taste of Cinema العربية. يسعى %s لتقديم أفضل التحليلات والقوائم السينمائية لإثراء المحتوى العربي بأهم الأعمال الفنية حول العالم.', 'mazaq'),
@@ -16,55 +33,39 @@ if (empty($author_bio)) {
     );
 }
 
-// Fetch latest 3 posts from this author, excluding current post
-$author_posts = new WP_Query([
-    'post_type' => 'post',
-    'posts_per_page' => 3,
-    'author' => $author_id,
-    'post__not_in' => [get_the_ID()],
-    'post_status' => 'publish',
-    'no_found_rows' => true,
-    'ignore_sticky_posts' => true
-]);
+// get_avatar() returns false when avatars are disabled site-wide; swap in
+// the branded initial plate so the link never renders empty.
+$avatar_html = get_avatar($author_id, 96, '', '', ['class' => 'author-box__avatar', 'loading' => 'lazy']);
+
+if (!is_string($avatar_html) || $avatar_html === '') {
+    $initial     = function_exists('mb_substr') ? mb_substr($author_name, 0, 1) : substr($author_name, 0, 1);
+    $avatar_html = '<span class="author-box__avatar-plate" aria-hidden="true">' . esc_html($initial) . '</span>';
+}
 ?>
 
 <aside class="author-box" aria-labelledby="author-box-title">
-    <div class="author-box__inner <?php echo $author_posts->have_posts() ? 'mb-8 pb-6 border-b border-mist dark:border-border-subtle' : ''; ?>">
+    <div class="author-box__inner">
         <div class="author-box__media">
             <a href="<?php echo esc_url($author_link); ?>" class="author-box__avatar-link" aria-label="<?php echo esc_attr(sprintf(__('عرض أرشيف الكاتب: %s', 'mazaq'), $author_name)); ?>">
-                <?php echo get_avatar($author_id, 96, '', '', ['class' => 'author-box__avatar', 'loading' => 'lazy']); ?>
+                <?php echo $avatar_html; ?>
             </a>
         </div>
         <div class="author-box__body">
+            <p class="author-box__credit"><?php esc_html_e('بقلم', 'mazaq'); ?></p>
             <h2 id="author-box-title" class="author-box__name">
                 <a href="<?php echo esc_url($author_link); ?>">
                     <?php echo esc_html($author_name); ?>
                 </a>
             </h2>
+            <?php if ('' !== $author_role) : ?>
+                <p class="author-box__role"><?php echo esc_html($author_role); ?></p>
+            <?php endif; ?>
             <p class="author-box__bio">
                 <?php echo wp_kses_post($author_bio); ?>
             </p>
             <a href="<?php echo esc_url($author_link); ?>" class="author-box__link">
-                <span><?php esc_html_e('عرض جميع مقالات الكاتب', 'mazaq'); ?></span>
-                <svg class="author-box__link-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5m6-6-6 6 6 6"></path></svg>
+                <?php esc_html_e('عرض جميع مقالات الكاتب', 'mazaq'); ?>
             </a>
         </div>
     </div>
-
-    <?php if ($author_posts->have_posts()) : ?>
-        <div class="author-box__latest">
-            <h3 class="font-display text-label text-slate-800 dark:text-primary-tint mb-4"><?php echo esc_html(sprintf(__('آخر مقالات %s', 'mazaq'), $author_name)); ?></h3>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <?php while ($author_posts->have_posts()) : $author_posts->the_post(); ?>
-                    <?php 
-                    get_template_part('template-parts/content/article-card', null, [
-                        'layout' => 'compact',
-                        'class' => 'h-full',
-                    ]);
-                    ?>
-                <?php endwhile; wp_reset_postdata(); ?>
-            </div>
-        </div>
-    <?php endif; ?>
 </aside>
-
