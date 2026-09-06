@@ -720,9 +720,11 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     })();
 
-    document.querySelectorAll('.article-card__image').forEach(function (image) {
+    document.querySelectorAll('.article-card__image, .most-read-widget__image').forEach(function (image) {
         image.addEventListener('error', function () {
-            image.classList.add('article-card__image--unavailable');
+            image.classList.add(image.classList.contains('most-read-widget__image')
+                ? 'most-read-widget__image--unavailable'
+                : 'article-card__image--unavailable');
         });
     });
 

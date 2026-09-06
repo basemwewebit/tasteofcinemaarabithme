@@ -170,61 +170,14 @@ if (!$popular->have_posts()) {
         </section>
     <?php endif; ?>
 
-    <?php if ($popular->have_posts()) : ?>
-        <section class="home-section home-section--popular" aria-labelledby="popular-posts-title">
-            <div class="home-section__head">
-                <div>
-                    <h2 id="popular-posts-title" class="home-section__title">
-                        <?php echo esc_html($popular_scope_week ? __('الأكثر قراءة هذا الأسبوع', 'mazaq') : __('الأكثر قراءة', 'mazaq')); ?>
-                    </h2>
-                </div>
-            </div>
-
-            <ol class="popular-rail" aria-label="<?php esc_attr_e('قائمة المقالات الأكثر قراءة', 'mazaq'); ?>">
-                <?php $rank = 1; ?>
-                <?php while ($popular->have_posts()) : $popular->the_post(); ?>
-                    <?php
-                    $popular_views = mazaq_get_post_views(get_the_ID());
-                    $popular_title = get_the_title();
-                    // Fallback initial is decorative; an empty title still needs a plate glyph.
-                    $popular_initial = $popular_title !== ''
-                        ? (function_exists('mb_substr') ? mb_substr($popular_title, 0, 1, 'UTF-8') : substr($popular_title, 0, 1))
-                        : '؟';
-                    // Thumbnail is decorative here: the title sits beside it as text,
-                    // so an empty alt avoids a duplicate screen-reader announcement.
-                    $popular_thumb = get_the_post_thumbnail(get_the_ID(), 'sidebar-thumbnail', [
-                        'class' => 'popular-rail__image',
-                        'loading' => 'lazy',
-                        'decoding' => 'async',
-                        'alt' => '',
-                    ]);
-                    ?>
-                    <li class="popular-rail__item">
-                        <a href="<?php the_permalink(); ?>" class="popular-rail__link">
-                            <span class="popular-rail__rank num"><?php echo esc_html(sprintf('%02d', $rank)); ?></span>
-                            <span class="popular-rail__media">
-                                <?php if ($popular_thumb !== '') : ?>
-                                    <?php echo $popular_thumb; ?>
-                                <?php else : ?>
-                                    <span class="popular-rail__image popular-rail__image--fallback" aria-hidden="true"><?php echo esc_html($popular_initial); ?></span>
-                                <?php endif; ?>
-                            </span>
-                            <span class="popular-rail__body">
-                                <span class="popular-rail__title"><?php echo esc_html($popular_title); ?></span>
-                                <?php if ($popular_views > 0) : ?>
-                                    <span class="popular-rail__meta">
-                                        <span class="num"><?php echo esc_html(number_format_i18n($popular_views)); ?></span>
-                                        <?php esc_html_e('قراءة', 'mazaq'); ?>
-                                    </span>
-                                <?php endif; ?>
-                            </span>
-                        </a>
-                    </li>
-                    <?php $rank++; ?>
-                <?php endwhile; wp_reset_postdata(); ?>
-            </ol>
-        </section>
-    <?php endif; ?>
+    <?php
+    get_template_part('template-parts/widgets/most-read', null, [
+        'query' => $popular,
+        'scope' => $popular_scope_week ? 'week' : 'all',
+        'variant' => 'home',
+        'count' => 5,
+    ]);
+    ?>
 
     <section class="home-section home-section--latest" aria-labelledby="latest-posts-title">
         <div class="home-section__head">
