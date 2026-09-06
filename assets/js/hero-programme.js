@@ -86,6 +86,12 @@
 
 	function updateDrift() {
 		if (reduceMotion.matches || stackedLayout.matches) {
+			slides.forEach(function (slide) {
+				var image = slide.querySelector('.programme-spread__image');
+				if (image) {
+					image.style.removeProperty('--drift');
+				}
+			});
 			return;
 		}
 
@@ -123,6 +129,10 @@
 			next = Math.min(current + 1, slides.length - 1);
 		} else if (event.key === 'ArrowRight') {
 			next = Math.max(current - 1, 0);
+		} else if (event.key === 'Home') {
+			next = 0;
+		} else if (event.key === 'End') {
+			next = slides.length - 1;
 		}
 
 		if (next !== null) {
@@ -139,8 +149,10 @@
 
 	track.addEventListener('scroll', onScroll, { passive: true });
 	window.addEventListener('resize', updateDrift, { passive: true });
+	reduceMotion.addEventListener('change', updateDrift);
+	stackedLayout.addEventListener('change', updateDrift);
 
-	if (spine) {
+	if (spine && slides.length > 1) {
 		spine.hidden = false;
 	}
 

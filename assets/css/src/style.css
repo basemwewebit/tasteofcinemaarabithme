@@ -2481,6 +2481,7 @@ html.dark .programme-spread__media { background: #16161b; }
 .programme-spread__title {
     display: -webkit-box;
     overflow: hidden;
+    overflow-wrap: anywhere;
     font-family: var(--font-display);
     font-size: clamp(1.45rem, 2vw, 2rem);
     font-weight: 800;
@@ -2501,6 +2502,7 @@ html.dark .programme-spread__media { background: #16161b; }
 .programme-spread__deck {
     display: -webkit-box;
     overflow: hidden;
+    overflow-wrap: anywhere;
     max-width: 42ch;
     color: var(--ph-ink-muted);
     font-size: 1rem;
@@ -2533,11 +2535,17 @@ html.dark .programme-spread__media { background: #16161b; }
     transition: transform 0.35s var(--ph-ease);
 }
 
-.programme-spread__link:hover .programme-spread__action {
+.programme-spread__link:hover .programme-spread__action,
+.programme-spread__link:focus-visible .programme-spread__action {
     background: var(--ph-gold-hover);
 }
 
-.programme-spread__link:hover .programme-spread__action svg {
+.programme-spread__link:active .programme-spread__action {
+    transform: translateY(1px);
+}
+
+.programme-spread__link:hover .programme-spread__action svg,
+.programme-spread__link:focus-visible .programme-spread__action svg {
     transform: translateX(-4px);
 }
 
@@ -2558,11 +2566,13 @@ html.dark .programme-spread__media { background: #16161b; }
     transition: transform 0.35s var(--ph-ease);
 }
 
-.programme-spread__link:hover .programme-spread__more {
+.programme-spread__link:hover .programme-spread__more,
+.programme-spread__link:focus-visible .programme-spread__more {
     border-color: var(--ph-gold);
 }
 
-.programme-spread__link:hover .programme-spread__more svg {
+.programme-spread__link:hover .programme-spread__more svg,
+.programme-spread__link:focus-visible .programme-spread__more svg {
     transform: translateX(-3px);
 }
 
@@ -2681,7 +2691,7 @@ html.dark .programme-spread__credit-sep {
     transition: color 0.3s var(--ph-ease), background-color 0.3s var(--ph-ease), border-color 0.3s var(--ph-ease);
 }
 
-.programme-hero__page:hover {
+.programme-hero__page:not(.is-active):hover {
     color: var(--ph-ink);
     border-color: var(--ph-line);
 }

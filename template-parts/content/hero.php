@@ -10,7 +10,9 @@ declare(strict_types=1);
  * the progress line are progressive enhancement on top, never a gate.
  */
 
-$is_published = static fn (int $post_id): bool => $post_id > 0 && get_post_status($post_id) === 'publish';
+$is_published = static fn (int $post_id): bool => $post_id > 0
+    && get_post_type($post_id) === 'post'
+    && get_post_status($post_id) === 'publish';
 $hero_post_ids = array_values(array_unique(array_filter(array_map('intval', (array) mazaq_get_hero_post_ids()), $is_published)));
 
 if (count($hero_post_ids) < 4) {
@@ -74,7 +76,7 @@ $render_image = static function (int $post_id, string $size, string $class_name,
         return;
     }
     ?>
-    <img src="<?php echo esc_url($fallback); ?>" class="<?php echo esc_attr($class_name); ?>" alt="" loading="<?php echo $priority ? 'eager' : 'lazy'; ?>" decoding="async" data-drift>
+    <img src="<?php echo esc_url($fallback); ?>" class="<?php echo esc_attr($class_name); ?>" alt="" loading="<?php echo $priority ? 'eager' : 'lazy'; ?>"<?php echo $priority ? ' fetchpriority="high"' : ''; ?> decoding="async" data-drift>
     <?php
 };
 
@@ -86,7 +88,7 @@ $spread_count = count($spread_ids);
 
 <section class="programme-hero" dir="rtl" aria-label="<?php esc_attr_e('برنامج العرض — مختارات هذا الأسبوع', 'mazaq'); ?>" data-programme-hero data-count="<?php echo esc_attr((string) $spread_count); ?>">
     <div class="programme-hero__stage">
-        <ol class="programme-hero__track" tabindex="0" aria-label="<?php esc_attr_e('شرائح البرنامج — استخدم الأسهم للتنقل بينها', 'mazaq'); ?>">
+        <ol class="programme-hero__track" id="programme-hero-track" tabindex="0" aria-label="<?php esc_attr_e('شرائح البرنامج — استخدم الأسهم للتنقل بينها', 'mazaq'); ?>">
             <?php foreach ($spread_ids as $index => $post_id) : ?>
                 <?php
                 $is_lead = 0 === $index;
@@ -145,7 +147,7 @@ $spread_count = count($spread_ids);
             <ol class="programme-hero__pager">
                 <?php foreach ($spread_ids as $index => $post_id) : ?>
                     <li class="programme-hero__page-item">
-                        <button type="button" class="programme-hero__page<?php echo 0 === $index ? ' is-active' : ''; ?>" data-slide="<?php echo esc_attr((string) $index); ?>" aria-label="<?php echo esc_attr(sprintf(__('الانتقال إلى الشريحة %1$s: %2$s', 'mazaq'), $eastern_numerals($index + 1), $title_for($post_id))); ?>" aria-current="<?php echo 0 === $index ? 'true' : 'false'; ?>">
+                        <button type="button" class="programme-hero__page<?php echo 0 === $index ? ' is-active' : ''; ?>" data-slide="<?php echo esc_attr((string) $index); ?>" aria-controls="programme-hero-track" aria-label="<?php echo esc_attr(sprintf(__('الانتقال إلى الشريحة %1$s: %2$s', 'mazaq'), $eastern_numerals($index + 1), $title_for($post_id))); ?>" aria-current="<?php echo 0 === $index ? 'true' : 'false'; ?>">
                             <span class="num"><?php echo esc_html($eastern_numerals($index + 1)); ?></span>
                         </button>
                     </li>
