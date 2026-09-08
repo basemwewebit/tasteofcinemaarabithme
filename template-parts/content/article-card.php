@@ -9,6 +9,9 @@ $args = wp_parse_args(
         'class' => '',
         'show_category' => true,
         'fallback_plate' => '',
+        'image_size' => '',
+        'image_sizes' => '',
+        'small_image_media' => '',
     ]
 );
 
@@ -57,6 +60,10 @@ if ($layout === 'wide') {
 } elseif (in_array($layout, ['compact', 'related'], true)) {
     $image_size = 'sidebar-thumbnail';
 }
+$image_size_override = is_string($args['image_size']) ? trim($args['image_size']) : '';
+if ($image_size_override !== '') {
+    $image_size = $image_size_override;
+}
 $excerpt_length = $layout === 'wide' ? 30 : 22;
 $excerpt = mazaq_get_excerpt($excerpt_length);
 $excerpt = is_string($excerpt) ? trim($excerpt) : '';
@@ -65,13 +72,18 @@ $reading_time = is_string($reading_time) ? trim($reading_time) : '';
 $date_w3c = get_the_date(DATE_W3C, $post_id);
 $date_display = $date_w3c ? get_the_date('j F Y', $post_id) : '';
 $fallback_plate = (string) $args['fallback_plate'];
-$image_sizes = '(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw';
+$image_sizes_override = is_string($args['image_sizes']) ? trim($args['image_sizes']) : '';
+$small_image_media = is_string($args['small_image_media']) ? trim($args['small_image_media']) : '';
+$image_sizes = '(min-width: 1280px) 448px, (min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw';
 if ($layout === 'wide') {
-    $image_sizes = '(min-width: 1024px) 58vw, 100vw';
+    $image_sizes = '(min-width: 1280px) 768px, (min-width: 768px) 58vw, 100vw';
 } elseif ($layout === 'poster') {
     $image_sizes = '(min-width: 1024px) 22vw, (min-width: 768px) 32vw, 70vw';
 } elseif (in_array($layout, ['compact', 'related'], true)) {
-    $image_sizes = '5rem';
+    $image_sizes = '80px';
+}
+if ($image_sizes_override !== '') {
+    $image_sizes = $image_sizes_override;
 }
 $article_classes = trim(sprintf(
     'article-card article-card--%s %s %s',
@@ -80,11 +92,29 @@ $article_classes = trim(sprintf(
     (string) $args['class']
 ));
 
-$render_media = static function (string $class_name = 'article-card__image') use ($post_id, $image_size, $image_sizes, $title, $initial, $fallback_plate, $layout): void {
+$render_media = static function (string $class_name = 'article-card__image') use ($post_id, $image_size, $image_sizes, $title, $initial, $fallback_plate, $layout, $small_image_media): void {
     if (has_post_thumbnail($post_id)) {
         ?>
         <span class="article-card__media-fallback" aria-hidden="true"><?php echo esc_html($initial($title)); ?></span>
         <?php
+        $small_source = '';
+        $small_srcset = '';
+        if (in_array($layout, ['standard', 'wide'], true)) {
+            $thumbnail_id = (int) get_post_thumbnail_id($post_id);
+            if ($thumbnail_id > 0) {
+                $small_source = (string) (wp_get_attachment_image_url($thumbnail_id, 'card-small-thumbnail') ?: '');
+                $small_srcset = (string) (wp_get_attachment_image_srcset($thumbnail_id, 'card-small-thumbnail') ?: '');
+            }
+            if ($small_srcset === '') {
+                $small_srcset = $small_source;
+            }
+        }
+        if ($small_srcset !== '') {
+            echo '<picture><source media="(max-width: 640px)" srcset="' . esc_attr($small_srcset) . '" sizes="' . esc_attr($image_sizes) . '">';
+            if ($small_image_media !== '') {
+                echo '<source media="' . esc_attr($small_image_media) . '" srcset="' . esc_attr($small_srcset) . '" sizes="' . esc_attr($image_sizes) . '">';
+            }
+        }
         echo get_the_post_thumbnail($post_id, $image_size, [
             'class' => $class_name,
             /* Wide is the lead card: never delay it behind lazy loading. */
@@ -93,6 +123,9 @@ $render_media = static function (string $class_name = 'article-card__image') use
             'sizes' => $image_sizes,
             'alt' => mazaq_get_post_thumbnail_alt($post_id, $title),
         ]);
+        if ($small_srcset !== '') {
+            echo '</picture>';
+        }
         return;
     }
     if ($fallback_plate !== '') {

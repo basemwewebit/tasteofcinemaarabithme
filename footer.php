@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 $social_twitter = function_exists('get_field') ? (string) get_field('social_twitter', 'option') : '';
 $social_website = function_exists('get_field') ? (string) get_field('social_website', 'option') : '';
+$logo_src = mazaq_theme_logo_url(96);
 ?>
 <footer role="contentinfo" class="delight-footer">
     <span class="delight-footer__stage" aria-hidden="true"></span>
@@ -11,7 +12,7 @@ $social_website = function_exists('get_field') ? (string) get_field('social_webs
         <div class="delight-footer__grid">
             <div class="delight-footer__col delight-footer__col--brand">
                 <a href="<?php echo esc_url(home_url('/')); ?>" class="delight-footer__brand focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2">
-                    <img src="<?php echo esc_url(get_template_directory_uri() . '/assets/images/logo.webp'); ?>" alt="<?php bloginfo('name'); ?>" class="delight-footer__logo" loading="lazy" decoding="async" width="474" height="460" data-no-lazy="1">
+                    <img src="<?php echo esc_url($logo_src); ?>" alt="<?php bloginfo('name'); ?>" class="delight-footer__logo" loading="lazy" decoding="async" width="96" height="93" data-no-lazy="1">
                 </a>
                 <p class="delight-footer__desc">مجلة رقمية تهتم بشؤون الفن السابع. مراجعات، قوائم، تحليلات وأخبار السينما العالمية نقربها للمشاهد العربي بأسلوب عصري وحيوي.</p>
                 <?php if ($social_twitter || $social_website) : ?>

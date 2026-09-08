@@ -115,7 +115,7 @@ if (!$popular->have_posts()) {
                     </p>
                 </div>
                 <?php if ($collection_url !== '') : ?>
-                    <a class="editor-collection__all" href="<?php echo esc_url($collection_url); ?>" aria-label="<?php echo esc_attr(sprintf(__('كل مقالات %s', 'mazaq'), $collection_term->name)); ?>">
+                    <a class="editor-collection__all" href="<?php echo esc_url($collection_url); ?>">
                         <span><?php esc_html_e('كل المقالات', 'mazaq'); ?></span>
                         <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5"></path>
@@ -132,6 +132,9 @@ if (!$popular->have_posts()) {
                         'layout' => $selection_index === 0 ? 'wide' : 'compact',
                         'class' => $selection_index === 0 ? 'screening-selection__lead' : 'screening-selection__support',
                         'fallback_plate' => $collection_plate_fallbacks[min($selection_index, 2)],
+                        'image_size' => $selection_index === 0 ? 'card-medium-thumbnail' : '',
+                        'image_sizes' => $selection_index === 0 ? '(min-width: 1280px) 526px, (min-width: 981px) 40vw, 100vw' : '',
+                        'small_image_media' => '',
                     ]); ?>
                     <?php $selection_index++; ?>
                 <?php endwhile; wp_reset_postdata(); ?>
@@ -207,6 +210,15 @@ if (!$popular->have_posts()) {
                     get_template_part('template-parts/content/article-card', null, [
                         'layout' => $post_index === 0 ? 'wide' : 'standard',
                         'class' => $post_index === 0 ? 'latest-feed__lead' : ($post_index === 5 ? 'latest-feed__finale' : ''),
+                        'image_size' => $post_index === 5 ? '' : 'card-medium-thumbnail',
+                        'image_sizes' => $post_index === 0
+                            ? '(min-width: 1280px) 506px, (min-width: 981px) 40vw, 100vw'
+                            : ($post_index === 5
+                                ? '(min-width: 981px) 70vw, 100vw'
+                                : '(min-width: 1280px) 400px, (min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw'),
+                        'small_image_media' => $post_index > 0 && $post_index < 5
+                            ? '(min-width: 981px) and (max-width: 1440px)'
+                            : '',
                     ]);
                     $post_index++;
                 endwhile;

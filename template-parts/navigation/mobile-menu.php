@@ -11,6 +11,7 @@ $delight_menu_picks = get_posts([
     'fields' => 'ids',
     'post__not_in' => $delight_menu_exclude,
 ]);
+$logo_src = mazaq_theme_logo_url(96);
 ?>
 <div id="menu-overlay" class="delight-menu-overlay fixed inset-0 z-50 hidden" aria-hidden="true"></div>
 <aside
@@ -31,11 +32,11 @@ $delight_menu_picks = get_posts([
             aria-label="<?php esc_attr_e('الرئيسية', 'mazaq'); ?>"
         >
             <img
-                src="<?php echo esc_url(get_template_directory_uri() . '/assets/images/logo.webp'); ?>"
+                src="<?php echo esc_url($logo_src); ?>"
                 alt="<?php bloginfo('name'); ?>"
                 class="delight-menu__logo dark:brightness-125"
-                width="474"
-                height="460"
+                width="96"
+                height="93"
                 data-no-lazy="1"
             >
         </a>

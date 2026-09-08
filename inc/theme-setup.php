@@ -20,8 +20,11 @@ function mazaq_theme_setup(): void
 
     add_image_size('hero-image', 1600, 700, true);
     add_image_size('hero-poster', 1800, 1100, true);
+    add_image_size('programme-mobile-thumbnail', 480, 320, true);
     add_image_size('card-thumbnail', 800, 500, true);
     add_image_size('card-wide-thumbnail', 800, 500, true);
+    add_image_size('card-small-thumbnail', 400, 250, true);
+    add_image_size('card-medium-thumbnail', 600, 375, true);
     add_image_size('sidebar-thumbnail', 150, 150, true);
     add_image_size('search-poster', 400, 533, true);
     add_image_size('poster-card', 600, 800, true);

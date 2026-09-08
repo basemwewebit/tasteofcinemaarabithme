@@ -58,7 +58,7 @@ $category_for = static function (int $post_id): array {
     return [$name, $tint];
 };
 
-$render_image = static function (int $post_id, string $size, string $class_name, string $fallback, bool $priority = false): void {
+$render_image = static function (int $post_id, string $size, string $class_name, string $fallback, bool $priority = false, string $mobile_size = ''): void {
     if (has_post_thumbnail($post_id)) {
         $attributes = [
             'class' => $class_name,
@@ -72,7 +72,25 @@ $render_image = static function (int $post_id, string $size, string $class_name,
             $attributes['fetchpriority'] = 'high';
             $attributes['data-no-lazy'] = '1';
         }
+        $mobile_source = '';
+        $mobile_srcset = '';
+        if ($mobile_size !== '') {
+            $thumbnail_id = (int) get_post_thumbnail_id($post_id);
+            if ($thumbnail_id > 0) {
+                $mobile_source = (string) (wp_get_attachment_image_url($thumbnail_id, $mobile_size) ?: '');
+                $mobile_srcset = (string) (wp_get_attachment_image_srcset($thumbnail_id, $mobile_size) ?: '');
+            }
+            if ($mobile_srcset === '') {
+                $mobile_srcset = $mobile_source;
+            }
+        }
+        if ($mobile_srcset !== '') {
+            echo '<picture><source media="(max-width: 760px)" srcset="' . esc_attr($mobile_srcset) . '" sizes="88vw">';
+        }
         echo get_the_post_thumbnail($post_id, $size, $attributes);
+        if ($mobile_srcset !== '') {
+            echo '</picture>';
+        }
         return;
     }
     ?>
@@ -93,24 +111,25 @@ $spread_count = count($spread_ids);
                 <?php
                 $is_lead = 0 === $index;
                 $spread_title = $title_for($post_id);
+                $spread_title_id = 'programme-slide-' . ($index + 1) . '-title';
                 $spread_excerpt = wp_trim_words(wp_strip_all_tags((string) get_the_excerpt($post_id)), $is_lead ? 27 : 18, '…');
                 [$spread_category, $spread_tint] = $category_for($post_id);
                 ?>
-                <li class="programme-hero__slide" id="programme-slide-<?php echo esc_attr((string) ($index + 1)); ?>" role="group" aria-roledescription="<?php esc_attr_e('شريحة', 'mazaq'); ?>" aria-label="<?php echo esc_attr(sprintf(__('%1$s من %2$s: %3$s', 'mazaq'), $eastern_numerals($index + 1), $eastern_numerals($spread_count), $spread_title)); ?>">
+                <li class="programme-hero__slide" id="programme-slide-<?php echo esc_attr((string) ($index + 1)); ?>" aria-label="<?php echo esc_attr(sprintf(__('%1$s من %2$s: %3$s', 'mazaq'), $eastern_numerals($index + 1), $eastern_numerals($spread_count), $spread_title)); ?>">
                     <article class="programme-spread<?php echo $is_lead ? ' programme-spread--lead' : ''; ?>"<?php echo $spread_tint !== '' ? ' style="--ph-tint: ' . esc_attr($spread_tint) . ';"' : ''; ?>>
-                        <a class="programme-spread__link" href="<?php echo esc_url(get_permalink($post_id)); ?>" aria-label="<?php echo esc_attr(sprintf(__('اقرأ: %s', 'mazaq'), $spread_title)); ?>">
+                        <a class="programme-spread__link" href="<?php echo esc_url(get_permalink($post_id)); ?>">
                             <span class="programme-spread__media" aria-hidden="true">
                                 <?php
                                 if ($is_lead) {
-                                    $render_image($post_id, 'hero-poster', 'programme-spread__image', $theme_uri . '/assets/plates/feature-still.png', true);
+                                    $render_image($post_id, 'hero-poster', 'programme-spread__image', $theme_uri . '/assets/plates/feature-still.png', true, 'programme-mobile-thumbnail');
                                 } else {
-                                    $render_image($post_id, 'large', 'programme-spread__image', $plate_fallbacks[$index - 1] ?? $plate_fallbacks[0]);
+                                    $render_image($post_id, 'large', 'programme-spread__image', $plate_fallbacks[$index - 1] ?? $plate_fallbacks[0], false, 'programme-mobile-thumbnail');
                                 }
                                 ?>
                             </span>
                             <span class="programme-spread__panel">
                                 <span class="programme-spread__copy">
-                                    <span class="programme-spread__title" role="heading" aria-level="2"><?php echo esc_html($spread_title); ?></span>
+                                    <h2 id="<?php echo esc_attr($spread_title_id); ?>" class="programme-spread__title"><?php echo esc_html($spread_title); ?></h2>
                                     <?php if ($spread_excerpt !== '') : ?>
                                         <span class="programme-spread__deck"><?php echo esc_html($spread_excerpt); ?></span>
                                     <?php endif; ?>

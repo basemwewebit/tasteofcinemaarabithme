@@ -209,8 +209,8 @@ function mazaq_fallback_site_icon(): void
     }
 
     printf(
-        '<link rel="icon" type="image/png" href="%s">' . "\n",
-        esc_url(get_template_directory_uri() . '/assets/images/logo.png')
+        '<link rel="icon" type="image/webp" href="%s">' . "\n",
+        esc_url(mazaq_theme_logo_url(96))
     );
 }
 add_action('wp_head', 'mazaq_fallback_site_icon');

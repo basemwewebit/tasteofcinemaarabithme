@@ -270,6 +270,25 @@ function mazaq_get_hero_post_id(): int
     return mazaq_get_hero_post_ids()[0] ?? 0;
 }
 
+/**
+ * Return a theme-logo URL for the requested display tier.
+ */
+function mazaq_theme_logo_url(int $width = 152): string
+{
+    $variants = [
+        96 => 'logo-96.webp',
+        152 => 'logo-152.webp',
+    ];
+    $filename = $variants[$width] ?? $variants[152];
+    $path = get_template_directory() . '/assets/images/' . $filename;
+
+    if (!file_exists($path)) {
+        $filename = 'logo.webp';
+    }
+
+    return get_template_directory_uri() . '/assets/images/' . $filename;
+}
+
 function mazaq_nav_menu_link_attributes(array $atts, WP_Post $menu_item): array
 {
     if (!empty($menu_item->current) || in_array('current-menu-item', (array) $menu_item->classes, true)) {

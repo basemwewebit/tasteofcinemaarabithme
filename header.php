@@ -14,6 +14,8 @@ if (is_singular() && has_post_thumbnail()) {
 if (!$og_image) {
     $og_image = get_template_directory_uri() . '/assets/images/og-cover.jpg';
 }
+$logo_src = mazaq_theme_logo_url(96);
+$loader_logo_src = mazaq_theme_logo_url(152);
 ?>
 <!doctype html>
 <html <?php language_attributes(); ?> class="scroll-smooth">
@@ -78,7 +80,7 @@ if (!$og_image) {
         <span class="toc-loader-glow"></span>
         <span class="toc-loader-ring toc-loader-ring--outer"></span>
         <span class="toc-loader-ring toc-loader-ring--inner"></span>
-        <img src="<?php echo esc_url(get_template_directory_uri() . '/assets/images/logo.webp'); ?>" alt="" class="toc-loader-logo dark:brightness-125" decoding="async" width="474" height="460" data-no-lazy="1">
+        <img src="<?php echo esc_url($loader_logo_src); ?>" alt="" class="toc-loader-logo dark:brightness-125" decoding="async" width="152" height="148" data-no-lazy="1">
     </div>
 </div>
 
@@ -106,7 +108,7 @@ if (!$og_image) {
         </div>
 
         <a href="<?php echo esc_url(home_url('/')); ?>" class="delight-masthead__brand focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2">
-            <img src="<?php echo esc_url(get_template_directory_uri() . '/assets/images/logo.webp'); ?>" alt="<?php bloginfo('name'); ?>" class="delight-masthead__logo" width="474" height="460" data-no-lazy="1">
+            <img src="<?php echo esc_url($logo_src); ?>" alt="<?php bloginfo('name'); ?>" class="delight-masthead__logo" width="96" height="93" data-no-lazy="1">
         </a>
 
         <div class="delight-masthead__cluster delight-masthead__cluster--end">
