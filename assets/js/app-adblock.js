@@ -1,5 +1,5 @@
 (function initAdblock() {
-    if (!document.querySelector('[data-ad-container="true"]')) return;
+    if (!document.body || !document.querySelector('[data-ad-container="true"]')) return;
 
     var adBlockConfig = (window.mazaq_ajax && window.mazaq_ajax.adblock) || {};
     var adBlockStateSessionKey = adBlockConfig.session_storage_key || 'mazaq_adblock_state';
@@ -183,7 +183,7 @@
         closeBtn.style.width = '2.75rem';
         closeBtn.style.height = '2.75rem';
         closeBtn.setAttribute('aria-label', 'إغلاق الرسالة');
-        closeBtn.innerHTML = '&times;';
+        closeBtn.textContent = '\u00D7';
         var titleEl = document.createElement('h3');
         titleEl.className = 'adblock-prompt-title';
         titleEl.textContent = promptCopy.title;
@@ -217,11 +217,15 @@
         primaryLink.addEventListener('click', function () { mutePromptForDays(14); removePrompt(); pushMonetizationEvent('ad_prompt_support_click'); });
         document.body.appendChild(prompt);
         document.body.classList.add('has-adblock-prompt');
-        adblockFocusTrap = window.FocusTrap(prompt, {
-            initialFocus: closeBtn,
-            onEscape: function () { mutePromptForDays(3); removePrompt(); pushMonetizationEvent('ad_prompt_escape'); }
-        });
-        adblockFocusTrap.activate();
+        // The prompt stays fully dismissible without the trap; it only
+        // hardens focus cycling when FocusTrap is actually present.
+        if (typeof window.FocusTrap === 'function') {
+            adblockFocusTrap = window.FocusTrap(prompt, {
+                initialFocus: closeBtn,
+                onEscape: function () { mutePromptForDays(3); removePrompt(); pushMonetizationEvent('ad_prompt_escape'); }
+            });
+            adblockFocusTrap.activate();
+        }
     }
 
     resolveAdBlockState().then(function (state) {

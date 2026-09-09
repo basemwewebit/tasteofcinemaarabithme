@@ -4,10 +4,24 @@ declare(strict_types=1);
 
 function mazaq_get_ad_slot(string $slot_name): string
 {
-    if (!function_exists('get_field')) {
+    $slot_name = trim($slot_name);
+    if ($slot_name === '' || !function_exists('get_field')) {
         return '';
     }
     return (string) get_field($slot_name, 'option');
+}
+
+/**
+ * AdSense client ids look like "ca-pub-1234567890123456"; anything outside
+ * that alphabet is stripped so a malformed option can never reach the
+ * attribute or the script URL.
+ */
+function mazaq_get_adsense_publisher_id(): string
+{
+    if (!function_exists('get_field')) {
+        return '';
+    }
+    return (string) preg_replace('/[^A-Za-z0-9-]/', '', (string) get_field('adsense_publisher_id', 'option'));
 }
 
 /**
@@ -18,13 +32,19 @@ function mazaq_get_ad_slot(string $slot_name): string
 function mazaq_render_ad(string $slot_name, string $format = 'responsive', string $classes = ''): void
 {
     $slot_id = mazaq_get_ad_slot($slot_name);
-    $publisher = function_exists('get_field') ? (string) get_field('adsense_publisher_id', 'option') : '';
+    $publisher = mazaq_get_adsense_publisher_id();
     $dummy_ads_enabled = false;
     $expects_network_ad = (bool) ($slot_id && $publisher && !$dummy_ads_enabled);
 
     // Production silence: an unconfigured slot never draws a husk.
     if (!$expects_network_ad && !$dummy_ads_enabled) {
         return;
+    }
+
+    // An unknown format would silently lose its CLS reservation; fold it
+    // back onto the responsive reservation instead.
+    if (!in_array($format, ['horizontal', 'rectangle', 'vertical', 'fluid', 'responsive'], true)) {
+        $format = 'responsive';
     }
 
     $class_attr = trim('ad-container ' . $classes);
@@ -58,16 +78,13 @@ function mazaq_render_ad(string $slot_name, string $format = 'responsive', strin
 
 function mazaq_adsense_head_script(): void
 {
-    if (!function_exists('get_field')) {
+    $publisher = mazaq_get_adsense_publisher_id();
+    if ($publisher === '') {
         return;
     }
 
-    $publisher = (string) get_field('adsense_publisher_id', 'option');
-    if (!$publisher) {
-        return;
-    }
-
-    echo '<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' . esc_attr($publisher) . '" crossorigin="anonymous"></script>';
+    $src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' . rawurlencode($publisher);
+    echo '<script async src="' . esc_url($src) . '" crossorigin="anonymous"></script>';
 }
 add_action('wp_head', 'mazaq_adsense_head_script');
 
@@ -79,7 +96,7 @@ add_action('wp_head', 'mazaq_adsense_head_script');
  */
 function mazaq_ads_lazy_push(): void
 {
-    if (!function_exists('get_field') || (string) get_field('adsense_publisher_id', 'option') === '') {
+    if (mazaq_get_adsense_publisher_id() === '') {
         return;
     }
 
@@ -132,12 +149,18 @@ add_action('wp_enqueue_scripts', 'mazaq_ads_lazy_push', 20);
 
 function mazaq_inject_in_article_ads(string $content): string
 {
-    if (!is_single() || is_admin()) {
+    // Only real single-post HTML views get injected plates; feeds, embeds,
+    // AJAX and REST renderings must stay ad-free.
+    if (is_admin() || is_feed() || is_embed() || wp_doing_ajax() || (defined('REST_REQUEST') && REST_REQUEST)) {
+        return $content;
+    }
+
+    if (!is_single()) {
         return $content;
     }
 
     $parts = explode('</p>', $content);
-    
+
     // We need at least 3 paragraphs to inject an ad
     if (count($parts) <= 3) {
         return $content;
@@ -158,7 +181,8 @@ function mazaq_inject_in_article_ads(string $content): string
         $new_content .= $part . '</p>';
 
         // Check if the current part actually contains text to avoid injecting after empty splits or spacer divs
-        if (strlen(trim(strip_tags($part))) > 0 && ($index + 1) % 3 === 0 && $ad_count < $max_ads) {
+        // wp_strip_all_tags also drops script/style guts, unlike strip_tags
+        if (strlen(trim(wp_strip_all_tags($part))) > 0 && ($index + 1) % 3 === 0 && $ad_count < $max_ads) {
             ob_start();
             get_template_part('template-parts/ads/ad-in-article');
             $new_content .= (string) ob_get_clean();

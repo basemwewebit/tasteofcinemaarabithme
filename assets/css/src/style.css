@@ -662,14 +662,21 @@ li {
 /* --- The Sponsor's Plate -----------------------------------------------
    Every ad slot is a mounted plate in the publication's grammar: a quiet
    stage with a celluloid hairline, an honest «إعلان» note, and space
-   reserved per format, so a late creative never shifts the page. Gold never
-   appears on a plate; the plate itself is inert — no hover, no motion. */
+   reserved per format, so a late creative never shifts the page. The stage
+   holds a faint celluloid idle-light wash — projector light waiting on a
+   mounted screen — and deepens one step when it speaks in the publication's
+   voice. Gold never appears on a plate; the plate itself is inert — no
+   hover, no motion. */
 .ad-container {
     --ad-surface: color-mix(in srgb, var(--color-paper-muted) 52%, transparent);
-    --ad-stage: var(--color-paper-elevated);
+    --ad-stage-base: var(--color-paper-elevated);
+    --ad-stage: color-mix(in srgb, var(--color-celluloid) 7%, var(--ad-stage-base));
+    --ad-stage-speaking: color-mix(in srgb, var(--color-celluloid) 12%, var(--ad-stage-base));
     --ad-line: var(--color-celluloid);
     --ad-line-soft: color-mix(in srgb, var(--color-celluloid) 46%, transparent);
     --ad-ink: var(--color-text-on-paper-muted);
+    --ad-ink-strong: var(--color-text-on-paper);
+    --ad-cta-ink: var(--color-text-on-paper);
     display: block;
     padding: 0.6rem 0.6rem 0.7rem;
     border-radius: var(--radius-lg);
@@ -679,10 +686,14 @@ li {
 
 html.dark .ad-container {
     --ad-surface: color-mix(in srgb, var(--color-ink-elevated) 80%, transparent);
-    --ad-stage: var(--color-ink-elevated);
+    --ad-stage-base: var(--color-ink-elevated);
+    --ad-stage: color-mix(in srgb, var(--color-celluloid) 5%, var(--ad-stage-base));
+    --ad-stage-speaking: color-mix(in srgb, var(--color-celluloid) 9%, var(--ad-stage-base));
     --ad-line: rgb(212 201 168 / 0.26);
     --ad-line-soft: rgb(212 201 168 / 0.16);
     --ad-ink: var(--color-text-on-ink-muted);
+    --ad-ink-strong: var(--color-text-on-ink);
+    --ad-cta-ink: var(--color-gold-tint);
 }
 
 .ad-container__note {
@@ -702,6 +713,7 @@ html.dark .ad-container {
     height: 0.5rem;
     border-radius: 2px;
     border: 1px solid color-mix(in srgb, var(--ad-line) 72%, transparent);
+    background: color-mix(in srgb, var(--ad-line) 28%, transparent);
 }
 
 .ad-container__stage {
@@ -746,6 +758,16 @@ html.dark .ad-container {
     color: var(--ad-ink);
     font-size: var(--text-caption);
     font-weight: 500;
+    overflow-wrap: break-word;
+}
+
+/* Unfilled state: the stage speaks in the publication's voice instead of
+   hosting a creative, so its idle-light wash deepens and its hairline warms
+   one step. The chrome stays inert; the CTA below remains the only live
+   element, keeping its quiet gold hairline on hover. */
+.ad-container--fallback .ad-container__stage {
+    background: var(--ad-stage-speaking);
+    border-color: color-mix(in srgb, var(--ad-line) 80%, transparent);
 }
 
 /* The injected cell in archive rows spans the row, so the square gives way
@@ -755,8 +777,33 @@ html.dark .ad-container {
     height: clamp(6.5rem, 12vw, 9rem);
 }
 
+/* The support appeal never clips inside a fixed reservation: once no
+   creative is coming, the reservation's job is done, so the stage grows to
+   host the card honestly instead of cutting its title and CTA. */
+.ad-container--fallback[data-ad-format="horizontal"] .ad-container__stage,
+.ad-container--fallback[data-ad-format="fluid"] .ad-container__stage,
+.ad-container--fallback[data-ad-format="responsive"] .ad-container__stage {
+    height: auto;
+    min-height: 5.5rem;
+}
+
 .article-content .ad-container {
     margin-block: var(--space-lg);
+}
+
+/* Forced colors strips the inset hairline and stage washes, so the plate
+   boundary is redrawn as a real border and the stage falls back to Canvas. */
+@media (forced-colors: active) {
+    .ad-container {
+        box-shadow: none;
+        border: 1px solid CanvasText;
+    }
+
+    .ad-container__stage {
+        border-color: CanvasText;
+        background: Canvas;
+        color: CanvasText;
+    }
 }
 
 .article-content {
@@ -1049,22 +1096,16 @@ html.dark .ad-container {
     font-family: var(--font-display);
     font-size: 1rem;
     font-weight: var(--font-weight-title);
-    color: var(--color-text-on-paper);
-}
-
-.dark .ad-fallback-card__title {
-    color: var(--color-text-on-ink);
+    color: var(--ad-ink-strong);
+    overflow-wrap: break-word;
 }
 
 .ad-fallback-card__body {
     margin: 0;
     font-size: var(--text-caption);
     line-height: 1.75;
-    color: var(--color-text-on-paper-muted);
-}
-
-.dark .ad-fallback-card__body {
-    color: var(--color-text-on-ink-muted);
+    color: var(--ad-ink);
+    overflow-wrap: break-word;
 }
 
 .ad-fallback-card__cta {
@@ -1072,7 +1113,7 @@ html.dark .ad-container {
     align-items: center;
     width: fit-content;
     margin-block-start: 0.3rem;
-    color: var(--color-text-on-paper);
+    color: var(--ad-cta-ink);
     font-size: var(--text-caption);
     font-weight: 600;
     text-decoration: none;
@@ -1082,10 +1123,6 @@ html.dark .ad-container {
 
 .ad-fallback-card__cta:hover {
     border-block-end-color: var(--color-primary);
-}
-
-.dark .ad-fallback-card__cta {
-    color: var(--color-gold-tint);
 }
 
 @media (min-width: 640px) {
