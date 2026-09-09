@@ -10,41 +10,50 @@ function mazaq_get_ad_slot(string $slot_name): string
     return (string) get_field($slot_name, 'option');
 }
 
+/**
+ * Render an ad slot as a sponsor's plate: a quiet celluloid-framed stage with
+ * an honest «إعلان» note and space reserved per format, so a late creative
+ * never shifts the page. An unconfigured slot renders nothing at all.
+ */
 function mazaq_render_ad(string $slot_name, string $format = 'responsive', string $classes = ''): void
 {
     $slot_id = mazaq_get_ad_slot($slot_name);
     $publisher = function_exists('get_field') ? (string) get_field('adsense_publisher_id', 'option') : '';
-    $dummy_ads_enabled = false; // Set to false to disable dummy ads and show empty box or AdSense
+    $dummy_ads_enabled = false;
     $expects_network_ad = (bool) ($slot_id && $publisher && !$dummy_ads_enabled);
 
+    // Production silence: an unconfigured slot never draws a husk.
+    if (!$expects_network_ad && !$dummy_ads_enabled) {
+        return;
+    }
+
     $class_attr = trim('ad-container ' . $classes);
-    echo '<div class="' . esc_attr($class_attr) . '" data-slot-name="' . esc_attr($slot_name) . '" data-ad-container="true" data-ad-format="' . esc_attr($format) . '" data-expects-network-ad="' . ($expects_network_ad ? '1' : '0') . '">';
+    printf(
+        '<aside class="%1$s" data-ad-container="true" data-slot-name="%2$s" data-ad-format="%3$s" data-expects-network-ad="%4$d">',
+        esc_attr($class_attr),
+        esc_attr($slot_name),
+        esc_attr($format),
+        $expects_network_ad ? 1 : 0
+    );
+
+    echo '<p class="ad-container__note"><span class="ad-container__mark" aria-hidden="true"></span>' . esc_html__('إعلان', 'mazaq') . '</p>';
+    echo '<div class="ad-container__stage">';
 
     if ($expects_network_ad) {
-        echo '<ins class="adsbygoogle w-full" style="display:block; min-width:100px;" data-ad-ins="true" data-ad-client="' . esc_attr((string) $publisher) . '" data-ad-slot="' . esc_attr($slot_id) . '" data-ad-format="' . esc_attr($format) . '" data-full-width-responsive="true"></ins>';
-        echo '<script>try { (adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) { console.warn("AdSense layout issue: No slot size"); }</script>';
+        // The creative stays pending until the shared observer promotes it near
+        // the viewport (see mazaq_ads_lazy_push); space is reserved meanwhile.
+        printf(
+            '<ins class="adsbygoogle" style="display:block" data-ad-ins="true" data-ad-pending="true" data-ad-client="%1$s" data-ad-slot="%2$s" data-ad-format="%3$s" data-full-width-responsive="true"></ins>',
+            esc_attr($publisher),
+            esc_attr($slot_id),
+            esc_attr($format)
+        );
     } else {
-        if ($dummy_ads_enabled) {
-            // Display purely HTML dummy banner for testing layout (no external images)
-            $text = ($format === 'horizontal') ? 'بانر إعلاني أسفل المقال' : 'إعلان مربع';
-            $height_class = ($format === 'horizontal') ? 'min-h-[90px]' : 'min-h-[250px]';
-            
-            if ($format === 'fluid') { // For in-article ads typically fluid/responsive
-                $text = 'إعلان داخل المقال';
-                $height_class = 'min-h-[150px]';
-            }
-
-            echo '<div class="flex items-center justify-center w-full ' . esc_attr($height_class) . ' bg-slate-100 dark:bg-midnight border-2 border-dashed border-slate-300 dark:border-primary/30 rounded-xl relative group transition-colors hover:bg-slate-200 dark:hover:bg-midnight/80">';
-            echo '<span class="text-slate-400 dark:text-primary/80 font-bold text-lg md:text-xl text-center px-4 group-hover:dark:text-primary transition-colors">' . esc_html($text) . '</span>';
-            echo '<span class="absolute top-2 end-2 bg-slate-300 dark:bg-primary/20 text-slate-700 dark:text-primary text-[10px] font-bold px-2 py-0.5 rounded">Ad</span>';
-            echo '</div>';
-        } else {
-            // Default empty placeholder
-            echo '<div class="flex items-center justify-center w-full h-full bg-slate-50 dark:bg-midnight border-2 border-dashed border-slate-200 dark:border-white/10 rounded-xl text-slate-600 dark:text-slate-300 font-medium min-h-[100px]">مساحة إعلانية</div>';
-        }
+        echo '<span class="ad-container__dummy">' . esc_html__('مساحة إعلانية', 'mazaq') . '</span>';
     }
 
     echo '</div>';
+    echo '</aside>';
 }
 
 function mazaq_adsense_head_script(): void
@@ -61,6 +70,65 @@ function mazaq_adsense_head_script(): void
     echo '<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' . esc_attr($publisher) . '" crossorigin="anonymous"></script>';
 }
 add_action('wp_head', 'mazaq_adsense_head_script');
+
+/**
+ * One shared observer promotes every reserved creative to a real request once
+ * it approaches the viewport (120% rootMargin), and a MutationObserver rescans
+ * for plates appended by infinite scroll. Until promotion, the plate holds its
+ * reserved space and the page stays quiet.
+ */
+function mazaq_ads_lazy_push(): void
+{
+    if (!function_exists('get_field') || (string) get_field('adsense_publisher_id', 'option') === '') {
+        return;
+    }
+
+    $js = <<<'JS'
+(function () {
+    "use strict";
+    var SELECTOR = "ins[data-ad-pending]";
+    function promote(el) {
+        if (!el || !el.hasAttribute("data-ad-pending")) return;
+        el.removeAttribute("data-ad-pending");
+        try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {}
+    }
+    var pending = document.querySelectorAll(SELECTOR);
+    if (!pending.length) return;
+    if (!("IntersectionObserver" in window)) {
+        Array.prototype.forEach.call(pending, promote);
+        return;
+    }
+    var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+            if (!entry.isIntersecting) return;
+            io.unobserve(entry.target);
+            promote(entry.target);
+        });
+    }, { rootMargin: "120% 0px" });
+    Array.prototype.forEach.call(pending, function (el) { io.observe(el); });
+    if ("MutationObserver" in window) {
+        var scan = function () {
+            Array.prototype.forEach.call(document.querySelectorAll(SELECTOR), function (el) {
+                if (el.__mazaqAdObserved) return;
+                el.__mazaqAdObserved = true;
+                io.observe(el);
+            });
+        };
+        new MutationObserver(scan).observe(document.body, { childList: true, subtree: true });
+    }
+})();
+JS;
+
+    if (wp_script_is('mazaq-app', 'registered')) {
+        wp_add_inline_script('mazaq-app', $js);
+        return;
+    }
+
+    wp_register_script('mazaq-ads-lazy-push', '', [], null, true);
+    wp_enqueue_script('mazaq-ads-lazy-push');
+    wp_add_inline_script('mazaq-ads-lazy-push', $js);
+}
+add_action('wp_enqueue_scripts', 'mazaq_ads_lazy_push', 20);
 
 function mazaq_inject_in_article_ads(string $content): string
 {

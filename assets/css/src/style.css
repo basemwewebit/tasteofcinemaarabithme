@@ -659,21 +659,104 @@ li {
     opacity: 1;
 }
 
+/* --- The Sponsor's Plate -----------------------------------------------
+   Every ad slot is a mounted plate in the publication's grammar: a quiet
+   stage with a celluloid hairline, an honest «إعلان» note, and space
+   reserved per format, so a late creative never shifts the page. Gold never
+   appears on a plate; the plate itself is inert — no hover, no motion. */
 .ad-container {
-    background-color: var(--color-warm-ash);
-    border: 1px dashed var(--color-slate-300);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--color-pewter);
-    font-size: 0.875rem;
-    overflow: hidden;
+    --ad-surface: color-mix(in srgb, var(--color-paper-muted) 52%, transparent);
+    --ad-stage: var(--color-paper-elevated);
+    --ad-line: var(--color-celluloid);
+    --ad-line-soft: color-mix(in srgb, var(--color-celluloid) 46%, transparent);
+    --ad-ink: var(--color-text-on-paper-muted);
+    display: block;
+    padding: 0.6rem 0.6rem 0.7rem;
+    border-radius: var(--radius-lg);
+    background: var(--ad-surface);
+    box-shadow: inset 0 0 0 1px var(--ad-line-soft);
 }
 
-.dark .ad-container {
-    background-color: var(--color-nocturnal-slate);
-    border-color: var(--color-slate-700);
-    color: var(--color-slate-500);
+html.dark .ad-container {
+    --ad-surface: color-mix(in srgb, var(--color-ink-elevated) 80%, transparent);
+    --ad-stage: var(--color-ink-elevated);
+    --ad-line: rgb(212 201 168 / 0.26);
+    --ad-line-soft: rgb(212 201 168 / 0.16);
+    --ad-ink: var(--color-text-on-ink-muted);
+}
+
+.ad-container__note {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin: 0 0 0.55rem;
+    color: var(--ad-ink);
+    font-size: var(--text-caption);
+    font-weight: 600;
+    line-height: var(--line-height-label);
+}
+
+.ad-container__mark {
+    flex: none;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 2px;
+    border: 1px solid color-mix(in srgb, var(--ad-line) 72%, transparent);
+}
+
+.ad-container__stage {
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    border: 1px solid var(--ad-line-soft);
+    border-radius: var(--radius-md);
+    background: var(--ad-stage);
+}
+
+.ad-container__stage ins.adsbygoogle {
+    width: 100%;
+}
+
+/* Reserved space per format — deterministic, so a late creative never
+   pushes the page. */
+.ad-container[data-ad-format="horizontal"] .ad-container__stage {
+    height: clamp(5.5rem, 10vw, 7.5rem);
+}
+
+.ad-container[data-ad-format="rectangle"] .ad-container__stage {
+    aspect-ratio: 1;
+    max-height: 20rem;
+}
+
+.ad-container[data-ad-format="vertical"] .ad-container__stage {
+    aspect-ratio: 1 / 2;
+}
+
+.ad-container[data-ad-format="fluid"] .ad-container__stage {
+    height: clamp(9rem, 16vw, 13.5rem);
+}
+
+.ad-container[data-ad-format="responsive"] .ad-container__stage {
+    height: clamp(14rem, 62vw, 16rem);
+}
+
+/* Dev dummy: the same plate with an honest empty stage. */
+.ad-container__dummy {
+    padding: 1rem 1.25rem;
+    color: var(--ad-ink);
+    font-size: var(--text-caption);
+    font-weight: 500;
+}
+
+/* The injected cell in archive rows spans the row, so the square gives way
+   to a banner proportion that belongs to the filing-cabinet rhythm. */
+.archive-index > .ad-container .ad-container__stage {
+    aspect-ratio: auto;
+    height: clamp(6.5rem, 12vw, 9rem);
+}
+
+.article-content .ad-container {
+    margin-block: var(--space-lg);
 }
 
 .article-content {
@@ -948,67 +1031,61 @@ li {
     color: var(--color-pewter);
 }
 
-.ad-container--fallback {
-    border-style: solid;
-}
-
+/* Support invitation: when no creative lands, the reserved stage hosts an
+   honest appeal instead of an empty frame; the plate survives untouched. */
 .ad-fallback-card {
     width: 100%;
     min-height: 100%;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: 0.5rem;
-    text-align: right;
-    padding: 1rem;
-    border-radius: 0.75rem;
-    background: linear-gradient(130deg, var(--color-cream) 0%, var(--color-white) 40%, var(--color-screen-light) 100%);
-    border: 1px solid var(--color-gold-border);
-}
-
-.dark .ad-fallback-card {
-    background: linear-gradient(130deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%);
-    border-color: rgba(212, 175, 55, 0.4);
+    gap: 0.4rem;
+    padding: 1.1rem 1.25rem;
+    text-align: start;
 }
 
 .ad-fallback-card__title {
     margin: 0;
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: var(--color-nocturnal-slate);
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: var(--font-weight-title);
+    color: var(--color-text-on-paper);
 }
 
 .dark .ad-fallback-card__title {
-    color: var(--color-screen-light);
+    color: var(--color-text-on-ink);
 }
 
 .ad-fallback-card__body {
     margin: 0;
-    font-size: 0.82rem;
-    line-height: 1.8;
-    color: var(--color-charcoal);
+    font-size: var(--text-caption);
+    line-height: 1.75;
+    color: var(--color-text-on-paper-muted);
 }
 
 .dark .ad-fallback-card__body {
-    color: var(--color-slate-300);
+    color: var(--color-text-on-ink-muted);
 }
 
 .ad-fallback-card__cta {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
     width: fit-content;
-    border-radius: 0.6rem;
-    background-color: var(--color-primary);
-    color: var(--color-primary-text);
-    font-size: 0.82rem;
-    font-weight: 700;
-    padding: 0.45rem 0.75rem;
+    margin-block-start: 0.3rem;
+    color: var(--color-text-on-paper);
+    font-size: var(--text-caption);
+    font-weight: 600;
     text-decoration: none;
+    border-block-end: 2px solid transparent;
+    transition: border-color 0.3s ease;
 }
 
 .ad-fallback-card__cta:hover {
-    filter: brightness(0.95);
+    border-block-end-color: var(--color-primary);
+}
+
+.dark .ad-fallback-card__cta {
+    color: var(--color-gold-tint);
 }
 
 @media (min-width: 640px) {
@@ -3382,10 +3459,6 @@ html.dark .screening-home .newsletter-panel {
     background-color: var(--nl-surface);
 }
 
-html.dark .screening-home__ad-label {
-    color: #9c988e;
-}
-
 .screening-selection__grid {
     display: grid !important;
     grid-template-columns: minmax(0, 2fr) minmax(17rem, 0.8fr) !important;
@@ -3437,13 +3510,6 @@ html.dark .screening-home__ad-label {
 .screening-home__ad {
     position: relative;
     margin-block: clamp(3rem, 6vw, 5rem);
-}
-
-.screening-home__ad-label {
-    display: block;
-    margin-block-end: 0.45rem;
-    color: #6b665b;
-    font-size: 0.72rem;
 }
 
 .screening-home .editor-collection__head,

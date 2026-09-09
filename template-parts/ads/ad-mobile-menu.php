@@ -1,1 +1,6 @@
-<?php mazaq_render_ad('ad_slot_mobile_menu', 'responsive', 'w-full min-h-[250px] rounded-lg'); ?>
+<?php
+/**
+ * Mobile menu drawer ad: sits in the drawer footer, which owns the padding
+ * and hairline; the plate keeps the same grammar in both rooms.
+ */
+mazaq_render_ad('ad_slot_mobile_menu', 'responsive');

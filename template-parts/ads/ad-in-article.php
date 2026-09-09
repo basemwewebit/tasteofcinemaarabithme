@@ -1,1 +1,6 @@
-<?php mazaq_render_ad('ad_slot_in_article', 'fluid', 'w-full min-h-[150px] rounded-xl my-10'); ?>
+<?php
+/**
+ * In-article ad: injected by the content filter; breathing room comes from
+ * `.article-content > .ad-container` so the plate stays inert here.
+ */
+mazaq_render_ad('ad_slot_in_article', 'fluid');

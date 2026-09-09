@@ -147,7 +147,6 @@ if (!$popular->have_posts()) {
     ]); ?>
 
     <div class="screening-home__ad">
-        <span class="screening-home__ad-label"><?php esc_html_e('إعلان', 'mazaq'); ?></span>
         <?php get_template_part('template-parts/ads/ad-responsive'); ?>
     </div>
 

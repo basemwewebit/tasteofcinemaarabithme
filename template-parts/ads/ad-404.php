@@ -1,13 +1,10 @@
 <?php
 /**
- * Ad component for 404 page
+ * Ad component for 404 page.
+ * The plate carries its own «إعلان» note and reserved stage; only the
+ * placement belongs here.
  */
 ?>
-<div class="max-w-4xl mx-auto px-6 mt-12 mb-8 relative z-20">
-    <div class="bg-slate-800/50 border border-slate-700/50 rounded-lg p-4 md:p-8 flex flex-col items-center">
-        <span class="text-slate-400 text-[10px] font-bold mb-4 opacity-70">إعلان</span>
-        <div class="w-full flex justify-center overflow-hidden">
-            <?php mazaq_render_ad('ad_slot_404_banner', 'horizontal', 'w-full min-h-[90px] md:min-h-[120px]'); ?>
-        </div>
-    </div>
+<div class="ad-slot-404 mx-auto mt-12 mb-8 w-full max-w-4xl px-6">
+    <?php mazaq_render_ad('ad_slot_404_banner', 'horizontal'); ?>
 </div>

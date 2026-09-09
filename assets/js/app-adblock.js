@@ -141,15 +141,26 @@
         Array.prototype.forEach.call(adContainers, function (container) {
             if (container.getAttribute('data-ad-fallback-rendered') === '1') return;
             var slotName = container.getAttribute('data-slot-name') || 'unknown';
+            var adNode = container.querySelector('ins.adsbygoogle, ins[data-ad-ins="true"]');
+            // A reserved-but-pending creative has not been requested yet; it
+            // must keep its plate instead of becoming a false unfilled state.
+            if (adNode && adNode.hasAttribute('data-ad-pending')) return;
             var hasFilledAd = isContainerAdFilled(container);
             if (!forceFallback && hasFilledAd) return;
-            var adNode = container.querySelector('ins.adsbygoogle, ins[data-ad-ins="true"]');
             var adStatus = adNode ? adNode.getAttribute('data-adsbygoogle-status') : '';
             var shouldFallback = forceFallback || !adNode || adStatus === 'unfilled' || !hasFilledAd;
             if (!shouldFallback) return;
-            container.innerHTML = '';
+            // The support invitation moves into the reserved stage, so the
+            // plate, its note, and its height all survive.
+            var stage = container.querySelector('.ad-container__stage');
+            if (stage) {
+                stage.innerHTML = '';
+                stage.appendChild(createFallbackNode(slotName));
+            } else {
+                container.innerHTML = '';
+                container.appendChild(createFallbackNode(slotName));
+            }
             container.classList.add('ad-container--fallback');
-            container.appendChild(createFallbackNode(slotName));
             container.setAttribute('data-ad-fallback-rendered', '1');
             pushMonetizationEvent('ad_fallback_rendered', { slot_name: slotName, forced: forceFallback ? 1 : 0 });
         });

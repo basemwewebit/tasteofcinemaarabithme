@@ -1,5 +1,7 @@
 <?php
-$slot = isset($args['slot']) ? $args['slot'] : 'ad_slot_hero_banner'; // Default slot
-mazaq_render_ad($slot, 'rectangle', 'col-span-1 w-full min-h-[300px] rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center overflow-hidden');
-?>
-
+/**
+ * Grid-cell ad: a one-column plate inside the feed grids, injected inline by
+ * the archive feed and by infinite scroll.
+ */
+$slot = isset($args['slot']) ? $args['slot'] : 'ad_slot_hero_banner';
+mazaq_render_ad($slot, 'rectangle');
