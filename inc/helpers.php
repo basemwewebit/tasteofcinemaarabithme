@@ -206,7 +206,7 @@ add_filter('the_content', 'mazaq_balance_content_tags', 999);
 /**
  * Get all eligible hero post IDs based on priority:
  * 1. ACF option 'hero_featured_post'
- * 2. Daily rotation hero posts (auto-generated)
+ * 2. Content rotation hero posts (auto-generated)
  * 3. Sticky posts
  * 4. Latest posts fallback
  *
@@ -222,7 +222,7 @@ function mazaq_get_hero_post_ids(): array
         return [$acf_id];
     }
 
-    // 2. Daily Rotation Hero Posts (auto-generated daily batch, lazily filled)
+    // 2. Content rotation hero posts (auto-generated daily batch, lazily filled)
     if (function_exists('mazaq_hero_daily_config') && function_exists('mazaq_rotation_get_today_batch_ids')) {
         $daily_ids = mazaq_rotation_get_today_batch_ids(mazaq_hero_daily_config());
         if (!empty($daily_ids)) {

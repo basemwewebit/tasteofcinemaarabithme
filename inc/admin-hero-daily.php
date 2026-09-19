@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Hero daily rotation: a thin Content rotation feature. Rotation, scheduling,
+ * Hero rotation: a thin Content rotation feature. Rotation, scheduling,
  * and the dashboard widget live in the engine (inc/content-rotation.php);
  * this file is configuration plus the schedule entry points the shared
  * settings page calls back into.

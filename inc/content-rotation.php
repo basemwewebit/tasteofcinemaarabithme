@@ -393,7 +393,7 @@ function mazaq_rotation_register_dashboard_widget(array $feature): void
 
     wp_add_dashboard_widget(
         $feature['widget_id'],
-        $feature['widget_title'],
+        __($feature['widget_title'], 'mazaq'),
         static function () use ($feature): void {
             mazaq_rotation_render_widget($feature);
         }
@@ -413,7 +413,9 @@ function mazaq_rotation_render_widget(array $feature): void
     $config = mazaq_rotation_get_config($feature);
     $state = mazaq_rotation_prepare_today_batch($feature, false);
     $count_label = (int) $config['batch_size'];
-    $widget = $feature['widget'];
+    // Configs are built at load time, before the text domain exists, so
+    // copy is translated here at render time instead of in the config.
+    $widget = array_map(static fn (string $copy): string => __($copy, 'mazaq'), $feature['widget']);
 
     echo '<div dir="rtl" style="text-align:right">';
 

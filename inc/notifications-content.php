@@ -95,7 +95,7 @@ function mazaq_browser_notifications_fallback_slot_is_visible(string $slot, ?int
 }
 
 /**
- * Return the current fallback feed for non-subscribed visitors.
+ * Return the Recent notifications for non-subscribed visitors.
  *
  * @return array<int, array<string, mixed>>
  */
@@ -106,21 +106,16 @@ function mazaq_browser_notifications_get_fallback_notifications(): array
     $today = mazaq_browser_notifications_today();
     $now = time();
 
-    if (is_array($feed['new_post'])) {
-        $created_at = strtotime((string) ($feed['new_post']['createdAt'] ?? '')) ?: null;
-        $created_day = $created_at ? wp_date('Y-m-d', $created_at, wp_timezone()) : null;
-
-        if (mazaq_browser_notifications_fallback_slot_is_visible('new_post', $created_at, $created_day, $today, $now)) {
-            $notifications[] = $feed['new_post'];
+    foreach (['new_post', 'daily_random'] as $slot) {
+        if (!is_array($feed[$slot])) {
+            continue;
         }
-    }
 
-    if (is_array($feed['daily_random'])) {
-        $created_at = strtotime((string) ($feed['daily_random']['createdAt'] ?? '')) ?: null;
+        $created_at = strtotime((string) ($feed[$slot]['createdAt'] ?? '')) ?: null;
         $created_day = $created_at ? wp_date('Y-m-d', $created_at, wp_timezone()) : null;
 
-        if (mazaq_browser_notifications_fallback_slot_is_visible('daily_random', $created_at, $created_day, $today, $now)) {
-            $notifications[] = $feed['daily_random'];
+        if (mazaq_browser_notifications_fallback_slot_is_visible($slot, $created_at, $created_day, $today, $now)) {
+            $notifications[] = $feed[$slot];
         }
     }
 
@@ -271,6 +266,10 @@ function mazaq_browser_notifications_apply_feed_payload(array $state, array $pay
  */
 function mazaq_browser_notifications_store_feed_payload(array $payload): void
 {
+    if (empty($payload['type'])) {
+        return;
+    }
+
     mazaq_browser_notifications_update_feed_state(
         mazaq_browser_notifications_apply_feed_payload(
             mazaq_browser_notifications_get_feed_state(),
