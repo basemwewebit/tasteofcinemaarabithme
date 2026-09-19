@@ -8,12 +8,10 @@ declare(strict_types=1);
 
 const MAZAQ_TOC_MISSING_WIDGET_ID = 'mazaq-toc-missing-widget';
 const MAZAQ_TOC_MISSING_WIDGET_OPTION = 'mazaq_toc_missing_widget_state';
-const MAZAQ_TOC_MISSING_FEED_TRANSIENT = 'mazaq_toc_missing_feed_items_v1';
 const MAZAQ_TOC_MISSING_REMOTE_POOL_TRANSIENT = 'mazaq_toc_missing_remote_pool_v1';
-const MAZAQ_TOC_MISSING_FEED_TRANSIENT_TTL = 15 * MINUTE_IN_SECONDS;
 const MAZAQ_TOC_MISSING_REMOTE_POOL_TTL = 15 * MINUTE_IN_SECONDS;
 const MAZAQ_TOC_MISSING_BATCH_SIZE = 5;
-const MAZAQ_TOC_MISSING_FEED_URL = 'https://www.tasteofcinema.com/feed/';
+const MAZAQ_TOC_MISSING_FEED_LIMIT = 120;
 const MAZAQ_TOC_MISSING_REST_URL = 'https://www.tasteofcinema.com/wp-json/wp/v2/posts';
 const MAZAQ_TOC_MISSING_REST_PER_PAGE = 100;
 const MAZAQ_TOC_MISSING_REST_RANDOM_PAGES = 8;
@@ -29,55 +27,7 @@ function mazaq_toc_missing_default_state(): array
     ];
 }
 
-function mazaq_toc_missing_normalize_item($raw_item): array
-{
-    if (!is_array($raw_item)) {
-        return [];
-    }
-
-    $url = esc_url_raw((string) ($raw_item['url'] ?? ''));
-    $slug = sanitize_title((string) ($raw_item['slug'] ?? ''));
-    $title = sanitize_text_field((string) ($raw_item['title'] ?? ''));
-    $date = sanitize_text_field((string) ($raw_item['date'] ?? ''));
-
-    if ('' === $url || '' === $slug) {
-        return [];
-    }
-
-    if ('' === $title) {
-        $title = $url;
-    }
-
-    return [
-        'title' => $title,
-        'url' => $url,
-        'slug' => $slug,
-        'date' => $date,
-    ];
-}
-
-function mazaq_toc_missing_normalize_items(array $raw_items): array
-{
-    $items = [];
-    $seen = [];
-
-    foreach ($raw_items as $raw_item) {
-        $item = mazaq_toc_missing_normalize_item($raw_item);
-        if (empty($item)) {
-            continue;
-        }
-
-        $slug = $item['slug'];
-        if (isset($seen[$slug])) {
-            continue;
-        }
-
-        $seen[$slug] = true;
-        $items[] = $item;
-    }
-
-    return $items;
-}
+// Row normalize + slug helpers live in the shared source module (inc/toc-source.php).
 
 function mazaq_toc_missing_get_state(): array
 {
@@ -86,7 +36,7 @@ function mazaq_toc_missing_get_state(): array
     $state = is_array($state) ? array_merge($defaults, $state) : $defaults;
 
     $state['updated_at'] = is_string($state['updated_at']) ? $state['updated_at'] : '';
-    $state['items'] = mazaq_toc_missing_normalize_items((array) ($state['items'] ?? []));
+    $state['items'] = mazaq_toc_source_normalize_items((array) ($state['items'] ?? []));
 
     return $state;
 }
@@ -95,97 +45,12 @@ function mazaq_toc_missing_update_state(array $state): void
 {
     $normalized = mazaq_toc_missing_default_state();
     $normalized['updated_at'] = is_string($state['updated_at'] ?? null) ? $state['updated_at'] : '';
-    $normalized['items'] = mazaq_toc_missing_normalize_items((array) ($state['items'] ?? []));
+    $normalized['items'] = mazaq_toc_source_normalize_items((array) ($state['items'] ?? []));
 
     update_option(MAZAQ_TOC_MISSING_WIDGET_OPTION, $normalized, false);
 }
 
-function mazaq_toc_missing_extract_slug_from_url(string $url): string
-{
-    $path = (string) parse_url($url, PHP_URL_PATH);
-    $path = trim($path, '/');
-
-    if ('' === $path) {
-        return '';
-    }
-
-    $segments = array_values(array_filter(explode('/', $path)));
-    if (empty($segments)) {
-        return '';
-    }
-
-    $last_segment = (string) end($segments);
-
-    return sanitize_title(rawurldecode($last_segment));
-}
-
-function mazaq_toc_missing_prepare_feed_item($item): array
-{
-    if (!is_object($item) || !method_exists($item, 'get_permalink')) {
-        return [];
-    }
-
-    $url = esc_url_raw((string) $item->get_permalink());
-    if ('' === $url) {
-        return [];
-    }
-
-    $slug = mazaq_toc_missing_extract_slug_from_url($url);
-    if ('' === $slug) {
-        return [];
-    }
-
-    return [
-        'title' => sanitize_text_field((string) $item->get_title()),
-        'url' => $url,
-        'slug' => $slug,
-        'date' => sanitize_text_field((string) $item->get_date('Y-m-d H:i:s')),
-    ];
-}
-
-function mazaq_toc_missing_fetch_feed_items(bool $force_refresh = false): array
-{
-    $cached_items = get_transient(MAZAQ_TOC_MISSING_FEED_TRANSIENT);
-
-    if (!$force_refresh && is_array($cached_items) && !empty($cached_items)) {
-        return mazaq_toc_missing_normalize_items($cached_items);
-    }
-
-    if (!function_exists('fetch_feed')) {
-        require_once ABSPATH . WPINC . '/feed.php';
-    }
-
-    $feed = fetch_feed(MAZAQ_TOC_MISSING_FEED_URL);
-    if (is_wp_error($feed)) {
-        return is_array($cached_items) ? mazaq_toc_missing_normalize_items($cached_items) : [];
-    }
-
-    $items = $feed->get_items(0, 120);
-    if (empty($items)) {
-        return is_array($cached_items) ? mazaq_toc_missing_normalize_items($cached_items) : [];
-    }
-
-    $prepared_items = [];
-
-    foreach ($items as $item) {
-        $prepared = mazaq_toc_missing_prepare_feed_item($item);
-        if (!empty($prepared)) {
-            $prepared_items[] = $prepared;
-        }
-    }
-
-    $prepared_items = mazaq_toc_missing_normalize_items($prepared_items);
-
-    if (!empty($prepared_items)) {
-        set_transient(
-            MAZAQ_TOC_MISSING_FEED_TRANSIENT,
-            $prepared_items,
-            MAZAQ_TOC_MISSING_FEED_TRANSIENT_TTL
-        );
-    }
-
-    return $prepared_items;
-}
+// Feed fetching lives in the shared source module (inc/toc-source.php).
 
 function mazaq_toc_missing_prepare_rest_item($item): array
 {
@@ -197,7 +62,7 @@ function mazaq_toc_missing_prepare_rest_item($item): array
     $slug = sanitize_title((string) ($item['slug'] ?? ''));
 
     if ('' === $slug && '' !== $url) {
-        $slug = mazaq_toc_missing_extract_slug_from_url($url);
+        $slug = mazaq_toc_source_extract_slug_from_url($url);
     }
 
     if ('' === $url || '' === $slug) {
@@ -320,7 +185,7 @@ function mazaq_toc_missing_fetch_rest_items(): array
         }
     }
 
-    return mazaq_toc_missing_normalize_items($prepared_items);
+    return mazaq_toc_source_normalize_items($prepared_items);
 }
 
 function mazaq_toc_missing_fetch_remote_pool(bool $force_refresh = false): array
@@ -328,13 +193,13 @@ function mazaq_toc_missing_fetch_remote_pool(bool $force_refresh = false): array
     $cached_pool = get_transient(MAZAQ_TOC_MISSING_REMOTE_POOL_TRANSIENT);
 
     if (!$force_refresh && is_array($cached_pool) && !empty($cached_pool)) {
-        return mazaq_toc_missing_normalize_items($cached_pool);
+        return mazaq_toc_source_normalize_items($cached_pool);
     }
 
-    $feed_items = mazaq_toc_missing_fetch_feed_items($force_refresh);
+    $feed_items = mazaq_toc_source_fetch_feed_items(MAZAQ_TOC_MISSING_FEED_LIMIT, $force_refresh);
     $rest_items = mazaq_toc_missing_fetch_rest_items();
 
-    $pool = mazaq_toc_missing_normalize_items(array_merge($feed_items, $rest_items));
+    $pool = mazaq_toc_source_normalize_items(array_merge($feed_items, $rest_items));
 
     if (!empty($pool)) {
         set_transient(
@@ -378,7 +243,7 @@ function mazaq_toc_missing_get_existing_post_slugs(array $slugs): array
 
 function mazaq_toc_missing_filter_items(array $items, array $exclude_slugs = []): array
 {
-    $items = mazaq_toc_missing_normalize_items($items);
+    $items = mazaq_toc_source_normalize_items($items);
     if (empty($items)) {
         return [];
     }
@@ -410,7 +275,7 @@ function mazaq_toc_missing_filter_items(array $items, array $exclude_slugs = [])
 
 function mazaq_toc_missing_pick_random_items(array $items, int $count): array
 {
-    $items = mazaq_toc_missing_normalize_items($items);
+    $items = mazaq_toc_source_normalize_items($items);
     if (empty($items) || $count <= 0) {
         return [];
     }

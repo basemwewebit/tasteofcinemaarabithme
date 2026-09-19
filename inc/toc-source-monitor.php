@@ -12,7 +12,6 @@ declare(strict_types=1);
 const TOC_MONITOR_CRON_HOOK   = 'toc_source_monitor_check';
 const TOC_MONITOR_SEEN_OPTION  = 'toc_monitor_last_seen_url';
 const TOC_MONITOR_PENDING_OPTION = 'toc_monitor_pending_posts';
-const TOC_MONITOR_FEED_URL    = 'https://www.tasteofcinema.com/feed/';
 const TOC_MONITOR_DISMISS_ACTION = 'toc_monitor_dismiss';
 const TOC_MONITOR_DISMISS_NONCE = 'toc_monitor_dismiss_nonce';
 const TOC_MONITOR_EMAIL_ENABLED_OPTION = 'toc_monitor_email_enabled';
@@ -33,31 +32,8 @@ function toc_monitor_schedule_cron(): void
 add_action(TOC_MONITOR_CRON_HOOK, 'toc_monitor_fetch_feed');
 
 // ---------------------------------------------------------------------------
-// Feed fetcher
+// Feed fetcher (shared TasteOfCinema source module, inc/toc-source.php)
 // ---------------------------------------------------------------------------
-
-function toc_monitor_disable_feed_cache_lifetime(int $seconds): int
-{
-    return 0;
-}
-
-function toc_monitor_prepare_item_data($item): array
-{
-    if (!is_object($item) || !method_exists($item, 'get_permalink')) {
-        return [];
-    }
-
-    $url = esc_url_raw((string) $item->get_permalink());
-    if (empty($url)) {
-        return [];
-    }
-
-    return [
-        'url' => $url,
-        'title' => sanitize_text_field((string) $item->get_title()),
-        'date' => sanitize_text_field((string) $item->get_date('Y-m-d H:i:s')),
-    ];
-}
 
 function toc_monitor_email_enabled(): bool
 {
@@ -110,23 +86,13 @@ function toc_monitor_send_email(array $new_posts): void
 
 function toc_monitor_fetch_feed(): void
 {
-    // Bypass SimplePie cache so we always get fresh data.
-    add_filter('wp_feed_cache_transient_lifetime', 'toc_monitor_disable_feed_cache_lifetime');
-
-    $feed = fetch_feed(TOC_MONITOR_FEED_URL);
-
-    remove_filter('wp_feed_cache_transient_lifetime', 'toc_monitor_disable_feed_cache_lifetime');
-
-    if (is_wp_error($feed)) {
-        return;
-    }
-
-    $items = $feed->get_items(0, 20);
+    // Forced: the hourly check always wants fresh data, as before.
+    $items = mazaq_toc_source_fetch_feed_items(20, true);
     if (empty($items)) {
         return;
     }
 
-    $latest = toc_monitor_prepare_item_data($items[0]);
+    $latest = $items[0];
     if (empty($latest['url'])) {
         return;
     }
@@ -146,8 +112,7 @@ function toc_monitor_fetch_feed(): void
     }
 
     $new_posts = [];
-    foreach ($items as $item) {
-        $post_data = toc_monitor_prepare_item_data($item);
+    foreach ($items as $post_data) {
         if (empty($post_data['url'])) {
             continue;
         }
