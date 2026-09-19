@@ -26,6 +26,20 @@ _Avoid_: raw heading, anchor id.
 The daily no-repeat batch mechanic that selects which articles surface in rotating editorial slots.
 _Avoid_: daily rotation, random picks, shuffle.
 
+## Notification mechanics
+
+**Push notification**:
+A daily suggestion or new-post alert delivered to a subscriber's browser.
+_Avoid_: payload, when referring to the thing rather than its wire shape.
+
+**Daily suggestion**:
+The once-daily article pick sent to subscribers.
+_Avoid_: Content rotation pick (an independent random pick, not a rotation batch), daily_random.
+
+**Recent notifications**:
+The latest push notifications surfaced on-site for visitors without push subscriptions.
+_Avoid_: fallback feed.
+
 ## Ownership boundaries
 
 **Theme-owned finding**:
