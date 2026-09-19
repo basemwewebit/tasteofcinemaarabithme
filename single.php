@@ -28,7 +28,7 @@
                             <li><?php echo esc_html($author_name); ?></li>
                         <?php endif; ?>
                         <li><time class="num" datetime="<?php echo esc_attr(get_the_date(DATE_W3C)); ?>"><?php echo esc_html(get_the_date('j F Y')); ?></time></li>
-                        <li><?php echo esc_html(toc_estimated_reading_time()); ?></li>
+                        <li><?php echo esc_html(mazaq_reading_time(get_the_ID())); ?></li>
                         <?php if ($show_modified_date) : ?>
                             <li><?php esc_html_e('آخر تحديث:', 'mazaq'); ?> <time class="num" datetime="<?php echo esc_attr(get_the_modified_date(DATE_W3C)); ?>"><?php echo esc_html(get_the_modified_date('j F Y')); ?></time></li>
                         <?php endif; ?>

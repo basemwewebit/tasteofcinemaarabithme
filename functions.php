@@ -67,28 +67,6 @@ function toc_breadcrumbs(): void
 }
 
 /**
- * T004: Calculate estimated reading time.
- */
-function toc_estimated_reading_time($content = '') {
-    if (empty($content)) {
-        $post = get_post();
-        $content = $post && isset($post->post_content) ? $post->post_content : '';
-    }
-
-    // Use preg_split with utf8 mode to correctly count Arabic words
-    $words = preg_split('/\s+/u', trim(strip_tags((string) $content)), -1, PREG_SPLIT_NO_EMPTY);
-    $word_count = is_array($words) ? count($words) : 0;
-
-    $reading_speed = 200; // Average reading speed
-    $minutes = (int) ceil($word_count / $reading_speed);
-
-    // Ensure minimum 1 minute
-    $minutes = max(1, $minutes);
-
-    return sprintf(_n('%d دقيقة', '%d دقائق', $minutes, 'mazaq'), $minutes);
-}
-
-/**
  * T007: Fetch related posts with Transient caching.
  */
 function toc_get_related_posts($post_id, $count = 4) {
