@@ -16,34 +16,7 @@ function mazaq_random_film_get_candidate_ids(): array
         return array_values(array_filter(array_map('intval', $cached_ids)));
     }
 
-    $post_ids = [];
-    $page = 1;
-    $per_page = 200;
-
-    do {
-        $query = new WP_Query([
-            'post_type'              => 'post',
-            'post_status'            => 'publish',
-            'posts_per_page'         => $per_page,
-            'paged'                  => $page,
-            'fields'                 => 'ids',
-            'ignore_sticky_posts'    => true,
-            'no_found_rows'          => true,
-            'update_post_meta_cache' => false,
-            'update_post_term_cache' => false,
-        ]);
-
-        $batch_ids = array_values(array_filter(array_map('intval', (array) $query->posts)));
-        if (empty($batch_ids)) {
-            break;
-        }
-
-        $post_ids = array_merge($post_ids, $batch_ids);
-        $page++;
-        wp_reset_postdata();
-    } while (count($batch_ids) === $per_page);
-
-    $post_ids = array_values(array_unique($post_ids));
+    $post_ids = mazaq_rotation_get_published_post_ids();
     set_transient(MAZAQ_RANDOM_FILM_IDS_TRANSIENT, $post_ids, 30 * MINUTE_IN_SECONDS);
 
     return $post_ids;
@@ -69,35 +42,7 @@ function mazaq_random_film_get_candidate_ids_by_category(int $category_id): arra
         return [];
     }
 
-    $post_ids = [];
-    $page = 1;
-    $per_page = 200;
-
-    do {
-        $query = new WP_Query([
-            'post_type'              => 'post',
-            'post_status'            => 'publish',
-            'posts_per_page'         => $per_page,
-            'paged'                  => $page,
-            'fields'                 => 'ids',
-            'cat'                    => $category_id,
-            'ignore_sticky_posts'    => true,
-            'no_found_rows'          => true,
-            'update_post_meta_cache' => false,
-            'update_post_term_cache' => false,
-        ]);
-
-        $batch_ids = array_values(array_filter(array_map('intval', (array) $query->posts)));
-        if (empty($batch_ids)) {
-            break;
-        }
-
-        $post_ids = array_merge($post_ids, $batch_ids);
-        $page++;
-        wp_reset_postdata();
-    } while (count($batch_ids) === $per_page);
-
-    return array_values(array_unique($post_ids));
+    return mazaq_rotation_get_published_post_ids(['cat' => $category_id]);
 }
 
 /**

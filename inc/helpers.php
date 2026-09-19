@@ -215,12 +215,6 @@ add_filter('the_content', 'mazaq_balance_content_tags', 999);
 function mazaq_get_hero_post_ids(): array
 {
     $ids = [];
-    $hero_rotation_enabled = true;
-
-    if (function_exists('mazaq_content_rotation_get_settings')) {
-        $rotation_settings = mazaq_content_rotation_get_settings();
-        $hero_rotation_enabled = !empty($rotation_settings['hero_enabled']);
-    }
 
     // 1. ACF Option (highest priority - manual override)
     $acf_id = function_exists('get_field') ? (int) get_field('hero_featured_post', 'option') : 0;
@@ -228,17 +222,11 @@ function mazaq_get_hero_post_ids(): array
         return [$acf_id];
     }
 
-    // 2. Daily Rotation Hero Posts (auto-generated daily batch)
-    if ($hero_rotation_enabled && function_exists('mazaq_hero_daily_get_state')) {
-        $daily_state = mazaq_hero_daily_get_state();
-        if (!empty($daily_state['hero_post_ids']) && $daily_state['rotation_date'] === mazaq_hero_daily_today()) {
-            return $daily_state['hero_post_ids'];
-        }
-
-        // Generate batch if not exists for today (lazy generation)
-        $daily_state = mazaq_hero_daily_prepare_today_batch(false);
-        if (!empty($daily_state['hero_post_ids'])) {
-            return $daily_state['hero_post_ids'];
+    // 2. Daily Rotation Hero Posts (auto-generated daily batch, lazily filled)
+    if (function_exists('mazaq_hero_daily_config') && function_exists('mazaq_rotation_get_today_batch_ids')) {
+        $daily_ids = mazaq_rotation_get_today_batch_ids(mazaq_hero_daily_config());
+        if (!empty($daily_ids)) {
+            return $daily_ids;
         }
     }
 

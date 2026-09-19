@@ -20,6 +20,12 @@ _Avoid_: generic tile, thumbnail-only card.
 A second- or third-level article heading carrying a stable anchor id and an optional listicle rank.
 _Avoid_: raw heading, anchor id.
 
+## Editorial mechanics
+
+**Content rotation**:
+The daily no-repeat batch mechanic that selects which articles surface in rotating editorial slots.
+_Avoid_: daily rotation, random picks, shuffle.
+
 ## Ownership boundaries
 
 **Theme-owned finding**:
