@@ -16,6 +16,10 @@ _Avoid_: decorative slide, card-only item.
 A reusable presentation of an article whose imagery and text communicate its editorial priority.
 _Avoid_: generic tile, thumbnail-only card.
 
+**Article section**:
+A second- or third-level article heading carrying a stable anchor id and an optional listicle rank.
+_Avoid_: raw heading, anchor id.
+
 ## Ownership boundaries
 
 **Theme-owned finding**:

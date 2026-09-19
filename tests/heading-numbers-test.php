@@ -2,20 +2,17 @@
 
 /**
  * Standalone self-check for the reading index's heading numbering. No framework,
- * no WP: run with `php tests/heading-numbers-test.php`. Stubs the hook functions
- * inc/helpers.php calls at load time so the file can be included in isolation.
+ * no WP: run with `php tests/heading-numbers-test.php`. Stubs the hook function
+ * inc/article-headings.php calls at load time so the file can be included in isolation.
  */
 
 declare(strict_types=1);
 
-if (!function_exists('add_action')) {
-    function add_action(...$args): void {}
-}
 if (!function_exists('add_filter')) {
     function add_filter(...$args): void {}
 }
 
-require __DIR__ . '/../inc/helpers.php';
+require __DIR__ . '/../inc/article-headings.php';
 
 // No headings → nothing to number.
 assert(mazaq_listicle_heading_numbers([]) === []);
