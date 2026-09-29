@@ -21,14 +21,6 @@ function mazaq_register_acf_fields(): void
     $option_fields = [
         ['key' => 'field_ga4_measurement_id', 'label' => 'GA4 Measurement ID', 'name' => 'ga4_measurement_id', 'type' => 'text'],
         ['key' => 'field_adsense_publisher_id', 'label' => 'AdSense Publisher ID', 'name' => 'adsense_publisher_id', 'type' => 'text'],
-        ['key' => 'field_ad_slot_hero_banner', 'label' => 'Hero Banner Slot', 'name' => 'ad_slot_hero_banner', 'type' => 'text'],
-        ['key' => 'field_ad_slot_sidebar_square', 'label' => 'Sidebar Square Slot', 'name' => 'ad_slot_sidebar_square', 'type' => 'text'],
-        ['key' => 'field_ad_slot_mobile_menu', 'label' => 'Mobile Menu Slot', 'name' => 'ad_slot_mobile_menu', 'type' => 'text'],
-        ['key' => 'field_ad_slot_in_article', 'label' => 'In Article Slot', 'name' => 'ad_slot_in_article', 'type' => 'text'],
-        ['key' => 'field_ad_slot_bottom_article', 'label' => 'Bottom Article Slot', 'name' => 'ad_slot_bottom_article', 'type' => 'text'],
-        ['key' => 'field_ad_slot_sidebar_vertical', 'label' => 'Sidebar Vertical Slot', 'name' => 'ad_slot_sidebar_vertical', 'type' => 'text'],
-        ['key' => 'field_ad_slot_archive_banner', 'label' => 'Archive Banner Slot', 'name' => 'ad_slot_archive_banner', 'type' => 'text'],
-        ['key' => 'field_ad_slot_404_banner', 'label' => '404 Banner Slot', 'name' => 'ad_slot_404_banner', 'type' => 'text'],
         ['key' => 'field_hero_featured_post', 'label' => 'Hero Featured Post', 'name' => 'hero_featured_post', 'type' => 'post_object', 'post_type' => ['post'], 'return_format' => 'id'],
         ['key' => 'field_contact_email', 'label' => 'Contact Email', 'name' => 'contact_email', 'type' => 'email'],
         ['key' => 'field_contact_address', 'label' => 'Contact Address', 'name' => 'contact_address', 'type' => 'textarea'],
@@ -45,6 +37,17 @@ function mazaq_register_acf_fields(): void
             ]
         ],
     ];
+
+    // Per Ad placement: the AdSense slot id (Network ad) and an image + URL
+    // (Direct ad, see inc/ads.php). One list feeds all three fields.
+    $ad_fields = [];
+    foreach (['hero_banner', 'sidebar_square', 'mobile_menu', 'in_article', 'bottom_article', 'sidebar_vertical', 'archive_banner', '404_banner'] as $placement) {
+        $label = ucwords(str_replace('_', ' ', $placement));
+        $ad_fields[] = ['key' => "field_ad_slot_{$placement}", 'label' => "{$label} Slot", 'name' => "ad_slot_{$placement}", 'type' => 'text'];
+        $ad_fields[] = ['key' => "field_ad_slot_{$placement}_direct_image", 'label' => "{$label} Direct Ad Image", 'name' => "ad_slot_{$placement}_direct_image", 'type' => 'image', 'return_format' => 'id', 'preview_size' => 'medium', 'mime_types' => 'gif,png,jpg,jpeg,webp'];
+        $ad_fields[] = ['key' => "field_ad_slot_{$placement}_direct_url", 'label' => "{$label} Direct Ad URL", 'name' => "ad_slot_{$placement}_direct_url", 'type' => 'url'];
+    }
+    $option_fields = array_merge(array_slice($option_fields, 0, 2), $ad_fields, array_slice($option_fields, 2));
 
     acf_add_local_field_group([
         'key' => 'group_mazaq_theme_options',

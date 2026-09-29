@@ -48,6 +48,20 @@ _Avoid_: Content rotation pick (an independent random pick, not a rotation batch
 The latest push notifications surfaced on-site for visitors without push subscriptions.
 _Avoid_: fallback feed.
 
+## Advertising
+
+**Ad placement**:
+A fixed position in the theme where an advertisement may appear, each holding a reserved format so a late creative never shifts the page.
+_Avoid_: ad slot, when referring to the position (an ad network's "slot" is a unit id, not a position).
+
+**Direct ad**:
+An image linked to another website that the editor places in an Ad placement. Where both exist, it takes the Ad placement over the Network ad. It shows once per Ad placement per page view; a repeat falls back to the Network ad.
+_Avoid_: house ad (that is our own promotion), sponsor ad.
+
+**Network ad**:
+An advertisement filled by the ad network (AdSense) for an Ad placement.
+_Avoid_: dummy ad, when referring to the real thing.
+
 ## Ownership boundaries
 
 **Theme-owned finding**:

@@ -25,19 +25,53 @@ function mazaq_get_adsense_publisher_id(): string
 }
 
 /**
+ * A Direct ad is the image and destination URL an editor set for an Ad
+ * placement. Both must be present and the URL must be http(s); anything less
+ * is no Direct ad at all.
+ *
+ * @return array{url: string, image: string}|null
+ */
+function mazaq_get_direct_ad(string $slot_name): ?array
+{
+    $slot_name = trim($slot_name);
+    if ($slot_name === '' || !function_exists('get_field')) {
+        return null;
+    }
+
+    // esc_url_raw() would repair "example.com" or keep "//host" and "/path";
+    // only an explicit http(s) URL counts.
+    $url = trim((string) get_field($slot_name . '_direct_url', 'option'));
+    $url = preg_match('#^https?://#i', $url) ? esc_url_raw($url, ['http', 'https']) : '';
+    $image_id = (int) get_field($slot_name . '_direct_image', 'option');
+    // "full" keeps a GIF animated; resized copies are static frames.
+    $image = $image_id ? wp_get_attachment_image_url($image_id, 'full') : false;
+
+    return ($url !== '' && $image) ? ['url' => $url, 'image' => $image] : null;
+}
+
+/**
  * Render an ad slot as a sponsor's plate: a quiet celluloid-framed stage with
  * an honest «إعلان» note and space reserved per format, so a late creative
- * never shifts the page. An unconfigured slot renders nothing at all.
+ * never shifts the page. A complete Direct ad takes the placement (once per
+ * request); otherwise the Network ad; an unconfigured slot renders nothing.
  */
 function mazaq_render_ad(string $slot_name, string $format = 'responsive', string $classes = ''): void
 {
+    // A Direct ad wins its placement, but shows once per placement per request
+    // so the in-article injection never repeats one image down a single article.
+    static $direct_shown = [];
+    $direct = isset($direct_shown[$slot_name]) ? null : mazaq_get_direct_ad($slot_name);
+    if ($direct) {
+        $direct_shown[$slot_name] = true;
+    }
+
     $slot_id = mazaq_get_ad_slot($slot_name);
     $publisher = mazaq_get_adsense_publisher_id();
     $dummy_ads_enabled = false;
-    $expects_network_ad = (bool) ($slot_id && $publisher && !$dummy_ads_enabled);
+    $expects_network_ad = (bool) (!$direct && $slot_id && $publisher && !$dummy_ads_enabled);
 
     // Production silence: an unconfigured slot never draws a husk.
-    if (!$expects_network_ad && !$dummy_ads_enabled) {
+    if (!$direct && !$expects_network_ad && !$dummy_ads_enabled) {
         return;
     }
 
@@ -59,7 +93,14 @@ function mazaq_render_ad(string $slot_name, string $format = 'responsive', strin
     echo '<p class="ad-container__note"><span class="ad-container__mark" aria-hidden="true"></span>' . esc_html__('إعلان', 'mazaq') . '</p>';
     echo '<div class="ad-container__stage">';
 
-    if ($expects_network_ad) {
+    if ($direct) {
+        printf(
+            '<a href="%1$s" target="_blank" rel="sponsored noopener noreferrer"><img src="%2$s" alt="%3$s" loading="lazy"></a>',
+            esc_url($direct['url']),
+            esc_url($direct['image']),
+            esc_attr__('إعلان', 'mazaq')
+        );
+    } elseif ($expects_network_ad) {
         // The creative stays pending until the shared observer promotes it near
         // the viewport (see mazaq_ads_lazy_push); space is reserved meanwhile.
         printf(
@@ -155,7 +196,10 @@ function mazaq_inject_in_article_ads(string $content): string
         return $content;
     }
 
-    if (!is_single()) {
+    // Only the article body in the main loop: excerpts and meta descriptions
+    // also run this filter, and their discarded plates would burn a placement's
+    // once-per-request Direct ad before the real body renders.
+    if (!is_single() || !in_the_loop() || !is_main_query()) {
         return $content;
     }
 
