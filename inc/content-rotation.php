@@ -161,7 +161,10 @@ function mazaq_rotation_get_config(array $feature): array
 
     return [
         'enabled' => !empty($settings[$feature['settings_enabled_key']]),
-        'batch_size' => max(1, min($feature['max_count'], (int) $settings[$feature['settings_count_key']])),
+        // A feature without 'settings_count_key' always deals its max_count.
+        'batch_size' => isset($feature['settings_count_key'])
+            ? max(1, min($feature['max_count'], (int) $settings[$feature['settings_count_key']]))
+            : $feature['max_count'],
     ];
 }
 
@@ -477,8 +480,10 @@ function mazaq_rotation_render_widget(array $feature): void
     wp_nonce_field($feature['quick_save_nonce']);
     echo '<input type="hidden" name="action" value="' . esc_attr($feature['quick_save_action']) . '" />';
     echo '<p><label><input type="checkbox" name="' . esc_attr($feature['settings_enabled_key']) . '" value="1" ' . checked($config['enabled'], true, false) . ' /> ' . esc_html($widget['enable_label']) . '</label></p>';
-    echo '<p><label for="' . esc_attr($widget['count_id']) . '">' . esc_html($widget['count_label']) . '</label> ';
-    echo '<input id="' . esc_attr($widget['count_id']) . '" type="number" min="1" max="' . esc_attr((string) $feature['max_count']) . '" name="' . esc_attr($feature['settings_count_key']) . '" value="' . esc_attr((string) $count_label) . '" class="small-text" /></p>';
+    if (isset($feature['settings_count_key'])) {
+        echo '<p><label for="' . esc_attr($widget['count_id']) . '">' . esc_html($widget['count_label']) . '</label> ';
+        echo '<input id="' . esc_attr($widget['count_id']) . '" type="number" min="1" max="' . esc_attr((string) $feature['max_count']) . '" name="' . esc_attr($feature['settings_count_key']) . '" value="' . esc_attr((string) $count_label) . '" class="small-text" /></p>';
+    }
     submit_button(__('حفظ سريع', 'mazaq'), 'secondary', 'submit', false);
     echo '</form>';
 
@@ -526,8 +531,10 @@ function mazaq_rotation_handle_quick_save(array $feature): void
     $settings = mazaq_content_rotation_get_settings();
     $settings[$feature['settings_enabled_key']] = isset($_POST[$feature['settings_enabled_key']]) ? 1 : 0;
 
-    $posted_count = isset($_POST[$feature['settings_count_key']]) ? wp_unslash($_POST[$feature['settings_count_key']]) : $settings[$feature['settings_count_key']];
-    $settings[$feature['settings_count_key']] = max(1, min($feature['max_count'], absint($posted_count)));
+    if (isset($feature['settings_count_key'])) {
+        $posted_count = isset($_POST[$feature['settings_count_key']]) ? wp_unslash($_POST[$feature['settings_count_key']]) : $settings[$feature['settings_count_key']];
+        $settings[$feature['settings_count_key']] = max(1, min($feature['max_count'], absint($posted_count)));
+    }
 
     mazaq_content_rotation_update_settings($settings);
     mazaq_rotation_prepare_today_batch($feature, true);

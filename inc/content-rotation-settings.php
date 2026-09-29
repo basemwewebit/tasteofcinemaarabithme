@@ -11,7 +11,6 @@ function mazaq_content_rotation_default_settings(): array
     return [
         'daily_hour' => 8,
         'hero_enabled' => 1,
-        'hero_count' => 3,
         'social_enabled' => 1,
         'social_count' => 3,
     ];
@@ -24,7 +23,6 @@ function mazaq_content_rotation_normalize_settings($settings): array
 
     $settings['daily_hour'] = max(0, min(23, (int) $settings['daily_hour']));
     $settings['hero_enabled'] = !empty($settings['hero_enabled']) ? 1 : 0;
-    $settings['hero_count'] = max(1, min(3, (int) $settings['hero_count']));
     $settings['social_enabled'] = !empty($settings['social_enabled']) ? 1 : 0;
     $settings['social_count'] = max(1, min(10, (int) $settings['social_count']));
 
@@ -126,14 +124,6 @@ function mazaq_content_rotation_register_settings(): void
     );
 
     add_settings_field(
-        'mazaq_rotation_hero_count',
-        __('عدد عناصر Hero', 'mazaq'),
-        'mazaq_content_rotation_render_hero_count_field',
-        MAZAQ_CONTENT_ROTATION_SETTINGS_PAGE,
-        'mazaq_content_rotation_main_section'
-    );
-
-    add_settings_field(
         'mazaq_rotation_social_enabled',
         __('تفعيل اقتراحات السوشيال', 'mazaq'),
         'mazaq_content_rotation_render_social_enabled_field',
@@ -168,14 +158,6 @@ function mazaq_content_rotation_render_hero_enabled_field(): void
     echo '<input type="checkbox" name="' . esc_attr(MAZAQ_CONTENT_ROTATION_SETTINGS_OPTION) . '[hero_enabled]" value="1" ' . checked((int) $settings['hero_enabled'], 1, false) . ' /> ';
     echo esc_html__('تشغيل تدوير Hero اليومي', 'mazaq');
     echo '</label>';
-}
-
-function mazaq_content_rotation_render_hero_count_field(): void
-{
-    $settings = mazaq_content_rotation_get_settings();
-
-    echo '<input type="number" min="1" max="3" name="' . esc_attr(MAZAQ_CONTENT_ROTATION_SETTINGS_OPTION) . '[hero_count]" value="' . esc_attr((string) $settings['hero_count']) . '" class="small-text" />';
-    echo '<p class="description">' . esc_html__('الحد المسموح: من 1 إلى 3 عناصر.', 'mazaq') . '</p>';
 }
 
 function mazaq_content_rotation_render_social_enabled_field(): void

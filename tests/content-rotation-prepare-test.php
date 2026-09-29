@@ -245,6 +245,13 @@ rotation_test_check(
     mazaq_rotation_get_config($social_feature) === ['enabled' => false, 'batch_size' => 10],
     'social config reads social keys and clamps to 10'
 );
+$fixed_feature = $hero_feature;
+unset($fixed_feature['settings_count_key']);
+$fixed_feature['max_count'] = 4;
+rotation_test_check(
+    mazaq_rotation_get_config($fixed_feature) === ['enabled' => true, 'batch_size' => 4],
+    'feature without a count key deals its fixed max_count'
+);
 
 // Disabled feature: state untouched, pool never queried.
 reset_rotation_fakes([11, 12, 13], ['hero_enabled' => 0, 'hero_count' => 2]);

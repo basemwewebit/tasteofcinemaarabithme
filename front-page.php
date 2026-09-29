@@ -1,10 +1,8 @@
 <?php get_header(); ?>
 
-<?php get_template_part('template-parts/content/hero'); ?>
-
 <?php
-$hero_ids = mazaq_get_hero_post_ids();
-$hero_ids = is_array($hero_ids) ? array_map('intval', $hero_ids) : [];
+$programme_ids = mazaq_programme_post_ids();
+get_template_part('template-parts/content/hero', null, ['post_ids' => $programme_ids]);
 
 $categories = get_categories([
     'orderby' => 'count',
@@ -57,7 +55,7 @@ if ($collection_term instanceof WP_Term) {
         'post_status' => 'publish',
         'cat' => (int) $collection_term->term_id,
         'posts_per_page' => 4,
-        'post__not_in' => $hero_ids,
+        'post__not_in' => $programme_ids,
         'ignore_sticky_posts' => true,
         'no_found_rows' => true,
     ]);
@@ -73,7 +71,7 @@ $collection_plate_fallbacks = [
 // most read (still real popularity) rather than recency, so the rail never
 // just mirrors the "latest" feed below it. Tracks scope for honest labelling.
 // Hero exclusions keep a featured article from repeating in the rail.
-$popular = mazaq_get_most_read_posts(5, $hero_ids);
+$popular = mazaq_get_most_read_posts(5, $programme_ids);
 $popular_scope_week = true;
 if (!$popular->have_posts()) {
     wp_reset_postdata();
@@ -82,7 +80,7 @@ if (!$popular->have_posts()) {
         'post_type' => 'post',
         'post_status' => 'publish',
         'posts_per_page' => 5,
-        'post__not_in' => $hero_ids,
+        'post__not_in' => $programme_ids,
         'ignore_sticky_posts' => true,
         'no_found_rows' => true,
         'meta_key' => '_post_views_count',
@@ -198,7 +196,7 @@ if (!$popular->have_posts()) {
                 'post_status' => 'publish',
                 'posts_per_page' => 6,
                 'paged' => 1,
-                'post__not_in' => $hero_ids,
+                'post__not_in' => $programme_ids,
                 'no_found_rows' => true,
             ]);
 

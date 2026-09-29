@@ -5,8 +5,8 @@ This context names the editorial surfaces and ownership boundaries that shape th
 ## Editorial surfaces
 
 **Continuous Programme**:
-The homepage’s ordered set of featured articles presented as a single editorial programme.
-_Avoid_: generic carousel, when referring to the editorial set.
+The homepage’s ordered set of exactly four featured articles presented as a single editorial programme: one feature followed by three Programme slides. An editor’s featured-post pick pins the feature; Content rotation deals the rest; the latest articles fill any gap. No article in the Continuous Programme repeats elsewhere on the homepage or in its continued Latest feed.
+_Avoid_: generic carousel, when referring to the editorial set; hero ids, when referring to the set.
 
 **Programme slide**:
 One article within the Continuous Programme, retaining its own title, summary, and link as part of the page’s reading sequence.

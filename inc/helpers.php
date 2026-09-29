@@ -204,61 +204,6 @@ function mazaq_balance_content_tags(string $content): string
 add_filter('the_content', 'mazaq_balance_content_tags', 999);
 
 /**
- * Get all eligible hero post IDs based on priority:
- * 1. ACF option 'hero_featured_post'
- * 2. Content rotation hero posts (auto-generated)
- * 3. Sticky posts
- * 4. Latest posts fallback
- *
- * @return int[]
- */
-function mazaq_get_hero_post_ids(): array
-{
-    $ids = [];
-
-    // 1. ACF Option (highest priority - manual override)
-    $acf_id = function_exists('get_field') ? (int) get_field('hero_featured_post', 'option') : 0;
-    if ($acf_id > 0) {
-        return [$acf_id];
-    }
-
-    // 2. Content rotation hero posts (auto-generated daily batch, lazily filled)
-    if (function_exists('mazaq_hero_daily_config') && function_exists('mazaq_rotation_get_today_batch_ids')) {
-        $daily_ids = mazaq_rotation_get_today_batch_ids(mazaq_hero_daily_config());
-        if (!empty($daily_ids)) {
-            return $daily_ids;
-        }
-    }
-
-    // 3. Sticky Posts (legacy fallback)
-    $sticky = get_option('sticky_posts');
-    if (!empty($sticky)) {
-        $ids = array_map('intval', (array) $sticky);
-    }
-
-    // 4. Fallback to latest posts (2-3 posts)
-    if (empty($ids)) {
-        $latest = get_posts([
-            'post_type'      => 'post',
-            'posts_per_page' => 3,
-            'fields'         => 'ids',
-            'post_status'    => 'publish',
-        ]);
-        if (!empty($latest)) {
-            $ids = array_map('intval', $latest);
-        }
-    }
-
-    // Filter out zero/falsy values
-    return array_values(array_filter($ids));
-}
-
-function mazaq_get_hero_post_id(): int
-{
-    return mazaq_get_hero_post_ids()[0] ?? 0;
-}
-
-/**
  * Return a theme-logo URL for the requested display tier.
  */
 function mazaq_theme_logo_url(int $width = 152): string

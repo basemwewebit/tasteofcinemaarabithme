@@ -10,29 +10,15 @@ declare(strict_types=1);
  * the progress line are progressive enhancement on top, never a gate.
  */
 
-$is_published = static fn (int $post_id): bool => $post_id > 0
-    && get_post_type($post_id) === 'post'
-    && get_post_status($post_id) === 'publish';
-$hero_post_ids = array_values(array_unique(array_filter(array_map('intval', (array) mazaq_get_hero_post_ids()), $is_published)));
+$programme_ids = $args['post_ids'] ?? mazaq_programme_post_ids();
 
-if (count($hero_post_ids) < 4) {
-    $hero_post_ids = array_values(array_unique(array_merge($hero_post_ids, array_map('intval', get_posts([
-        'post_type' => 'post',
-        'post_status' => 'publish',
-        'posts_per_page' => 4 - count($hero_post_ids),
-        'fields' => 'ids',
-        'post__not_in' => $hero_post_ids ?: [0],
-        'ignore_sticky_posts' => true,
-    ])))));
-}
-
-if (empty($hero_post_ids)) {
+if (empty($programme_ids)) {
     return;
 }
 
 $theme_uri = get_template_directory_uri();
-$feature_id = $hero_post_ids[0];
-$programme_ids = array_slice($hero_post_ids, 1, 3);
+$feature_id = $programme_ids[0];
+$slide_ids = array_slice($programme_ids, 1, 3);
 $plate_fallbacks = [
     $theme_uri . '/assets/plates/program-one-still.png',
     $theme_uri . '/assets/plates/program-two-still.png',
@@ -100,7 +86,7 @@ $render_image = static function (int $post_id, string $size, string $class_name,
 
 $feature_title = $title_for($feature_id);
 $feature_excerpt = wp_trim_words(wp_strip_all_tags((string) get_the_excerpt($feature_id)), 27, '…');
-$spread_ids = array_merge([$feature_id], $programme_ids);
+$spread_ids = array_merge([$feature_id], $slide_ids);
 $spread_count = count($spread_ids);
 ?>
 
