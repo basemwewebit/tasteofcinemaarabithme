@@ -8,6 +8,10 @@ This context names the editorial surfaces and ownership boundaries that shape th
 The homepage’s ordered set of exactly four featured articles presented as a single editorial programme: one feature followed by three Programme slides. An editor’s featured-post pick pins the feature; Content rotation deals the rest; the latest articles fill any gap. No article in the Continuous Programme repeats elsewhere on the homepage or in its continued Latest feed.
 _Avoid_: generic carousel, when referring to the editorial set; hero ids, when referring to the set.
 
+**Latest feed**:
+The front page's reverse-chronological run of articles below the Continuous Programme, excluding the Programme's four, delivered in pages of six: page 1 with the page, later pages on demand.
+_Avoid_: infinite scroll, load-more posts, latest posts grid.
+
 **Programme slide**:
 One article within the Continuous Programme, retaining its own title, summary, and link as part of the page’s reading sequence.
 _Avoid_: decorative slide, card-only item.

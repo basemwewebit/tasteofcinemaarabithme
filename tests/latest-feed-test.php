@@ -1,0 +1,216 @@
+<?php
+
+/**
+ * Standalone self-check for the Latest feed: sticky policy, Programme
+ * exclusion, page size, per-position presentation, ad-plate cadence, has-more.
+ * No framework, no WP: run with `php tests/latest-feed-test.php`.
+ *
+ * Fakes the two adapters behind the seam: WP_Query (serves pages from a fake
+ * pool and records the arguments it was built with) and get_template_part
+ * (records each card / ad-plate request with the article being rendered).
+ * The Programme's ids are stubbed, as the Continuous Programme self-check does.
+ */
+
+declare(strict_types=1);
+
+require __DIR__ . '/rotation-test-helper.php';
+
+// --- Fake Programme ----------------------------------------------------------
+$GLOBALS['fake_programme'] = [];
+
+function mazaq_programme_post_ids(): array
+{
+    return $GLOBALS['fake_programme'];
+}
+
+// --- Fake WP_Query: pages the fake pool, minus post__not_in -------------------
+$GLOBALS['fake_pool'] = [];
+$GLOBALS['fake_last_query_args'] = [];
+$GLOBALS['fake_current_post'] = 0;
+
+class WP_Query
+{
+    public $max_num_pages = 0;
+    private $ids = [];
+    private $cursor = 0;
+
+    public function __construct(array $args = [])
+    {
+        $GLOBALS['fake_last_query_args'] = $args;
+
+        $pool = array_values(array_diff($GLOBALS['fake_pool'], $args['post__not_in'] ?? []));
+        $per_page = (int) ($args['posts_per_page'] ?? 10);
+        $page = max(1, (int) ($args['paged'] ?? 1));
+
+        $this->max_num_pages = (int) ceil(count($pool) / $per_page);
+        $this->ids = array_slice($pool, ($page - 1) * $per_page, $per_page);
+    }
+
+    public function have_posts(): bool
+    {
+        return $this->cursor < count($this->ids);
+    }
+
+    public function the_post(): void
+    {
+        $GLOBALS['fake_current_post'] = $this->ids[$this->cursor++];
+    }
+}
+
+function wp_reset_postdata(): void
+{
+    $GLOBALS['fake_current_post'] = 0;
+}
+
+// --- Fake template loader: records requests, echoes a marker ------------------
+$GLOBALS['fake_parts'] = [];
+
+function get_template_part($slug, $name = null, $args = []): void
+{
+    $GLOBALS['fake_parts'][] = ['slug' => $slug, 'args' => $args, 'post' => $GLOBALS['fake_current_post']];
+    echo '[' . basename($slug) . ':' . $GLOBALS['fake_current_post'] . ']';
+}
+
+require __DIR__ . '/../inc/latest-feed.php';
+
+/** Newest-first pool of ids 100..(100 - $size + 1). */
+function feed_test_reset(int $size = 30): void
+{
+    $GLOBALS['fake_programme'] = [];
+    $GLOBALS['fake_pool'] = $size > 0 ? range(100, 100 - $size + 1) : [];
+    $GLOBALS['fake_last_query_args'] = [];
+    $GLOBALS['fake_parts'] = [];
+}
+
+/** Article cards only (ad plates filtered out), in render order. */
+function feed_test_cards(): array
+{
+    return array_values(array_filter(
+        $GLOBALS['fake_parts'],
+        static fn (array $part): bool => str_ends_with($part['slug'], 'article-card')
+    ));
+}
+
+// The query is chronological on every page (sticky posts ignored) and never
+// re-serves the Continuous Programme.
+feed_test_reset();
+$GLOBALS['fake_programme'] = [100, 99, 98, 97];
+mazaq_latest_feed(1);
+rotation_test_check(($GLOBALS['fake_last_query_args']['ignore_sticky_posts'] ?? false) === true, 'page 1 ignores sticky posts');
+rotation_test_check($GLOBALS['fake_last_query_args']['post__not_in'] === [100, 99, 98, 97], 'exactly the Programme ids are excluded');
+mazaq_latest_feed(3);
+rotation_test_check(($GLOBALS['fake_last_query_args']['ignore_sticky_posts'] ?? false) === true, 'page 3 ignores sticky posts');
+
+// Six per page; the requested page reaches the query; below 1 means 1.
+feed_test_reset();
+mazaq_latest_feed(2);
+rotation_test_check($GLOBALS['fake_last_query_args']['posts_per_page'] === 6, 'six articles per page');
+rotation_test_check($GLOBALS['fake_last_query_args']['paged'] === 2, 'requested page reaches the query');
+mazaq_latest_feed(0);
+rotation_test_check($GLOBALS['fake_last_query_args']['paged'] === 1, 'page 0 is treated as page 1');
+mazaq_latest_feed(-4);
+rotation_test_check($GLOBALS['fake_last_query_args']['paged'] === 1, 'negative page is treated as page 1');
+
+// Page 1 keeps the editorial rhythm: wide lead first, finale last, medium
+// cards between. Cards render in newest-first order, Programme skipped.
+feed_test_reset();
+$GLOBALS['fake_programme'] = [100, 99, 98, 97];
+$feed = mazaq_latest_feed(1);
+$cards = feed_test_cards();
+rotation_test_check(array_column($cards, 'post') === [96, 95, 94, 93, 92, 91], 'page 1 renders six articles newest first, Programme skipped');
+rotation_test_check($feed['html'] === '[article-card:96][article-card:95][article-card:94][article-card:93][article-card:92][article-card:91]', 'html is the cards in order');
+
+rotation_test_check($cards[0]['args'] === [
+    'layout' => 'wide',
+    'class' => 'latest-feed__lead',
+    'image_size' => 'card-medium-thumbnail',
+    'image_sizes' => '(min-width: 1280px) 506px, (min-width: 981px) 40vw, 100vw',
+    'small_image_media' => '',
+], 'position 0 is the wide lead card');
+
+foreach ([1, 2, 3, 4] as $i) {
+    rotation_test_check($cards[$i]['args'] === [
+        'layout' => 'standard',
+        'class' => '',
+        'image_size' => 'card-medium-thumbnail',
+        'image_sizes' => '(min-width: 1280px) 400px, (min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw',
+        'small_image_media' => '(min-width: 981px) and (max-width: 1440px)',
+    ], "position {$i} is a medium standard card");
+}
+
+rotation_test_check($cards[5]['args'] === [
+    'layout' => 'standard',
+    'class' => 'latest-feed__finale',
+    'image_size' => '',
+    'image_sizes' => '(min-width: 981px) 70vw, 100vw',
+    'small_image_media' => '',
+], 'position 5 is the finale card');
+
+// Later pages are uniform: every card standard, no lead, no finale.
+feed_test_reset(30);
+mazaq_latest_feed(2);
+$cards = feed_test_cards();
+rotation_test_check(array_column($cards, 'post') === [94, 93, 92, 91, 90, 89], 'page 2 continues where page 1 stopped');
+foreach ($cards as $i => $card) {
+    rotation_test_check($card['args'] === ['layout' => 'standard'], "page 2 position {$i} is a plain standard card");
+}
+
+// An ad plate precedes global positions 9, 17, 25 … (greater than 1, and 1
+// modulo 8), counted across pages; the first page never gets one.
+/** Order in which template parts were requested, as basenames. */
+function feed_test_sequence(): array
+{
+    return array_map(static fn (array $part): string => basename($part['slug']), $GLOBALS['fake_parts']);
+}
+
+/** Positions (0-based, within the page) that an ad plate precedes. */
+function feed_test_ad_positions(): array
+{
+    $positions = [];
+    $card = 0;
+    foreach (feed_test_sequence() as $slug) {
+        if ($slug === 'ad-grid') {
+            $positions[] = $card;
+        } else {
+            $card++;
+        }
+    }
+
+    return $positions;
+}
+
+feed_test_reset(60);
+foreach ([1 => [], 2 => [2], 3 => [4], 4 => [], 5 => [0], 6 => [2]] as $page => $expected) {
+    $GLOBALS['fake_parts'] = [];
+    mazaq_latest_feed($page);
+    rotation_test_check(feed_test_ad_positions() === $expected, "page {$page} ad plates at " . json_encode($expected));
+}
+
+// Has-more is reported on every page, page 1 included, and the Programme's
+// articles do not count towards it.
+feed_test_reset(30);
+rotation_test_check(mazaq_latest_feed(1)['has_more'] === true, 'page 1 of a long feed has more');
+rotation_test_check(mazaq_latest_feed(5)['has_more'] === false, 'the last page has no more');
+
+feed_test_reset(6);
+rotation_test_check(mazaq_latest_feed(1)['has_more'] === false, 'a one-page feed has no more on page 1');
+
+feed_test_reset(10);
+$GLOBALS['fake_programme'] = [100, 99, 98, 97];
+rotation_test_check(mazaq_latest_feed(1)['has_more'] === false, 'ten articles minus a four-article Programme fit one page');
+
+feed_test_reset(7);
+rotation_test_check(mazaq_latest_feed(1)['has_more'] === true, 'seven articles spill onto a second page');
+rotation_test_check(mazaq_latest_feed(2)['has_more'] === false, 'the spill page is the last');
+
+// An empty feed yields empty markup and no more, so the front page can show
+// its empty state.
+feed_test_reset(0);
+$feed = mazaq_latest_feed(1);
+rotation_test_check($feed === ['html' => '', 'has_more' => false], 'empty feed: no markup, nothing more');
+
+feed_test_reset(4);
+$GLOBALS['fake_programme'] = [100, 99, 98, 97];
+rotation_test_check(mazaq_latest_feed(1) === ['html' => '', 'has_more' => false], 'a pool wholly inside the Programme leaves an empty feed');
+
+echo "latest-feed: {$GLOBALS['rotation_test_passed']} seam checks passed\n";

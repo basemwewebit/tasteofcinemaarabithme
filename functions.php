@@ -31,6 +31,7 @@ $mazaq_includes = [
     'inc/random-film-popup.php',
     'inc/content-rotation.php',
     'inc/continuous-programme.php',
+    'inc/latest-feed.php',
     'inc/content-rotation-settings.php',
     'inc/admin-social-reminder.php',
     'inc/admin-hero-daily.php',

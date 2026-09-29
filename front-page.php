@@ -189,37 +189,11 @@ if (!$popular->have_posts()) {
             <p class="home-section__promise"><?php esc_html_e('لمن يريد متابعة المشهد بعد اختيارات التحرير.', 'mazaq'); ?></p>
         </div>
 
-        <div id="infinite-scroll-container" class="latest-feed" data-page="2" aria-live="polite" aria-busy="false">
+        <?php $latest_feed = mazaq_latest_feed(1); ?>
+        <div id="infinite-scroll-container" class="latest-feed" data-next-page="2" data-has-more="<?php echo $latest_feed['has_more'] ? '1' : '0'; ?>" aria-live="polite" aria-busy="false">
             <?php
-            $query = new WP_Query([
-                'post_type' => 'post',
-                'post_status' => 'publish',
-                'posts_per_page' => 6,
-                'paged' => 1,
-                'post__not_in' => $programme_ids,
-                'no_found_rows' => true,
-            ]);
-
-            if ($query->have_posts()) :
-                $post_index = 0;
-                while ($query->have_posts()) :
-                    $query->the_post();
-                    get_template_part('template-parts/content/article-card', null, [
-                        'layout' => $post_index === 0 ? 'wide' : 'standard',
-                        'class' => $post_index === 0 ? 'latest-feed__lead' : ($post_index === 5 ? 'latest-feed__finale' : ''),
-                        'image_size' => $post_index === 5 ? '' : 'card-medium-thumbnail',
-                        'image_sizes' => $post_index === 0
-                            ? '(min-width: 1280px) 506px, (min-width: 981px) 40vw, 100vw'
-                            : ($post_index === 5
-                                ? '(min-width: 981px) 70vw, 100vw'
-                                : '(min-width: 1280px) 400px, (min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw'),
-                        'small_image_media' => $post_index > 0 && $post_index < 5
-                            ? '(min-width: 981px) and (max-width: 1440px)'
-                            : '',
-                    ]);
-                    $post_index++;
-                endwhile;
-                wp_reset_postdata();
+            if ($latest_feed['html'] !== '') :
+                echo $latest_feed['html']; // Card markup from template parts, already escaped.
             else :
                 ?>
                 <div class="home-empty-state col-span-full">

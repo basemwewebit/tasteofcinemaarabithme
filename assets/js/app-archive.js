@@ -285,9 +285,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const infiniteScrollSentinel = document.getElementById('infinite-scroll-sentinel');
 
     if (container && loadingIndicator) {
-        let currentPage = 2;
+        // The server says which page comes next and whether there is one.
+        let currentPage = parseInt(container.dataset.nextPage, 10);
         let isLoading = false;
-        let hasMore = true;
+        let hasMore = container.dataset.hasMore === '1' && currentPage >= 2;
         let loadError = false;
         let endOfContentRendered = false;
         let infiniteScrollObserver = null;
