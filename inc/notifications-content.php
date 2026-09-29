@@ -222,7 +222,7 @@ function mazaq_browser_notifications_build_test_payload(): array
  */
 function mazaq_browser_notifications_build_daily_preview_payload(): array
 {
-    $post_id = mazaq_browser_notifications_pick_random_post_id();
+    $post_id = mazaq_article_pool_random_id();
     if ($post_id <= 0) {
         return [];
     }

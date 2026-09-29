@@ -1,14 +1,13 @@
 <?php
 
 /**
- * Notification schedule: the conductor. Owns the cron wiring, the candidate
- * pool behind the Daily suggestion, and the daily/new-post handlers that move
- * content through the dispatch seam. Thin over the pinned cores.
+ * Notification schedule: the conductor. Owns the cron wiring and the
+ * daily/new-post handlers that move content through the dispatch seam; the
+ * Daily suggestion draws from the Article pool. Thin over the pinned cores.
  */
 
 declare(strict_types=1);
 
-const MAZAQ_BROWSER_NOTIFICATIONS_IDS_TRANSIENT = 'mazaq_browser_notification_ids';
 const MAZAQ_BROWSER_NOTIFICATIONS_DAILY_EVENT = 'mazaq_browser_notifications_daily_event';
 const MAZAQ_BROWSER_NOTIFICATIONS_NEW_POST_EVENT = 'mazaq_browser_notifications_new_post_event';
 
@@ -105,91 +104,6 @@ function mazaq_browser_notifications_cleanup(): void
 add_action('switch_theme', 'mazaq_browser_notifications_cleanup');
 
 /**
- * Fetch all candidate published post IDs in batches and cache them.
- *
- * @return int[]
- */
-function mazaq_browser_notifications_get_candidate_ids(): array
-{
-    $cached_ids = get_transient(MAZAQ_BROWSER_NOTIFICATIONS_IDS_TRANSIENT);
-    if (is_array($cached_ids)) {
-        return array_values(array_filter(array_map('intval', $cached_ids)));
-    }
-
-    $post_ids = mazaq_rotation_get_published_post_ids();
-    set_transient(MAZAQ_BROWSER_NOTIFICATIONS_IDS_TRANSIENT, $post_ids, 30 * MINUTE_IN_SECONDS);
-
-    return $post_ids;
-}
-
-/**
- * Pick one random published post.
- */
-function mazaq_browser_notifications_pick_random_post_id(): int
-{
-    $candidate_ids = mazaq_browser_notifications_get_candidate_ids();
-
-    if (empty($candidate_ids)) {
-        return 0;
-    }
-
-    $random_index = wp_rand(0, count($candidate_ids) - 1);
-
-    return (int) $candidate_ids[$random_index];
-}
-
-/**
- * Clear cached candidate IDs.
- */
-function mazaq_browser_notifications_invalidate_ids_cache(): void
-{
-    delete_transient(MAZAQ_BROWSER_NOTIFICATIONS_IDS_TRANSIENT);
-}
-
-/**
- * Invalidate notification caches when posts change.
- */
-function mazaq_browser_notifications_invalidate_ids_on_save(int $post_id, WP_Post $post): void
-{
-    if (wp_is_post_revision($post_id) || wp_is_post_autosave($post_id)) {
-        return;
-    }
-
-    if ($post->post_type !== 'post') {
-        return;
-    }
-
-    mazaq_browser_notifications_invalidate_ids_cache();
-}
-add_action('save_post', 'mazaq_browser_notifications_invalidate_ids_on_save', 10, 2);
-
-/**
- * Invalidate cached IDs after a post is deleted.
- */
-function mazaq_browser_notifications_invalidate_ids_on_delete(int $post_id): void
-{
-    if (get_post_type($post_id) !== 'post') {
-        return;
-    }
-
-    mazaq_browser_notifications_invalidate_ids_cache();
-}
-add_action('deleted_post', 'mazaq_browser_notifications_invalidate_ids_on_delete');
-
-/**
- * Invalidate cached IDs when post publish status changes.
- */
-function mazaq_browser_notifications_invalidate_ids_on_transition(string $new_status, string $old_status, WP_Post $post): void
-{
-    if ($post->post_type !== 'post' || $new_status === $old_status) {
-        return;
-    }
-
-    mazaq_browser_notifications_invalidate_ids_cache();
-}
-add_action('transition_post_status', 'mazaq_browser_notifications_invalidate_ids_on_transition', 10, 3);
-
-/**
  * Send and store the daily random notification.
  */
 function mazaq_browser_notifications_handle_daily_event(): void
@@ -202,7 +116,7 @@ function mazaq_browser_notifications_handle_daily_event(): void
         return;
     }
 
-    $post_id = mazaq_browser_notifications_pick_random_post_id();
+    $post_id = mazaq_article_pool_random_id();
     if ($post_id <= 0) {
         return;
     }

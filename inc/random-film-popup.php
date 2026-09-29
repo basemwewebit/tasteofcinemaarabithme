@@ -2,77 +2,6 @@
 
 declare(strict_types=1);
 
-const MAZAQ_RANDOM_FILM_IDS_TRANSIENT = 'mazaq_random_film_ids';
-
-/**
- * Fetch all published post IDs in batches, then cache them for reuse.
- *
- * @return int[]
- */
-function mazaq_random_film_get_candidate_ids(): array
-{
-    $cached_ids = get_transient(MAZAQ_RANDOM_FILM_IDS_TRANSIENT);
-    if (is_array($cached_ids)) {
-        return array_values(array_filter(array_map('intval', $cached_ids)));
-    }
-
-    $post_ids = mazaq_rotation_get_published_post_ids();
-    set_transient(MAZAQ_RANDOM_FILM_IDS_TRANSIENT, $post_ids, 30 * MINUTE_IN_SECONDS);
-
-    return $post_ids;
-}
-
-/**
- * Fetch post IDs for one list/category without persistent cache.
- *
- * @return int[]
- */
-function mazaq_random_film_get_candidate_ids_by_category(int $category_id): array
-{
-    if ($category_id <= 0) {
-        return [];
-    }
-
-    $category_term = get_term($category_id, 'category');
-    if (!$category_term || is_wp_error($category_term)) {
-        return [];
-    }
-
-    if ((int) ($category_term->count ?? 0) <= 0) {
-        return [];
-    }
-
-    return mazaq_rotation_get_published_post_ids(['cat' => $category_id]);
-}
-
-/**
- * Pick one random post ID, optionally excluding recently shown IDs.
- */
-function mazaq_random_film_pick_post_id(array $exclude_ids = [], int $category_id = 0): int
-{
-    $candidate_ids = $category_id > 0
-        ? mazaq_random_film_get_candidate_ids_by_category($category_id)
-        : mazaq_random_film_get_candidate_ids();
-
-    if (empty($candidate_ids)) {
-        return 0;
-    }
-
-    $exclude_lookup = array_fill_keys(array_values(array_filter(array_map('intval', $exclude_ids))), true);
-    $filtered_ids = [];
-
-    foreach ($candidate_ids as $candidate_id) {
-        if (!isset($exclude_lookup[$candidate_id])) {
-            $filtered_ids[] = $candidate_id;
-        }
-    }
-
-    $pool = !empty($filtered_ids) ? $filtered_ids : $candidate_ids;
-    $random_index = wp_rand(0, count($pool) - 1);
-
-    return (int) $pool[$random_index];
-}
-
 /**
  * Build short synopsis with content fallback when excerpt is empty.
  */
@@ -141,7 +70,7 @@ function mazaq_ajax_get_random_film(): void
         $exclude_ids = array_slice($exclude_ids, -20);
     }
 
-    $post_id = mazaq_random_film_pick_post_id($exclude_ids, $category_id);
+    $post_id = mazaq_article_pool_random_id($exclude_ids, $category_id);
     if ($post_id <= 0) {
         $no_results_message = $category_id > 0
             ? __('لا توجد مقالات متاحة في هذه القائمة حالياً.', 'mazaq')
@@ -165,49 +94,3 @@ function mazaq_ajax_get_random_film(): void
 }
 add_action('wp_ajax_mazaq_get_random_film', 'mazaq_ajax_get_random_film');
 add_action('wp_ajax_nopriv_mazaq_get_random_film', 'mazaq_ajax_get_random_film');
-
-/**
- * Invalidate cached IDs whenever post publishing state changes.
- */
-function mazaq_random_film_invalidate_cache(): void
-{
-    delete_transient(MAZAQ_RANDOM_FILM_IDS_TRANSIENT);
-}
-
-function mazaq_random_film_invalidate_cache_on_save(int $post_id, WP_Post $post): void
-{
-    if (wp_is_post_revision($post_id) || wp_is_post_autosave($post_id)) {
-        return;
-    }
-
-    if ($post->post_type !== 'post') {
-        return;
-    }
-
-    mazaq_random_film_invalidate_cache();
-}
-add_action('save_post', 'mazaq_random_film_invalidate_cache_on_save', 10, 2);
-
-function mazaq_random_film_invalidate_cache_on_delete(int $post_id): void
-{
-    if (get_post_type($post_id) !== 'post') {
-        return;
-    }
-
-    mazaq_random_film_invalidate_cache();
-}
-add_action('deleted_post', 'mazaq_random_film_invalidate_cache_on_delete');
-
-function mazaq_random_film_invalidate_cache_on_transition(string $new_status, string $old_status, WP_Post $post): void
-{
-    if ($post->post_type !== 'post') {
-        return;
-    }
-
-    if ($new_status === $old_status) {
-        return;
-    }
-
-    mazaq_random_film_invalidate_cache();
-}
-add_action('transition_post_status', 'mazaq_random_film_invalidate_cache_on_transition', 10, 3);

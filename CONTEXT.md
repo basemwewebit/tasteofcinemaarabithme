@@ -22,6 +22,10 @@ _Avoid_: raw heading, anchor id.
 
 ## Editorial mechanics
 
+**Article pool**:
+Every published article that editorial picks draw from — Content rotation batches, the Daily suggestion, and the random film discovery panel. It can be narrowed to one list (category).
+_Avoid_: candidate ids, published post ids.
+
 **Content rotation**:
 The daily no-repeat batch mechanic that selects which articles surface in rotating editorial slots.
 _Avoid_: daily rotation, random picks, shuffle.

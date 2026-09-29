@@ -27,6 +27,7 @@ $mazaq_includes = [
     'inc/notifications-schedule.php',
     'inc/notifications-web.php',
     'inc/notifications-admin.php',
+    'inc/article-pool.php',
     'inc/random-film-popup.php',
     'inc/content-rotation.php',
     'inc/continuous-programme.php',

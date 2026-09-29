@@ -1,12 +1,14 @@
 <?php
 
 /**
- * Standalone self-check for the Content rotation orchestration: pool reader,
- * config mapping, daily prepare matrix, scheduler, and the narrow today-batch
- * getter. No framework, no WP: run with `php tests/content-rotation-prepare-test.php`.
+ * Standalone self-check for the Content rotation orchestration: config
+ * mapping, daily prepare matrix, write-on-change, scheduler, and the narrow
+ * today-batch getter. No framework, no WP: run with
+ * `php tests/content-rotation-prepare-test.php`.
  *
- * Stubs the option store, WP_Query, clock, cron queue, and rotation settings
- * the engine touches, then drives the engine seam the way production does.
+ * Stubs the option store, transients, WP_Query (under the Article pool),
+ * clock, cron queue, and rotation settings the engine touches, then drives
+ * the engine seam the way production does.
  */
 
 declare(strict_types=1);
@@ -26,6 +28,7 @@ if (!function_exists('get_option')) {
 if (!function_exists('update_option')) {
     function update_option($key, $value, $autoload = null): bool
     {
+        $GLOBALS['fake_option_writes'] = ($GLOBALS['fake_option_writes'] ?? 0) + 1;
         $GLOBALS['fake_options'][$key] = $value;
 
         return true;
@@ -40,6 +43,29 @@ if (!function_exists('add_option')) {
         }
 
         $GLOBALS['fake_options'][$key] = $value;
+
+        return true;
+    }
+}
+
+// --- Fake transient store (the Article pool's cache) -----------------------
+$GLOBALS['fake_transients'] = [];
+
+if (!defined('MINUTE_IN_SECONDS')) {
+    define('MINUTE_IN_SECONDS', 60);
+}
+
+if (!function_exists('get_transient')) {
+    function get_transient($key)
+    {
+        return $GLOBALS['fake_transients'][$key] ?? false;
+    }
+}
+
+if (!function_exists('set_transient')) {
+    function set_transient($key, $value, $expiration = 0): bool
+    {
+        $GLOBALS['fake_transients'][$key] = $value;
 
         return true;
     }
@@ -176,6 +202,7 @@ if (!function_exists('add_action')) {
     }
 }
 
+require __DIR__ . '/../inc/article-pool.php';
 require __DIR__ . '/../inc/content-rotation.php';
 
 $hero_feature = [
@@ -215,25 +242,12 @@ $social_feature = [
 function reset_rotation_fakes(array $pool = [], array $settings = []): void
 {
     $GLOBALS['fake_options'] = [];
+    $GLOBALS['fake_transients'] = [];
     $GLOBALS['fake_published_pool'] = $pool;
     $GLOBALS['fake_query_count'] = 0;
     $GLOBALS['fake_cron'] = [];
     $GLOBALS['fake_rotation_settings'] = $settings;
 }
-
-// Pool reader: pages the whole pool, ints, unique, stable order args.
-reset_rotation_fakes(range(1, 450));
-$ids = mazaq_rotation_get_published_post_ids();
-rotation_test_check($ids === range(1, 450), 'pool reader pages all 450 ids in order');
-rotation_test_check($GLOBALS['fake_query_count'] === 3, 'pool reader runs one short final page');
-rotation_test_check($GLOBALS['fake_last_query_args']['posts_per_page'] === 200, 'pool reader pages 200 at a time');
-rotation_test_check($GLOBALS['fake_last_query_args']['orderby'] === 'ID', 'pool reader orders by id ascending');
-rotation_test_check($GLOBALS['fake_last_query_args']['fields'] === 'ids', 'pool reader fetches ids only');
-
-// Pool reader: extra query args pass through for the category variant.
-reset_rotation_fakes([5, 6]);
-mazaq_rotation_get_published_post_ids(['cat' => 7]);
-rotation_test_check($GLOBALS['fake_last_query_args']['cat'] === 7, 'pool reader passes category through');
 
 // Config: settings keys map per feature, counts clamp to the feature cap.
 reset_rotation_fakes([], ['hero_enabled' => 1, 'hero_count' => 9, 'social_enabled' => 0, 'social_count' => 99]);
@@ -277,12 +291,19 @@ $current = mazaq_rotation_prepare_today_batch($hero_feature);
 rotation_test_check($current['hero_post_ids'] === [11, 12], 'current batch is not regenerated');
 rotation_test_check($current['used_post_ids'] === [11, 12], 'current used ids stay stable');
 
+// Unchanged state: a repeat prepare on the same day writes nothing.
+$GLOBALS['fake_option_writes'] = 0;
+mazaq_rotation_prepare_today_batch($hero_feature);
+mazaq_rotation_prepare_today_batch($hero_feature);
+rotation_test_check($GLOBALS['fake_option_writes'] === 0, 'unchanged prepare never rewrites the state option');
+
 // Stale date: a new day deals a new batch.
 reset_rotation_fakes(range(1, 10), ['hero_enabled' => 1, 'hero_count' => 2]);
 $GLOBALS['fake_options']['test_hero_state'] = ['rotation_date' => '2024-04-30', 'hero_post_ids' => [1, 2], 'used_post_ids' => [1, 2]];
 $stale = mazaq_rotation_prepare_today_batch($hero_feature);
 rotation_test_check($stale['rotation_date'] === '2024-05-01', 'stale date restamps today');
 rotation_test_check(count(array_intersect($stale['hero_post_ids'], [1, 2])) === 0, 'stale date avoids the consumed cycle');
+rotation_test_check($GLOBALS['fake_options']['test_hero_state'] === $stale, 'stale date persists the new batch');
 
 // Invalid batch ids: trashed posts force a regenerate even for today.
 reset_rotation_fakes([11, 12, 13], ['hero_enabled' => 1, 'hero_count' => 2]);
@@ -298,6 +319,7 @@ $GLOBALS['fake_options']['test_hero_state'] = ['rotation_date' => '2024-05-01', 
 $forced = mazaq_rotation_prepare_today_batch($hero_feature, true);
 rotation_test_check($forced['rotation_date'] === '2024-05-01', 'forced prepare keeps today');
 rotation_test_check(count(array_intersect($forced['hero_post_ids'], [1, 2])) === 0, 'forced prepare redeals outside used');
+rotation_test_check($GLOBALS['fake_options']['test_hero_state'] === $forced, 'forced prepare persists the new batch');
 
 // Narrow getter: today's batch served without a rescan.
 reset_rotation_fakes([11, 12, 13], ['hero_enabled' => 1, 'hero_count' => 2]);

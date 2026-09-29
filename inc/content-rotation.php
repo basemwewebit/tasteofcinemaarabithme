@@ -10,7 +10,7 @@
  *     'extra_state'  => [],              // Extra state keys with defaults.
  *   ]
  *
- * The WP-wired half (state store, pool reader, scheduler, widget) hangs off
+ * The WP-wired half (state store, Article pool read, scheduler, widget) hangs off
  * the same config; see below. This file registers no hooks itself: each
  * feature file calls mazaq_rotation_register_feature() with its own config.
  */
@@ -189,12 +189,17 @@ function mazaq_rotation_get_state(array $feature): array
 }
 
 /**
- * Update the feature's state in the database.
+ * Update the feature's state in the database, skipping the write when the
+ * state is unchanged (admin requests prepare on every load).
  */
 function mazaq_rotation_update_state(array $feature, array $state): void
 {
-    mazaq_rotation_ensure_option_exists($feature);
-    update_option($feature['option'], mazaq_rotation_normalize_state($feature, $state), false);
+    $state = mazaq_rotation_normalize_state($feature, $state);
+    if ($state === mazaq_rotation_get_state($feature)) {
+        return;
+    }
+
+    update_option($feature['option'], $state, false);
 }
 
 /**
@@ -214,47 +219,6 @@ function mazaq_rotation_is_post_publishable(int $post_id): bool
 }
 
 /**
- * Scan every published post id in pages. Extra WP_Query args merge in for
- * narrower pools (e.g. ['cat' => $category_id]).
- *
- * @return int[]
- */
-function mazaq_rotation_get_published_post_ids(array $extra_args = []): array
-{
-    $ids = [];
-    $page = 1;
-    $page_size = 200;
-
-    do {
-        $query = new WP_Query(array_merge(
-            [
-                'post_type' => 'post',
-                'post_status' => 'publish',
-                'fields' => 'ids',
-                'posts_per_page' => $page_size,
-                'paged' => $page,
-                'orderby' => 'ID',
-                'order' => 'ASC',
-                'ignore_sticky_posts' => true,
-                'no_found_rows' => true,
-                'update_post_meta_cache' => false,
-                'update_post_term_cache' => false,
-            ],
-            $extra_args
-        ));
-
-        $page_ids = array_map('intval', $query->posts);
-        if (!empty($page_ids)) {
-            $ids = array_merge($ids, $page_ids);
-        }
-
-        $page++;
-    } while (count($page_ids) === $page_size);
-
-    return array_values(array_unique($ids));
-}
-
-/**
  * Prepare the feature's batch for today, regenerating when forced, stale, or
  * holding unpublished ids.
  */
@@ -269,15 +233,15 @@ function mazaq_rotation_prepare_today_batch(array $feature, bool $force_regenera
     }
 
     $original_batch_ids = $state[$feature['batch_key']];
-    $published_ids = mazaq_rotation_get_published_post_ids();
-    $has_invalid_batch_posts = !empty(array_diff($original_batch_ids, $published_ids));
+    $pool_ids = mazaq_article_pool_ids();
+    $has_invalid_batch_posts = !empty(array_diff($original_batch_ids, $pool_ids));
 
-    $state = mazaq_rotation_prune_state($feature, $state, $published_ids);
+    $state = mazaq_rotation_prune_state($feature, $state, $pool_ids);
 
     $should_generate_new_batch = $force_regenerate || $state[$feature['date_key']] !== $today || $has_invalid_batch_posts;
 
     if ($should_generate_new_batch) {
-        $batch = mazaq_rotation_generate_batch($published_ids, $state['used_post_ids'], (int) $config['batch_size']);
+        $batch = mazaq_rotation_generate_batch($pool_ids, $state['used_post_ids'], (int) $config['batch_size']);
         $state[$feature['date_key']] = $today;
         $state[$feature['batch_key']] = $batch['batch_ids'];
         $state['used_post_ids'] = $batch['used_ids'];
