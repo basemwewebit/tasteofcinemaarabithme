@@ -52,9 +52,8 @@ function mazaq_schema_inject_film($graph, $context): array
 
     $film       = mazaq_schema_film_fields($post_id);
     $is_film     = (bool) apply_filters('mazaq_schema_is_film_review', ($film['film_title'] !== '' || $film['film_director'] !== ''), $post_id);
-    $headings   = function_exists('mazaq_extract_article_headings') ? mazaq_extract_article_headings($post_id) : [];
-    $list_items = array_values(array_filter($headings, static fn(array $h): bool => (int) ($h['level'] ?? 0) === 2));
-    $is_list    = count($list_items) >= 3;
+    $ranked     = function_exists('mazaq_ranked_list') ? mazaq_ranked_list(mazaq_extract_article_headings($post_id)) : null;
+    $is_list    = $ranked !== null;
 
     if (!$is_film && !$is_list) {
         return $graph;
@@ -132,24 +131,22 @@ function mazaq_schema_inject_film($graph, $context): array
     }
 
     if ($is_list) {
+        // Positions are the article's own ranks (a countdown runs 31..1), so the
+        // declared order follows the article rather than claiming ascending.
         $elements = [];
-        $position = 0;
-        foreach ($list_items as $item) {
-            $text = trim((string) ($item['text'] ?? ''));
-            if ($text === '') {
-                continue;
-            }
-            $position++;
-            $element = [
+        foreach ($ranked['items'] as $item) {
+            $elements[] = [
                 '@type'    => 'ListItem',
-                'position' => $position,
-                'name'     => $text,
+                'position' => $item['position'],
+                'name'     => $item['label'],
+                'url'      => $canonical . '#' . $item['id'],
             ];
-            if (!empty($item['id'])) {
-                $element['url'] = $canonical . '#' . $item['id'];
-            }
-            $elements[] = $element;
         }
+        $orders = [
+            'ascending'  => 'https://schema.org/ItemListOrderAscending',
+            'descending' => 'https://schema.org/ItemListOrderDescending',
+            'unordered'  => 'https://schema.org/ItemListUnordered',
+        ];
 
         if ($elements !== []) {
             $list = [
@@ -157,7 +154,7 @@ function mazaq_schema_inject_film($graph, $context): array
                 '@id'             => $list_id,
                 'name'            => get_the_title($post_id),
                 'numberOfItems'   => count($elements),
-                'itemListOrder'   => 'https://schema.org/ItemListOrderAscending',
+                'itemListOrder'   => $orders[$ranked['order']],
                 'itemListElement' => $elements,
             ];
             $graph[] = apply_filters('mazaq_schema_itemlist_data', $list, $post_id, $context);
