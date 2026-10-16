@@ -104,7 +104,11 @@
                             $inline_related_html = (string) ob_get_clean();
                         }
 
-                        echo mazaq_compose_article_body($content, $inline_related_html);
+                        echo mazaq_compose_article_body($content, $inline_related_html, static function (): string {
+                            ob_start();
+                            mazaq_render_ad('in_article');
+                            return (string) ob_get_clean();
+                        });
                         ?>
                     </div>
 

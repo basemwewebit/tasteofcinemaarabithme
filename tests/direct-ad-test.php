@@ -29,16 +29,6 @@ function esc_url_raw(string $url, array $protocols = []): string
 }
 
 function add_action(...$args): void {}
-function add_filter(...$args): void {}
-$GLOBALS['fake_in_loop'] = true;
-function is_admin(): bool { return false; }
-function is_feed(): bool { return false; }
-function is_embed(): bool { return false; }
-function wp_doing_ajax(): bool { return false; }
-function is_single(): bool { return true; }
-function is_main_query(): bool { return true; }
-function in_the_loop(): bool { return $GLOBALS['fake_in_loop']; }
-function wp_strip_all_tags(string $text): string { return strip_tags($text); }
 function esc_url(string $url): string { return $url; }
 function esc_attr(string $text): string { return htmlspecialchars($text, ENT_QUOTES); }
 function esc_attr__(string $text, string $domain = ''): string { return esc_attr($text); }
@@ -112,14 +102,5 @@ foreach (['hero_banner', 'mobile_menu', 'in_article', 'bottom_article', 'archive
     array_push($expected, "ad_slot_{$placement}", "ad_slot_{$placement}_direct_image", "ad_slot_{$placement}_direct_url");
 }
 rotation_test_check($ad_names === $expected, 'theme options list each rendered placement\'s three fields');
-
-// The article-body injection runs only in the main loop: excerpt/meta passes
-// through the same filter must not render (and so consume) any plates.
-$GLOBALS['fake_options'] = ['adsense_publisher_id' => 'ca-pub-1', 'ad_slot_in_article' => '1'];
-$body = str_repeat('<p>text</p>', 4);
-$GLOBALS['fake_in_loop'] = false;
-rotation_test_check(mazaq_inject_in_article_ads($body) === $body, 'no plates injected outside the main loop');
-$GLOBALS['fake_in_loop'] = true;
-rotation_test_check(str_contains(mazaq_inject_in_article_ads($body), 'data-slot-name="ad_slot_in_article"'), 'in-article plates injected in the main loop');
 
 echo "direct-ad-test: {$GLOBALS['rotation_test_passed']} checks passed\n";
