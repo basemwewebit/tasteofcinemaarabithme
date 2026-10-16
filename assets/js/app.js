@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function () {
             var toggleThemeClass = function () {
                 document.documentElement.classList.toggle('dark', isDark);
             };
-            if (document.startViewTransition && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            if (document.startViewTransition && !window.mazaqMotionReduced()) {
                 document.startViewTransition(toggleThemeClass);
             } else {
                 toggleThemeClass();
@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 localStorage.setItem('color-theme', isDark ? 'dark' : 'light');
             } catch (e) {}
 
-            var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            var prefersReduced = window.mazaqMotionReduced();
             if (prefersReduced) {
                 syncThemeBtn(isDark);
                 return;
@@ -760,6 +760,87 @@ document.addEventListener('DOMContentLoaded', function () {
         };
     }
 
+    // --- Reading preferences panel: a disclosure, not a dialog ---
+    var readingTools = document.querySelector('[data-reading-tools]');
+    var readingPrefs = window.mazaqReadingPreferences;
+    if (readingTools && readingPrefs) {
+        var toolsToggle = readingTools.querySelector('.reading-tools__toggle');
+        var toolsPanel = document.getElementById('reading-tools-panel');
+        var sizeValue = readingTools.querySelector('[data-size-value]');
+        var sizeSteps = Array.prototype.slice.call(readingTools.querySelectorAll('[data-size-step]'));
+        var prefSwitches = Array.prototype.slice.call(readingTools.querySelectorAll('[data-pref]'));
+
+        var syncReadingTools = function () {
+            var prefs = readingPrefs.get();
+            sizeValue.textContent = Math.round(readingPrefs.textScale(prefs.size) * 100) + '%';
+            sizeSteps.forEach(function (btn) {
+                var step = Number(btn.getAttribute('data-size-step'));
+                var atLimit = step < 0 ? prefs.size <= readingPrefs.sizeMin : prefs.size >= readingPrefs.sizeMax;
+                // aria-disabled, not disabled: a focused button must keep focus at the limit.
+                btn.setAttribute('aria-disabled', atLimit ? 'true' : 'false');
+            });
+            prefSwitches.forEach(function (btn) {
+                btn.setAttribute('aria-pressed', prefs[btn.getAttribute('data-pref')] ? 'true' : 'false');
+            });
+        };
+
+        var setToolsOpen = function (open, returnFocus) {
+            toolsPanel.hidden = !open;
+            toolsToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+            if (!open && returnFocus) {
+                toolsToggle.focus();
+            }
+        };
+
+        toolsToggle.addEventListener('click', function () {
+            setToolsOpen(toolsPanel.hidden, false);
+        });
+
+        sizeSteps.forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                if (btn.getAttribute('aria-disabled') === 'true') return;
+                readingPrefs.set({ size: readingPrefs.get().size + Number(btn.getAttribute('data-size-step')) });
+            });
+        });
+
+        prefSwitches.forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var key = btn.getAttribute('data-pref');
+                var patch = {};
+                patch[key] = !readingPrefs.get()[key];
+                readingPrefs.set(patch);
+            });
+        });
+
+        readingTools.querySelector('[data-reading-reset]').addEventListener('click', function () {
+            readingPrefs.reset();
+        });
+
+        readingTools.addEventListener('keydown', function (e) {
+            if ((e.key === 'Escape' || e.key === 'Esc') && !toolsPanel.hidden) {
+                e.preventDefault();
+                setToolsOpen(false, true);
+            }
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!toolsPanel.hidden && !readingTools.contains(e.target)) {
+                setToolsOpen(false, false);
+            }
+        });
+
+        // Focus leaving the panel (Tab past its end) closes it.
+        readingTools.addEventListener('focusout', function (e) {
+            if (!toolsPanel.hidden && e.relatedTarget && !readingTools.contains(e.relatedTarget)) {
+                setToolsOpen(false, false);
+            }
+        });
+
+        document.addEventListener('mazaq:reading-preferences', syncReadingTools);
+        syncReadingTools();
+        readingTools.hidden = false;
+    }
+
     var backToTopBtn = document.getElementById('back-to-top');
     if (backToTopBtn) {
         var showThreshold = 300;
@@ -773,7 +854,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         backToTopBtn.addEventListener('click', function (e) {
             e.preventDefault();
-            var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            var prefersReduced = window.mazaqMotionReduced();
             if (prefersReduced) { window.scrollTo(0, 0); return; }
             var start = window.scrollY;
             var startTime = performance.now();

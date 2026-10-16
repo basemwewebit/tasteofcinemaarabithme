@@ -32,3 +32,26 @@ function mazaq_theme_setup(): void
     $GLOBALS['content_width'] = 800;
 }
 add_action('after_setup_theme', 'mazaq_theme_setup');
+
+/**
+ * Hand an article image's own size to CSS, so it can be capped in height
+ * without upscaling, distorting, or losing its reserved space before load:
+ * CSS alone can't read the width/height attributes.
+ */
+function mazaq_content_image_size_vars(string $image): string
+{
+    if (!preg_match('/\swidth="(\d+)"/', $image, $width) || !preg_match('/\sheight="(\d+)"/', $image, $height)) {
+        return $image;
+    }
+    if ((int) $width[1] === 0 || (int) $height[1] === 0) {
+        return $image;
+    }
+
+    $vars = sprintf('--img-w:%d;--img-h:%d;', (int) $width[1], (int) $height[1]);
+    if (preg_match('/\sstyle="/', $image)) {
+        return (string) preg_replace('/\sstyle="/', ' style="' . $vars, $image, 1);
+    }
+
+    return (string) preg_replace('/^<img\s/', '<img style="' . $vars . '" ', $image, 1);
+}
+add_filter('wp_content_img_tag', 'mazaq_content_image_size_vars');

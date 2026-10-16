@@ -38,17 +38,9 @@ $loader_logo_src = mazaq_theme_logo_url(152);
             document.documentElement.classList.add('toc-js');
             var isDark = localStorage.getItem('color-theme') === 'dark' || (!localStorage.getItem('color-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
             if(isDark){ document.documentElement.classList.add('dark'); }
-            try {
-                var storedFont = localStorage.getItem('mazaq-article-font-size');
-                if (storedFont) {
-                    var val = parseFloat(storedFont);
-                    if (val >= 0.875 && val <= 1.625) {
-                        document.documentElement.style.setProperty('--article-font-size-custom', val + 'rem');
-                    }
-                }
-            } catch (e) {}
         })();
     </script>
+    <script><?php echo file_get_contents(get_template_directory() . '/assets/js/reading-preferences.js'); // phpcs:ignore WordPress.Security.EscapeOutput -- theme-owned script ?></script>
     <script>
         (function () {
             try {

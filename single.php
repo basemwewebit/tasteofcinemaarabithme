@@ -52,7 +52,6 @@
                 <aside class="programme" aria-label="<?php esc_attr_e('برنامج القراءة', 'mazaq'); ?>">
                     <?php get_template_part('template-parts/content/film-infobox'); ?>
                     <?php get_template_part('template-parts/common/reading-rail'); ?>
-                    <?php get_template_part('template-parts/common/font-controls'); ?>
                 </aside>
 
                 <div class="programme-main">

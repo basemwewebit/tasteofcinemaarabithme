@@ -88,6 +88,16 @@ _Avoid_: dummy ad, when referring to the real thing.
 A contact message or a newsletter signup sent by a reader; every one passes the same intake checks (nonce, honeypot, per-form rate limit; reCAPTCHA for contact messages) before it is stored.
 _Avoid_: form submission, contact_message (that is the storage post type).
 
+## Reading preferences
+
+**Reading preferences**:
+A reader's own choices for how every page reads on their device: text size, high contrast, underlined links, a clearer font, and stopped motion. They follow the reader across pages and visits, and they start with stopped motion already on when the device asks for reduced motion. Text size is a single setting for the whole site; no page has its own size control.
+_Avoid_: accessibility panel, a11y widget, article font size.
+
+**Content image**:
+Any image that carries editorial material — in an article body, a featured image, an Editorial card, or an archive grid. All share one corner shape, never grow beyond their own size or their container, and reserve their space before they load. Large atmospheric surfaces (the Continuous Programme stage, full-bleed heroes) and author avatars are not Content images.
+_Avoid_: thumbnail, when meaning any image.
+
 ## Ownership boundaries
 
 **Theme-owned finding**:

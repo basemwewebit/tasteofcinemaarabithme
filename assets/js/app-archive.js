@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function () {
         function focusDynamicContent(target) {
             if (!target || typeof target.focus !== 'function') return;
             window.requestAnimationFrame(function () {
-                const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                const prefersReducedMotion = window.mazaqMotionReduced();
                 if (typeof randomFilmResult.scrollIntoView === 'function') {
                     randomFilmResult.scrollIntoView({
                         behavior: prefersReducedMotion ? 'auto' : 'smooth',

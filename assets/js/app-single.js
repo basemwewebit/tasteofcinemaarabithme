@@ -3,10 +3,8 @@
  *
  * - Reading progress beam (top) + projector spark.
  * - The programme index: scroll-spy margin index (>=1360px) + mobile puck/sheet.
- * - Article font-size controls.
  */
 document.addEventListener('DOMContentLoaded', function () {
-    var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     function throttle(func, limit) {
         var inThrottle;
@@ -32,7 +30,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // --- Element handles ---
     var progressEl = document.getElementById('reading-progress-container');
-    var article = document.querySelector('.article-content');
     var rail = document.querySelector('[data-reading-rail]');
     var puck = document.querySelector('[data-reading-puck]');
     var puckToggle = puck ? puck.querySelector('[data-puck-toggle]') : null;
@@ -44,14 +41,10 @@ document.addEventListener('DOMContentLoaded', function () {
     var railList = rail ? rail.querySelector('.programme-index__list') : null;
     var sheetItems = sheet ? Array.prototype.slice.call(sheet.querySelectorAll('[data-sheet-item]')) : [];
 
-    // The puck and the font buttons are JS-only controls: keep them out of the
+    // The puck is a JS-only control: keep it out of the
     // tab order entirely when this script never ran.
     if (puck) {
         puck.classList.add('is-live');
-    }
-    var fontControls = document.querySelector('.font-controls');
-    if (fontControls) {
-        fontControls.classList.add('is-live');
     }
 
     // Read the sections off the rendered index instead of re-querying the article:
@@ -184,7 +177,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
         var top = window.scrollY + target.getBoundingClientRect().top - 90;
-        window.scrollTo({ top: Math.max(0, top), behavior: prefersReduced ? 'auto' : 'smooth' });
+        window.scrollTo({ top: Math.max(0, top), behavior: window.mazaqMotionReduced() ? 'auto' : 'smooth' });
         if (window.history && window.history.replaceState) {
             window.history.replaceState(null, '', '#' + id);
         }
@@ -242,7 +235,7 @@ document.addEventListener('DOMContentLoaded', function () {
         puckToggle.setAttribute('aria-expanded', 'false');
         document.removeEventListener('click', onOutsideClick, true);
         document.removeEventListener('keydown', onSheetKeydown);
-        if (prefersReduced) {
+        if (window.mazaqMotionReduced()) {
             sheet.hidden = true;
         } else {
             sheetCloseTimer = window.setTimeout(function () {
@@ -277,51 +270,4 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
-
-    // --- Font size controls ---
-    var fontStorageKey = 'mazaq-article-font-size';
-    var fontMin = 0.875;
-    var fontMax = 1.625;
-    var currentFontSize = 1.125;
-    try {
-        // getItem throws in browsers with storage blocked entirely; losing the
-        // preference must not cost the rest of this init.
-        var storedFont = parseFloat(localStorage.getItem(fontStorageKey) || '');
-        if (isFinite(storedFont)) {
-            currentFontSize = storedFont;
-        }
-    } catch (e) {}
-    currentFontSize = Math.max(fontMin, Math.min(fontMax, currentFontSize));
-
-    function applyFontSize() {
-        document.documentElement.style.setProperty('--article-font-size-custom', currentFontSize + 'rem');
-        var el = document.querySelector('.article-content');
-        if (el) {
-            el.classList.add('font-resized');
-        }
-        try {
-            localStorage.setItem(fontStorageKey, String(currentFontSize));
-        } catch (e) {}
-    }
-
-    if (article) {
-        applyFontSize();
-    }
-
-    document.addEventListener('click', function (e) {
-        if (e.target.closest('#font-increase')) {
-            e.preventDefault();
-            if (currentFontSize < fontMax) {
-                currentFontSize += 0.125;
-                applyFontSize();
-            }
-        }
-        if (e.target.closest('#font-decrease')) {
-            e.preventDefault();
-            if (currentFontSize > fontMin) {
-                currentFontSize -= 0.125;
-                applyFontSize();
-            }
-        }
-    });
 });
