@@ -55,10 +55,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Read the sections off the rendered index instead of re-querying the article:
-    // single.php injects the inline-related block *into* .article-content, and its
-    // <h3 id> answers to 'h2[id], h3[id]' as if it were a section. That shifted every
-    // highlight after the ~60% mark by one and left the final heading with none at all.
-    // Order is kept 1:1 with the index (misses stay as null) so headings[i] always
+    // the body also holds headings that are not Article sections (the Inline related
+    // block's <h3 id>), and only the index knows which ones are. Order is kept 1:1 with the index (misses stay as null) so headings[i] always
     // addresses railItems[i] and sheetItems[i] -- one template emits both lists from
     // the same headings, so they always agree.
     var headings = railItems.map(function (item) {

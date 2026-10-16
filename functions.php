@@ -19,6 +19,7 @@ $mazaq_includes = [
     'inc/breadcrumb.php',
     'inc/helpers.php',
     'inc/article-headings.php',
+    'inc/article-body.php',
     'inc/film-graph.php',
     'inc/notifications-settings.php',
     'inc/notifications-store.php',

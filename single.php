@@ -79,8 +79,8 @@
                             }
                         }
 
+                        $inline_related_html = '';
                         if (!empty($inline_related_posts)) {
-                            // Render the inline related posts block
                             ob_start();
                             ?>
                             <aside class="inline-related" aria-labelledby="inline-related-title">
@@ -101,27 +101,10 @@
                                 </div>
                             </aside>
                             <?php
-                            $inline_related_html = ob_get_clean();
-
-                            // Split content by paragraph tags to find the 60% mark
-                            $paragraphs = explode('</p>', $content);
-                            $para_count = count($paragraphs);
-                            if ($para_count > 3) {
-                                $insert_at = (int) floor($para_count * 0.6);
-                                $insert_at = max(2, min($para_count - 2, $insert_at));
-                                // Splitting on </p> cannot see the enclosing tag, so walk back
-                                // off captioned figures and quotes rather than swallow the block.
-                                while ($insert_at > 2 && preg_match('/(<figure|<blockquote|wp-caption-text)/i', $paragraphs[$insert_at])) {
-                                    $insert_at--;
-                                }
-                                $paragraphs[$insert_at] .= $inline_related_html;
-                                $content = implode('</p>', $paragraphs);
-                            } else {
-                                $content .= $inline_related_html;
-                            }
+                            $inline_related_html = (string) ob_get_clean();
                         }
 
-                        echo $content;
+                        echo mazaq_compose_article_body($content, $inline_related_html);
                         ?>
                     </div>
 

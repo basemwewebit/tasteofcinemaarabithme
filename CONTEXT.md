@@ -28,6 +28,10 @@ _Avoid_: raw heading, anchor id.
 An article whose three or more H2 Article sections form its body list. When its sections carry their own ranks (counting up or down), those ranked sections are its items at those ranks; otherwise every H2 section is an item, by position.
 _Avoid_: listicle; ItemList (that is its schema wire format).
 
+**Article body composition**:
+Placing everything inserted into an article's body (in-article ad plates, the Inline related block) at safe points. A **Safe point** is just after a top-level paragraph with text, never inside a blockquote, figure, list, table or ad plate; inserts are never counted as paragraphs. The **Inline related block** is the related-articles block placed inside the body at the safe point nearest 60%.
+_Avoid_: injection point, split point.
+
 ## Editorial mechanics
 
 **Article pool**:
