@@ -21,66 +21,52 @@ class TOC_Recaptcha_Hooks
 
     public static function enqueue_scripts(): void
     {
+        // US2: Login / Register / Lost Password pages
+        if (in_array($GLOBALS['pagenow'], ['wp-login.php', 'wp-register.php'], true)) {
+            self::load(['#loginform', '#registerform', '#lostpasswordform']);
+        }
+    }
+
+    /**
+     * Load reCAPTCHA for the forms matching $selectors on this page view. Reader
+     * submission forms call this as they render (mazaq_reader_submission_fields).
+     *
+     * @param string[] $selectors Fixed CSS selectors, never user input.
+     */
+    public static function load(array $selectors): void
+    {
         // Use improved environment detection
         if (class_exists('TOC_Recaptcha_Verify') && TOC_Recaptcha_Verify::should_bypass_recaptcha()) {
             return;
         }
 
         $site_key = get_option('toc_recaptcha_site_key', '');
-        
+
         // Skip loading if no site key is configured
         if (empty($site_key)) {
             return;
         }
 
-        $should_load = false;
-        $selectors = [];
+        wp_enqueue_script(
+            'google-recaptcha-enterprise',
+            'https://www.google.com/recaptcha/enterprise.js?render=' . esc_attr($site_key),
+            [],
+            null,
+            true
+        );
 
-        // Define allowed CSS selectors for security
-        $login_selectors = ['#loginform', '#registerform', '#lostpasswordform'];
-        $contact_selector = 'form:has(button[name="mazaq_contact_submit"])';
+        wp_enqueue_script(
+            'toc-recaptcha-handler',
+            get_template_directory_uri() . '/assets/js/recaptcha-handler.js',
+            ['google-recaptcha-enterprise'],
+            filemtime(get_template_directory() . '/assets/js/recaptcha-handler.js'),
+            true
+        );
 
-        // US2: Login / Register / Lost Password pages
-        if (in_array($GLOBALS['pagenow'], ['wp-login.php', 'wp-register.php'], true)) {
-            $should_load = true;
-            $selectors = array_merge($selectors, $login_selectors);
-        }
-
-        // US1: Contact page
-        if (is_page_template('page-contact.php')) {
-            $should_load = true;
-            $selectors[] = $contact_selector;
-        }
-
-        if ($should_load) {
-            wp_enqueue_script(
-                'google-recaptcha-enterprise',
-                'https://www.google.com/recaptcha/enterprise.js?render=' . esc_attr($site_key),
-                [],
-                null,
-                true
-            );
-
-            wp_enqueue_script(
-                'toc-recaptcha-handler',
-                get_template_directory_uri() . '/assets/js/recaptcha-handler.js',
-                ['google-recaptcha-enterprise'],
-                filemtime(get_template_directory() . '/assets/js/recaptcha-handler.js'),
-                true
-            );
-
-            // Sanitize selectors for JavaScript output
-            // wp_localize_script uses wp_json_encode() which handles proper JSON encoding
-            $safe_selectors = array_map(static function (string $selector): string {
-                // Remove any potentially harmful characters, keep safe CSS selector syntax
-                return preg_replace('/[^a-zA-Z0-9_\-\[\]\(\)\.\:\#\=\s\,>~+"\']/', '', $selector);
-            }, $selectors);
-
-            wp_localize_script('toc-recaptcha-handler', 'tocRecaptchaConfig', [
-                'siteKey'   => $site_key,
-                'selectors' => $safe_selectors,
-            ]);
-        }
+        wp_localize_script('toc-recaptcha-handler', 'tocRecaptchaConfig', [
+            'siteKey'   => $site_key,
+            'selectors' => $selectors,
+        ]);
     }
 
     /**

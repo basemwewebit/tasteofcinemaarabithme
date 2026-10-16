@@ -15,7 +15,7 @@ $mazaq_includes = [
     'inc/ads.php',
     'inc/analytics.php',
     'inc/post-views.php',
-    'inc/contact-form.php',
+    'inc/reader-submissions.php',
     'inc/infinite-scroll.php',
     'inc/breadcrumb.php',
     'inc/helpers.php',

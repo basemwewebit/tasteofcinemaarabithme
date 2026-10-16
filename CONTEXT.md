@@ -82,6 +82,12 @@ _Avoid_: house ad (that is our own promotion), sponsor ad.
 An advertisement filled by the ad network (AdSense) for an Ad placement.
 _Avoid_: dummy ad, when referring to the real thing.
 
+## Reader intake
+
+**Reader submission**:
+A contact message or a newsletter signup sent by a reader; every one passes the same intake checks (nonce, honeypot, per-form rate limit; reCAPTCHA for contact messages) before it is stored.
+_Avoid_: form submission, contact_message (that is the storage post type).
+
 ## Ownership boundaries
 
 **Theme-owned finding**:

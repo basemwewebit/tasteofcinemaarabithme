@@ -23,8 +23,7 @@ $status = isset($_GET['contact_status']) ? sanitize_text_field((string) $_GET['c
         <div class="w-full lg:w-2/3 bg-slate-100 dark:bg-slate-800 rounded-lg p-8 border border-slate-200 dark:border-slate-700">
             <h2 class="text-headline text-slate-900 dark:text-white mb-8">أرسل رسالة</h2>
             <form method="post" class="flex flex-col gap-6">
-                <?php wp_nonce_field('mazaq_contact_form', 'mazaq_contact_nonce'); ?>
-                <input type="hidden" name="website" value="">
+                <?php mazaq_reader_submission_fields('contact'); ?>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label for="contact-name" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">الاسم الكامل</label>
@@ -43,7 +42,7 @@ $status = isset($_GET['contact_status']) ? sanitize_text_field((string) $_GET['c
                     <label for="contact-message" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">نص الرسالة</label>
                     <textarea id="contact-message" name="message" rows="6" placeholder="نص الرسالة" required class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 outline-none focus:border-primary text-slate-800 dark:text-white resize-none"></textarea>
                 </div>
-                <button type="submit" name="mazaq_contact_submit" value="1" class="bg-primary hover:bg-slate-900 dark:hover:bg-white text-slate-900 hover:text-white dark:hover:text-slate-900 font-bold text-lg px-8 py-4 rounded-xl transition-colors shadow-md self-start w-full md:w-auto">إرسال الرسالة</button>
+                <button type="submit" class="bg-primary hover:bg-slate-900 dark:hover:bg-white text-slate-900 hover:text-white dark:hover:text-slate-900 font-bold text-lg px-8 py-4 rounded-xl transition-colors shadow-md self-start w-full md:w-auto">إرسال الرسالة</button>
             </form>
         </div>
 

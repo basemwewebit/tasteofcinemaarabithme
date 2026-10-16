@@ -7,10 +7,17 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
     }
 
-    const forms = document.querySelectorAll(tocRecaptchaConfig.selectors.join(','));
+    // A selector may match a field inside the form (a Reader submission's marker) or the form itself.
+    const forms = Array.from(document.querySelectorAll(tocRecaptchaConfig.selectors.join(',')), function (el) {
+        return el.form || el;
+    });
 
     forms.forEach(function (form) {
         form.addEventListener('submit', function (e) {
+            // Google's script blocked: submit without a token so the server's rejection shows, not a dead button.
+            if (typeof grecaptcha === 'undefined' || !grecaptcha.enterprise) {
+                return;
+            }
             e.preventDefault();
 
             grecaptcha.enterprise.ready(function () {
