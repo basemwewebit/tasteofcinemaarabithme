@@ -39,7 +39,7 @@ $bg_url = $bg_id ? wp_get_attachment_image_url($bg_id, 'full') : '';
     <?php get_template_part('template-parts/archive/archive-feed', null, [
         'empty_message' => __('لا توجد مقالات في هذا التصنيف حالياً.', 'mazaq'),
         'empty_link' => true,
-        'group_by_category' => false,
+        'groupings' => ['month'],
     ]); ?>
 </main>
 
