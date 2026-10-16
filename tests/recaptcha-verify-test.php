@@ -110,6 +110,10 @@ google_answers(['tokenProperties' => ['valid' => true, 'action' => 'submit'], 'r
 rotation_test_check(!verify(), 'a missing score is 0.0 and is rejected');
 
 reset_recaptcha();
+google_answers(['tokenProperties' => ['valid' => true, 'action' => 'submit'], 'riskAnalysis' => ['score' => ['0.9']]]);
+rotation_test_check(!verify(), 'a score that isn\'t a number is 0.0 and is rejected');
+
+reset_recaptcha();
 google_answers(assessment([], 0.3));
 rotation_test_check(!verify(), 'a score below the threshold is rejected');
 
@@ -159,6 +163,10 @@ foreach (['0', '1'] as $fail_open) {
     reset_recaptcha(['toc_recaptcha_fail_open' => $fail_open]);
     $GLOBALS['fake_response'] = ['code' => 404, 'body' => '<html>Not Found</html>'];
     rotation_test_check(!verify(), "a 4xx without JSON is rejected (fail-open {$fail_open})");
+
+    reset_recaptcha(['toc_recaptcha_fail_open' => $fail_open]);
+    $GLOBALS['fake_response'] = ['code' => 302, 'body' => '<html>Moved</html>'];
+    rotation_test_check(!verify(), "a redirect is rejected (fail-open {$fail_open})");
 
     reset_recaptcha(['toc_recaptcha_fail_open' => $fail_open]);
     google_answers(['error' => ['code' => 403, 'message' => 'denied']]);

@@ -70,7 +70,7 @@ class TOC_Recaptcha_Admin
 
         add_settings_field(
             'toc_recaptcha_secret_key',
-            __('Secret Key/API Key', 'tasteofcinemaarabithme'),
+            __('API Key', 'tasteofcinemaarabithme'),
             [self::class, 'render_secret_key_field'],
             'toc-recaptcha-settings',
             'toc_recaptcha_main_section'
@@ -139,12 +139,11 @@ class TOC_Recaptcha_Admin
         echo ' ' . esc_html__('Let logins and form submissions through when Google cannot be reached (network error or Google outage). Invalid tokens, low scores and missing keys are still rejected.', 'tasteofcinemaarabithme');
         echo '</label>';
 
-        $current_env = function_exists('wp_get_environment_type') ? wp_get_environment_type() : 'unknown';
-        if (in_array($current_env, ['local', 'development'], true)) {
+        if (TOC_Recaptcha_Verify::should_bypass_recaptcha()) {
             /* translators: %s: the WordPress environment type */
-            echo '<p class="description">' . esc_html(sprintf(__('Current environment: %s. reCAPTCHA is skipped entirely here.', 'tasteofcinemaarabithme'), $current_env)) . '</p>';
+            echo '<p class="description">' . esc_html(sprintf(__('Current environment: %s. reCAPTCHA is skipped entirely here.', 'tasteofcinemaarabithme'), wp_get_environment_type())) . '</p>';
         } else {
-            echo '<p class="description notice notice-warning inline" style="margin-top:10px;">' . esc_html__('Warning: Enabling this on production is a security risk!', 'tasteofcinemaarabithme') . '</p>';
+            echo '<p class="description">' . esc_html__('While Google is unreachable, logins and forms are unprotected; leave this off if you would rather block them during an outage.', 'tasteofcinemaarabithme') . '</p>';
         }
     }
 
