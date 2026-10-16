@@ -3,7 +3,6 @@
  * Shared archive feed for the archive family: curated lead + filing-cabinet index.
  *
  * Args:
- * - ad_context       (string|null) Context passed to ad injections; null disables ads.
  * - empty_message    (string)      Message shown when no posts.
  * - empty_link       (bool)        Whether to show the "browse latest posts" link.
  * - group_by_category (bool)       Whether the index may be grouped by category.
@@ -12,13 +11,11 @@
  */
 
 $args = wp_parse_args($args ?? [], [
-    'ad_context' => 'archive',
     'empty_message' => __('لا توجد مقالات.', 'mazaq'),
     'empty_link' => true,
     'group_by_category' => true,
 ]);
 
-$ad_context = $args['ad_context'];
 $empty_message = (string) $args['empty_message'];
 $empty_link = (bool) $args['empty_link'];
 $group_by_category = (bool) $args['group_by_category'];
@@ -45,22 +42,18 @@ $is_first_page = ((int) (get_query_var('paged') ?: 1)) <= 1;
 
     <div class="archive-index" data-archive-index="true">
         <?php
-        $post_index = 0;
-        $ad_enabled = get_option('toc_ad_injection_enabled', false);
-        $ad_interval = (int) get_option('toc_ad_injection_interval', 6);
+        // Position counts across pages; the page-1 lead is position 1.
+        $position = (max(1, (int) get_query_var('paged')) - 1) * (int) get_query_var('posts_per_page');
 
         while (have_posts()) : the_post();
-            $post_index++;
+            $position++;
 
-            if ($is_first_page && $post_index === 1) {
+            if ($is_first_page && $position === 1) {
                 continue;
             }
 
+            mazaq_render_in_feed_ad($position);
             get_template_part('template-parts/archive/archive-row');
-
-            if ($ad_context && $ad_enabled && $ad_interval > 0 && $post_index % $ad_interval === 0) {
-                get_template_part('template-parts/ads/ad-grid', null, ['slot' => 'ad_slot_archive_banner']);
-            }
         endwhile;
         ?>
     </div>

@@ -26,7 +26,6 @@
 
 <main id="main-content" class="archive-main max-w-7xl mx-auto px-4 pb-20">
     <?php get_template_part('template-parts/archive/archive-feed', null, [
-        'ad_context' => 'tag',
         'empty_message' => __('لا توجد مقالات ضمن هذا الوسم حالياً.', 'mazaq'),
         'empty_link' => false,
     ]); ?>

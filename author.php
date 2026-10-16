@@ -85,7 +85,6 @@ $author_category_counts = array_slice($author_category_counts, 0, 3);
     </section>
 
     <?php get_template_part('template-parts/archive/archive-feed', null, [
-        'ad_context' => 'author',
         'empty_message' => __('لم يُنشر أي مقال بعد.', 'mazaq'),
         'empty_link' => true,
     ]); ?>

@@ -39,14 +39,10 @@ $stars  = ($agg !== null && function_exists('mazaq_film_rating_stars'))
 <main id="main-content" class="max-w-7xl mx-auto px-4 pb-20 flex-1 w-full">
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10">
         <?php if (have_posts()) :
-            $post_index = 0;
+            $position = (max(1, (int) get_query_var('paged')) - 1) * (int) get_query_var('posts_per_page');
             while (have_posts()) : the_post();
-                $post_index++;
+                mazaq_render_in_feed_ad(++$position);
                 get_template_part('template-parts/content/card-category');
-
-                if ($post_index % 6 === 0) {
-                    get_template_part('template-parts/ads/ad-grid', null, ['slot' => 'ad_slot_archive_banner']);
-                }
             endwhile;
         else : ?>
             <div class="col-span-full text-center py-16">
