@@ -92,9 +92,31 @@ function mazaq_extract_article_headings(int $post_id): array
             'level' => $row['level'],
             'text' => $row['text'],
             'number' => $row['number'],
+            'label' => mazaq_article_section_rank($row['text'])['label'] ?? $row['text'],
         ],
         $rows
     );
+}
+
+/**
+ * The rank a heading carries itself ("31. Cars 3 (2017)" → 31, "Cars 3 (2017)"), or
+ * null when it carries none. The one rank grammar: internal to this module.
+ *
+ * [0-9] rather than \d: under /u, \d also matches Arabic-Indic digits, which (int)
+ * then casts to 0 -- every entry would render "00" on this Arabic site. Digits must
+ * be followed by . ) - – or —, never a colon, so "1917 (2019)", "2001: A Space
+ * Odyssey" and "300: Rise of an Empire" are titles, not ranks.
+ *
+ * @return array{number: int, label: string}|null
+ */
+function mazaq_article_section_rank(string $text): ?array
+{
+    if (!preg_match('/^([0-9]{1,3})\s*[.)\-–—]\s*/u', $text, $match)) {
+        return null;
+    }
+    $label = substr($text, strlen($match[0]));
+
+    return ['number' => (int) $match[1], 'label' => $label !== '' ? $label : $text];
 }
 
 /**
@@ -119,17 +141,9 @@ function mazaq_listicle_heading_numbers(array $texts): array
     $numbered = 0;
 
     foreach ($texts as $text) {
-        // [0-9] rather than \d: under /u, \d also matches Arabic-Indic digits, which
-        // (int) then casts to 0 -- every entry would render "00" on this Arabic site.
-        // Headings numbered in Arabic-Indic digits fall back to position instead.
-        // Digits must be followed by punctuation, so "1917 (2019)" and
-        // "2001: A Space Odyssey" are read as titles, not as ranks.
-        if (preg_match('/^([0-9]{1,3})\s*[.)\-–—]/u', $text, $match)) {
-            $numbers[] = (int) $match[1];
-            $numbered++;
-            continue;
-        }
-        $numbers[] = null;
+        $rank = mazaq_article_section_rank($text);
+        $numbers[] = $rank['number'] ?? null;
+        $numbered += $rank === null ? 0 : 1;
     }
 
     if ($numbered === 0) {

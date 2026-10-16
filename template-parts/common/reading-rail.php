@@ -20,18 +20,9 @@ if (count($headings) < 3) {
     return;
 }
 
-/**
- * The index already prints the rank in its own mono column, so a heading that
- * numbers itself ("18. Bring Her Back (2025)") must not print that rank again
- * inside the label. In an RTL rail the leading "18." also bidi-jumps to the
- * far end of an LTR film title, which is the ".18 … 18" doubling in the bug
- * report. Strip one leading rank marker for display only; schema + anchors
- * keep reading the full heading text.
- */
-$mazaq_rail_label = static function (string $text): string {
-    $clean = (string) preg_replace('/^[0-9]{1,3}\s*[.)\-–—:]\s*/u', '', ltrim($text));
-    return $clean !== '' ? $clean : $text;
-};
+// The index prints the rank in its own mono column, so each entry shows the
+// section's label (its text minus its own rank). A leading "18." left in an RTL
+// label would also bidi-jump to the far end of an LTR film title.
 ?>
 <nav class="programme-index programme__note" data-reading-rail aria-labelledby="programme-index-title">
     <h2 id="programme-index-title" class="programme-index__title"><?php esc_html_e('في هذا المقال', 'mazaq'); ?></h2>
@@ -45,7 +36,7 @@ $mazaq_rail_label = static function (string $text): string {
                         <?php if ($index !== '') : ?>
                             <span class="programme-index__index num" aria-hidden="true"><?php echo esc_html($index); ?></span>
                         <?php endif; ?>
-                        <span class="programme-index__label" dir="auto"><?php echo esc_html($mazaq_rail_label($heading['text'])); ?></span>
+                        <span class="programme-index__label" dir="auto"><?php echo esc_html($heading['label']); ?></span>
                     </a>
                 </li>
             <?php endforeach; ?>
@@ -69,7 +60,7 @@ $mazaq_rail_label = static function (string $text): string {
                         <?php if ($index !== '') : ?>
                             <span class="reading-sheet__index num" aria-hidden="true"><?php echo esc_html($index); ?></span>
                         <?php endif; ?>
-                        <span class="reading-sheet__label" dir="auto"><?php echo esc_html($mazaq_rail_label($heading['text'])); ?></span>
+                        <span class="reading-sheet__label" dir="auto"><?php echo esc_html($heading['label']); ?></span>
                     </a>
                 </li>
             <?php endforeach; ?>

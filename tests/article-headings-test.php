@@ -7,7 +7,7 @@
  * included in isolation.
  *
  * Seam under test: the extractor/injector agreement. The extractor reports
- * rows (id/level/text/number); the injector stamps the same ids into content.
+ * rows (id/level/text/number/label); the injector stamps the same ids into content.
  * These tests prove the two sides agree by construction on fixture HTML.
  */
 
@@ -48,12 +48,12 @@ require __DIR__ . '/rotation-test-helper.php';
 require __DIR__ . '/../inc/article-headings.php';
 
 // Slice 1: row schema. Prose article, no ids, no ranks → positional numbers,
-// stable anchor ids, exactly the id/level/text/number shape consumers read.
+// stable anchor ids, exactly the id/level/text/number/label shape consumers read.
 $GLOBALS['__heading_fixtures'][11] = '<h2>Plot</h2><p>Body.</p><h3>Twist</h3><h2>Ending</h2>';
 rotation_test_check(mazaq_extract_article_headings(11) === [
-    ['id' => 'article-section-1', 'level' => 2, 'text' => 'Plot', 'number' => 1],
-    ['id' => 'article-section-2', 'level' => 3, 'text' => 'Twist', 'number' => 2],
-    ['id' => 'article-section-3', 'level' => 2, 'text' => 'Ending', 'number' => 3],
+    ['id' => 'article-section-1', 'level' => 2, 'text' => 'Plot', 'number' => 1, 'label' => 'Plot'],
+    ['id' => 'article-section-2', 'level' => 3, 'text' => 'Twist', 'number' => 2, 'label' => 'Twist'],
+    ['id' => 'article-section-3', 'level' => 2, 'text' => 'Ending', 'number' => 3, 'label' => 'Ending'],
 ]);
 
 // Slice 2: agreement. The injector stamps exactly the ids the extractor
@@ -67,8 +67,8 @@ rotation_test_check(array_column($rows12, 'id') === ['article-section-1', 'artic
 // never prints an empty link and numbering skips nothing visible.
 $GLOBALS['__heading_fixtures'][13] = '<h2>Plot</h2><h2></h2><h2>Ending</h2>';
 rotation_test_check(mazaq_extract_article_headings(13) === [
-    ['id' => 'article-section-1', 'level' => 2, 'text' => 'Plot', 'number' => 1],
-    ['id' => 'article-section-3', 'level' => 2, 'text' => 'Ending', 'number' => 2],
+    ['id' => 'article-section-1', 'level' => 2, 'text' => 'Plot', 'number' => 1, 'label' => 'Plot'],
+    ['id' => 'article-section-3', 'level' => 2, 'text' => 'Ending', 'number' => 2, 'label' => 'Ending'],
 ]);
 rotation_test_check(mazaq_add_article_heading_ids($GLOBALS['__heading_fixtures'][13]) === '<h2 id="article-section-1">Plot</h2><h2 id="article-section-2"></h2><h2 id="article-section-3">Ending</h2>');
 
@@ -76,10 +76,10 @@ rotation_test_check(mazaq_add_article_heading_ids($GLOBALS['__heading_fixtures']
 // so rail hrefs and rendered anchors agree even on hand-written markup.
 $GLOBALS['__heading_fixtures'][14] = '<h2 id="custom">Plot</h2><h3 id=\'lead\'>Twist</h3><h2 id="my heading">Spaced</h2><h2>Ending</h2>';
 rotation_test_check(mazaq_extract_article_headings(14) === [
-    ['id' => 'custom', 'level' => 2, 'text' => 'Plot', 'number' => 1],
-    ['id' => 'lead', 'level' => 3, 'text' => 'Twist', 'number' => 2],
-    ['id' => 'my heading', 'level' => 2, 'text' => 'Spaced', 'number' => 3],
-    ['id' => 'article-section-1', 'level' => 2, 'text' => 'Ending', 'number' => 4],
+    ['id' => 'custom', 'level' => 2, 'text' => 'Plot', 'number' => 1, 'label' => 'Plot'],
+    ['id' => 'lead', 'level' => 3, 'text' => 'Twist', 'number' => 2, 'label' => 'Twist'],
+    ['id' => 'my heading', 'level' => 2, 'text' => 'Spaced', 'number' => 3, 'label' => 'Spaced'],
+    ['id' => 'article-section-1', 'level' => 2, 'text' => 'Ending', 'number' => 4, 'label' => 'Ending'],
 ]);
 rotation_test_check(mazaq_add_article_heading_ids($GLOBALS['__heading_fixtures'][14]) === '<h2 id="custom">Plot</h2><h3 id=\'lead\'>Twist</h3><h2 id="my heading">Spaced</h2><h2 id="article-section-1">Ending</h2>');
 
@@ -87,8 +87,8 @@ rotation_test_check(mazaq_add_article_heading_ids($GLOBALS['__heading_fixtures']
 // assigned id, never doubled into a duplicate attribute.
 $GLOBALS['__heading_fixtures'][15] = '<h2 id="">Blank</h2><h2>Next</h2>';
 rotation_test_check(mazaq_extract_article_headings(15) === [
-    ['id' => 'article-section-1', 'level' => 2, 'text' => 'Blank', 'number' => 1],
-    ['id' => 'article-section-2', 'level' => 2, 'text' => 'Next', 'number' => 2],
+    ['id' => 'article-section-1', 'level' => 2, 'text' => 'Blank', 'number' => 1, 'label' => 'Blank'],
+    ['id' => 'article-section-2', 'level' => 2, 'text' => 'Next', 'number' => 2, 'label' => 'Next'],
 ]);
 rotation_test_check(mazaq_add_article_heading_ids($GLOBALS['__heading_fixtures'][15]) === '<h2 id="article-section-1">Blank</h2><h2 id="article-section-2">Next</h2>');
 
@@ -145,5 +145,23 @@ rotation_test_check(heading_numbers(['١١. Up (2009)', '١٠. Inside Out']) ===
 
 // Mixed scripts: only the ASCII rank counts.
 rotation_test_check(heading_numbers(['١١. Up (2009)', '10. Inside Out']) === [null, 10]);
+
+// --- label: the heading text minus its own rank marker ---
+function heading_labels(array $texts): array
+{
+    return array_column(mazaq_extract_article_headings(heading_fixture($texts)), 'label');
+}
+
+// A ranked heading drops exactly the rank its number came from.
+rotation_test_check(heading_labels(['31. Cars 3 (2017)', '9) Alien', '8 - Aliens', '7 – Alien 3', '6 — Resurrection'])
+    === ['Cars 3 (2017)', 'Alien', 'Aliens', 'Alien 3', 'Resurrection']);
+
+// A colon is never a rank: "300:" and "2001:" keep their full titles, even in a ranked list.
+rotation_test_check(heading_labels(['301. Troy (2004)', '300: Rise of an Empire (2014)', '2001: A Space Odyssey (1968)'])
+    === ['Troy (2004)', '300: Rise of an Empire (2014)', '2001: A Space Odyssey (1968)']);
+
+// Unranked headings (prose, Arabic-Indic digits, a four-digit lead) keep their full text.
+rotation_test_check(heading_labels(['مقدمة', '١١. Up (2009)', '1000. Movies'])
+    === ['مقدمة', '١١. Up (2009)', '1000. Movies']);
 
 echo "article-headings: all assertions passed\n";
