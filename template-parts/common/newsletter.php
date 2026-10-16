@@ -42,6 +42,7 @@ $status_id = $panel_id . '-status';
         aria-describedby="<?php echo esc_attr($summary_id); ?>"
         aria-busy="false"
     >
+        <?php mazaq_reader_submission_fields('newsletter'); ?>
         <div class="newsletter-panel__field">
             <label for="<?php echo esc_attr($email_id); ?>" class="newsletter-panel__label">
                 <?php esc_html_e('البريد الإلكتروني', 'mazaq'); ?>

@@ -15,9 +15,10 @@ const MAZAQ_READER_HOURLY_LIMIT = 5;
 /**
  * Check and store one Reader submission.
  *
- * @param string $form 'contact'
+ * @param string $form 'contact' or 'newsletter'
  * @param array $input The submitted fields, unslashed.
- * @return string success | invalid | rate_limited | rejected | failed (neither mailed nor stored)
+ * @return string success | duplicate (newsletter: already signed up) | invalid | rate_limited | rejected
+ *                | failed (not stored, and a contact message not mailed either)
  */
 function mazaq_reader_submit(string $form, array $input): string
 {
@@ -36,6 +37,10 @@ function mazaq_reader_submit(string $form, array $input): string
     }
     set_transient($key, $attempts + 1, HOUR_IN_SECONDS);
 
+    if ($form === 'newsletter') {
+        return mazaq_reader_store_signup($input);
+    }
+
     // ponytail: one reCAPTCHA provider, called directly; add a seam if a second arrives.
     $token = (string) ($input['g-recaptcha-response'] ?? '');
     if (!class_exists('TOC_Recaptcha_Verify') || !TOC_Recaptcha_Verify::verify_token($token)) {
@@ -43,6 +48,44 @@ function mazaq_reader_submit(string $form, array $input): string
     }
 
     return mazaq_reader_store_contact($input);
+}
+
+/** Store a newsletter signup once per email, matched by its hash. */
+function mazaq_reader_store_signup(array $input): string
+{
+    $email = sanitize_email((string) ($input['email'] ?? ''));
+    if ($email === '' || !is_email($email)) {
+        return 'invalid';
+    }
+
+    $hash = hash('sha256', strtolower($email));
+    $existing = new WP_Query([
+        'post_type' => 'contact_message',
+        'post_status' => 'private',
+        'posts_per_page' => 1,
+        'fields' => 'ids',
+        'no_found_rows' => true,
+        'meta_query' => [['key' => '_newsletter_email_hash', 'value' => $hash]],
+    ]);
+    if ($existing->have_posts()) {
+        return 'duplicate';
+    }
+
+    $post_id = wp_insert_post([
+        'post_type' => 'contact_message',
+        'post_status' => 'private',
+        'post_title' => sprintf(__('اشتراك نشرة: %s', 'mazaq'), $email),
+        'post_content' => __('طلب اشتراك في النشرة السينمائية.', 'mazaq'),
+    ], true);
+    if (is_wp_error($post_id) || !$post_id) {
+        return 'failed';
+    }
+
+    update_post_meta($post_id, '_contact_email', $email);
+    update_post_meta($post_id, '_contact_name', __('مشترك النشرة', 'mazaq'));
+    update_post_meta($post_id, '_newsletter_email_hash', $hash);
+
+    return 'success';
 }
 
 /** Mail a contact message to the editors and store it; either is enough. */
@@ -109,3 +152,24 @@ function mazaq_handle_contact_form(): void
     exit;
 }
 add_action('template_redirect', 'mazaq_handle_contact_form');
+
+function mazaq_ajax_newsletter_signup(): void
+{
+    $could_not = __('تعذر تسجيل الاشتراك الآن. حاول لاحقًا.', 'mazaq');
+    $replies = [
+        'success' => [200, __('تم الاشتراك بنجاح. أهلاً بك في النشرة.', 'mazaq')],
+        'duplicate' => [200, __('أنت مشترك بالفعل. شكرًا لاهتمامك.', 'mazaq')],
+        'invalid' => [400, __('أدخل بريدًا إلكترونيًا صحيحًا.', 'mazaq')],
+        'rate_limited' => [429, ''], // the newsletter script shows its own "too many requests" text
+        'rejected' => [403, $could_not],
+        'failed' => [500, $could_not],
+    ];
+    [$code, $message] = $replies[mazaq_reader_submit('newsletter', wp_unslash($_POST))];
+
+    if ($code === 200) {
+        wp_send_json_success(['message' => $message]);
+    }
+    wp_send_json_error($message === '' ? null : ['message' => $message], $code);
+}
+add_action('wp_ajax_mazaq_newsletter_signup', 'mazaq_ajax_newsletter_signup');
+add_action('wp_ajax_nopriv_mazaq_newsletter_signup', 'mazaq_ajax_newsletter_signup');

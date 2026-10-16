@@ -546,7 +546,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var forms = document.querySelectorAll('[data-newsletter-form]');
         var settings = window.mazaq_ajax || {};
         var newsletterRequestTimeoutMs = 12000;
-        if (!forms.length || !settings.ajax_url || !settings.newsletter_nonce) return;
+        if (!forms.length || !settings.ajax_url) return;
 
         forms.forEach(function (form) {
             var input = form.querySelector('input[type="email"]');
@@ -577,7 +577,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (typeof input.reportValidity === 'function') input.reportValidity();
                     return;
                 }
-                if (typeof window.fetch !== 'function' || typeof window.URLSearchParams !== 'function') {
+                if (typeof window.fetch !== 'function' || typeof window.URLSearchParams !== 'function' || typeof window.FormData !== 'function') {
                     setStatus('لا يمكن تسجيل الاشتراك من هذا المتصفح. حاول استخدام متصفح أحدث.', 'error');
                     return;
                 }
@@ -585,9 +585,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 button.disabled = true;
                 form.setAttribute('aria-busy', 'true');
                 setStatus('جاري تسجيل الاشتراك...', 'pending');
-                var body = new URLSearchParams();
+                // The form's own fields carry the nonce and honeypot (mazaq_reader_submission_fields).
+                var body = new URLSearchParams(new FormData(form));
                 body.set('action', settings.newsletter_action || 'mazaq_newsletter_signup');
-                body.set('nonce', settings.newsletter_nonce);
                 body.set('email', email);
                 var requestController = typeof window.AbortController === 'function' ? new window.AbortController() : null;
                 var requestTimeoutId = requestController

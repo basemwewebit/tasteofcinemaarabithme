@@ -231,4 +231,44 @@ for ($i = 0; $i < 5; $i++) {
 }
 rotation_test_check(mazaq_reader_submit('contact', contact_input()) === 'success', 'contact: honeypot hits are not counted');
 
+function signup_input(array $overrides = []): array
+{
+    return $overrides + [
+        'mazaq_reader_nonce' => 'valid-mazaq_reader_newsletter',
+        'website' => '',
+        'email' => 'Reader@Example.com',
+    ];
+}
+
+// A newsletter signup: stored privately with its email hash, never reCAPTCHA.
+reset_intake();
+$GLOBALS['fake_captcha_ok'] = false;
+rotation_test_check(mazaq_reader_submit('newsletter', signup_input()) === 'success', 'newsletter: success without reCAPTCHA');
+rotation_test_check($GLOBALS['fake_captcha_calls'] === 0, 'newsletter: never calls reCAPTCHA');
+$stored = $GLOBALS['fake_posts'][1] ?? null;
+rotation_test_check($stored !== null
+    && $stored['post']['post_type'] === 'contact_message'
+    && $stored['post']['post_status'] === 'private'
+    && $stored['meta']['_contact_email'] === 'Reader@Example.com'
+    && $stored['meta']['_newsletter_email_hash'] === hash('sha256', 'reader@example.com'), 'newsletter: stored privately with its email hash');
+
+// The same email again, in any case: duplicate, nothing new stored.
+rotation_test_check(mazaq_reader_submit('newsletter', signup_input(['email' => 'reader@example.com'])) === 'duplicate', 'newsletter: duplicate');
+rotation_test_check(count($GLOBALS['fake_posts']) === 1, 'newsletter: a duplicate stores nothing');
+
+// Invalid, rejected, failed.
+rotation_test_check(mazaq_reader_submit('newsletter', signup_input(['email' => 'nope'])) === 'invalid', 'newsletter: bad email invalid');
+rotation_test_check(mazaq_reader_submit('newsletter', signup_input(['website' => 'x'])) === 'rejected', 'newsletter: honeypot rejected');
+rotation_test_check(mazaq_reader_submit('newsletter', signup_input(['mazaq_reader_nonce' => 'valid-mazaq_reader_contact'])) === 'rejected', 'newsletter: contact nonce rejected');
+$GLOBALS['fake_insert_ok'] = false;
+rotation_test_check(mazaq_reader_submit('newsletter', signup_input(['email' => 'new@example.com'])) === 'failed', 'newsletter: store failure is failed');
+
+// Rate limit: its own five an hour, separate from the contact form's.
+reset_intake();
+for ($i = 0; $i < 5; $i++) {
+    mazaq_reader_submit('newsletter', signup_input(['email' => 'nope']));
+}
+rotation_test_check(mazaq_reader_submit('newsletter', signup_input()) === 'rate_limited', 'newsletter: 6th attempt rate limited');
+rotation_test_check(mazaq_reader_submit('contact', contact_input()) === 'success', 'newsletter attempts don\'t use up the contact form\'s');
+
 echo 'reader-submissions-test: ' . ($GLOBALS['rotation_test_passed'] ?? 0) . " checks passed\n";

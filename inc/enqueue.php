@@ -162,7 +162,6 @@ function mazaq_enqueue_assets(): void
         'random_film_action' => 'mazaq_get_random_film',
         'search_nonce' => wp_create_nonce('mazaq_search_suggestions_nonce'),
         'search_suggestions_action' => 'mazaq_search_suggestions',
-        'newsletter_nonce' => wp_create_nonce('mazaq_newsletter_signup_nonce'),
         'newsletter_action' => 'mazaq_newsletter_signup',
         'home_url' => home_url('/'),
         'notifications_bootstrap_url' => esc_url_raw(rest_url('mazaq/v1/notifications/bootstrap')),
