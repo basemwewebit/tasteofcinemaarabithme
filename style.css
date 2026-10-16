@@ -31,25 +31,3 @@ Tags: rtl-language-support, blog, news, custom-logo
     visibility: hidden;
     pointer-events: none;
 }
-
-/* --- T007: Ad Slot Anti-CLS --- */
-/* Ensure the ad wrapper has a minimum height to prevent Cumulative Layout Shift (CLS) */
-.ad-slot-wrapper {
-    min-height: 250px; /* Adjust this value based on typical ad heights */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    margin-top: 1rem;
-    margin-bottom: 1rem;
-    clear: both;
-}
-
-/* Specific context overrides if needed */
-.ad-slot-archive,
-.ad-slot-category,
-.ad-slot-author,
-.ad-slot-index {
-    /* Full width on mobile, span full columns on larger screens if using CSS grid (dependent on the container's grid-cols) */
-    grid-column: 1 / -1;
-}

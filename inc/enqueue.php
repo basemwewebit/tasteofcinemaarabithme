@@ -56,13 +56,10 @@ function mazaq_should_enqueue_adblock_assets(): bool
         $slot_names[] = 'ad_slot_hero_banner';
     }
     if (is_singular('post')) {
-        array_push($slot_names, 'ad_slot_in_article', 'ad_slot_bottom_article', 'ad_slot_sidebar_square', 'ad_slot_sidebar_vertical');
+        array_push($slot_names, 'ad_slot_in_article', 'ad_slot_bottom_article');
     }
     if (is_home() || is_archive() || is_search()) {
         $slot_names[] = 'ad_slot_archive_banner';
-    }
-    if (is_404()) {
-        $slot_names[] = 'ad_slot_404_banner';
     }
 
     foreach (array_unique($slot_names) as $slot_name) {
