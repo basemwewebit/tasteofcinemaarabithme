@@ -5,7 +5,7 @@
 <main id="main-content" class="single-main px-4 pt-10 pb-8 section-gap">
     <?php if (have_posts()) : while (have_posts()) : the_post(); ?>
         <article class="single-article single-article--cinema">
-            <?php toc_breadcrumbs(); ?>
+            <?php mazaq_breadcrumbs(); ?>
 
             <div class="programme-grid">
                 <header class="single-article__header" data-credits>
