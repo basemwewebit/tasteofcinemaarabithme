@@ -164,4 +164,54 @@ rotation_test_check(heading_labels(['301. Troy (2004)', '300: Rise of an Empire 
 rotation_test_check(heading_labels(['مقدمة', '١١. Up (2009)', '1000. Movies'])
     === ['مقدمة', '١١. Up (2009)', '1000. Movies']);
 
+// --- Ranked list: three or more H2 sections, numbered or not ---
+function ranked_list_shape(?array $list): ?array
+{
+    if ($list === null) {
+        return null;
+    }
+    return [
+        'order' => $list['order'],
+        'positions' => array_column($list['items'], 'position'),
+        'labels' => array_column($list['items'], 'label'),
+    ];
+}
+
+function ranked_list_of(array $texts): ?array
+{
+    return ranked_list_shape(mazaq_ranked_list(mazaq_extract_article_headings(heading_fixture($texts))));
+}
+
+// Fewer than three H2 sections is not a Ranked list.
+rotation_test_check(ranked_list_of(['1. Alien', '2. Aliens']) === null);
+
+// H3 sections never count toward the threshold or the items.
+$GLOBALS['__heading_fixtures'][200] = '<h2>Plot</h2><h3>One</h3><h3>Two</h3><h2>Ending</h2>';
+rotation_test_check(mazaq_ranked_list(mazaq_extract_article_headings(200)) === null);
+
+// Unnumbered: every H2 is an item, positioned 1..N in document order, ascending.
+$GLOBALS['__heading_fixtures'][201] = '<h2>Alien (1979)</h2><h3>Aside</h3><h2>Aliens (1986)</h2><h2>Alien 3 (1992)</h2>';
+rotation_test_check(ranked_list_shape(mazaq_ranked_list(mazaq_extract_article_headings(201))) === [
+    'order' => 'ascending', 'positions' => [1, 2, 3], 'labels' => ['Alien (1979)', 'Aliens (1986)', 'Alien 3 (1992)'],
+]);
+
+// Countdown: items are the ranked H2s at their own ranks; an intro counts toward the
+// threshold but is not an item.
+rotation_test_check(ranked_list_of(['مقدمة', '3. Ratatouille', '2. Monsters, Inc.', '1. Toy Story']) === [
+    'order' => 'descending', 'positions' => [3, 2, 1], 'labels' => ['Ratatouille', 'Monsters, Inc.', 'Toy Story'],
+]);
+rotation_test_check(ranked_list_of(['مقدمة', '2. Aliens', '1. Alien']) === [
+    'order' => 'descending', 'positions' => [2, 1], 'labels' => ['Aliens', 'Alien'],
+]);
+
+// Count-up.
+rotation_test_check(ranked_list_of(['1. Alien', '2. Aliens', '3. Alien 3']) === [
+    'order' => 'ascending', 'positions' => [1, 2, 3], 'labels' => ['Alien', 'Aliens', 'Alien 3'],
+]);
+
+// Ranks that neither rise nor fall throughout are unordered.
+rotation_test_check(ranked_list_of(['2. Aliens', '1. Alien', '3. Alien 3']) === [
+    'order' => 'unordered', 'positions' => [2, 1, 3], 'labels' => ['Aliens', 'Alien', 'Alien 3'],
+]);
+
 echo "article-headings: all assertions passed\n";

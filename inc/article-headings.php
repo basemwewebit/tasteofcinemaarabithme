@@ -99,6 +99,52 @@ function mazaq_extract_article_headings(int $post_id): array
 }
 
 /**
+ * The Ranked list an article's sections form, or null when they form none.
+ *
+ * A Ranked list is three or more H2 sections. When any H2 carries its own rank,
+ * the items are exactly the ranked H2s at those ranks (an intro or conclusion
+ * counts toward the three but is not an item), ordered as the article numbers
+ * them. Otherwise every H2 is an item, positioned 1..N, ascending.
+ *
+ * @param array<int, array{id: string, level: int, text: string, number: int|null, label: string}> $sections
+ *        From mazaq_extract_article_headings().
+ * @return array{items: array<int, array{id: string, label: string, position: int}>, order: 'ascending'|'descending'|'unordered'}|null
+ */
+function mazaq_ranked_list(array $sections): ?array
+{
+    $h2 = array_values(array_filter($sections, static fn(array $s): bool => (int) $s['level'] === 2));
+    if (count($h2) < 3) {
+        return null;
+    }
+
+    $items = [];
+    foreach ($h2 as $section) {
+        $rank = mazaq_article_section_rank($section['text']);
+        if ($rank !== null) {
+            $items[] = ['id' => $section['id'], 'label' => $section['label'], 'position' => $rank['number']];
+        }
+    }
+
+    if ($items === []) {
+        foreach ($h2 as $i => $section) {
+            $items[] = ['id' => $section['id'], 'label' => $section['label'], 'position' => $i + 1];
+        }
+        return ['items' => $items, 'order' => 'ascending'];
+    }
+
+    $positions = array_column($items, 'position');
+    $ascending = $positions;
+    sort($ascending);
+    $order = match (true) {
+        $positions === $ascending => 'ascending',
+        $positions === array_reverse($ascending) => 'descending',
+        default => 'unordered',
+    };
+
+    return ['items' => $items, 'order' => $order];
+}
+
+/**
  * The rank a heading carries itself ("31. Cars 3 (2017)" → 31, "Cars 3 (2017)"), or
  * null when it carries none. The one rank grammar: internal to this module.
  *

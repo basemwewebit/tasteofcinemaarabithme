@@ -1,9 +1,10 @@
 <?php
 
 /**
- * Standalone self-check for the pure film-graph aggregate math. No framework,
- * no WP: run with `php tests/film-graph-test.php`. Stubs the two hook functions
- * inc/film-graph.php calls at load time so the file can be included in isolation.
+ * Standalone self-check for the film graph. No framework, no WP: run with
+ * `php tests/film-graph-test.php`. Stubs the hook and post functions so the
+ * film graph and the real Article section module load in isolation; film titles
+ * are mined per post from fixture HTML, through both modules.
  */
 
 declare(strict_types=1);
@@ -17,9 +18,30 @@ if (!function_exists('add_filter')) {
 if (!function_exists('apply_filters')) {
     function apply_filters(string $hook, $value = null, ...$args) { return $value; }
 }
+if (!function_exists('get_post_field')) {
+    function get_post_field(string $field, int $post_id) {
+        return $GLOBALS['__film_posts'][$post_id] ?? '';
+    }
+}
+if (!function_exists('wp_strip_all_tags')) {
+    function wp_strip_all_tags(string $string): string { return trim(strip_tags($string)); }
+}
 
 require __DIR__ . '/rotation-test-helper.php';
+require __DIR__ . '/../inc/article-headings.php';
 require __DIR__ . '/../inc/film-graph.php';
+
+/** Film titles mined from a post whose H2 headings are $texts. */
+function film_titles(array $texts): array
+{
+    static $post_id = 0;
+    $post_id++;
+    $GLOBALS['__film_posts'][$post_id] = implode('', array_map(
+        static fn(string $text): string => '<h2>' . $text . '</h2><p>Body.</p>',
+        $texts
+    ));
+    return mazaq_film_titles_from_headings($post_id);
+}
 
 function frag(float $value, float $best): array
 {
@@ -44,20 +66,22 @@ rotation_test_check(mazaq_film_average_normalized([frag(7, 10), frag(8, 10)]) ==
 // Zero-scale fragments drop out of the count: only the 6/10 counts.
 rotation_test_check(mazaq_film_average_normalized([frag(6, 10), frag(3, 0)]) === ['rating' => 6.0, 'count' => 1]);
 
-// --- heading parser: keep only paren-year film entries; strip rank + year ---
-rotation_test_check(mazaq_film_title_from_heading('1. Desperate Hours (1990)') === 'Desperate Hours');
-rotation_test_check(mazaq_film_title_from_heading('7. Parasite (2019)') === 'Parasite');
-rotation_test_check(mazaq_film_title_from_heading('10. U.S. Marshals (1998)') === 'U.S. Marshals');
-rotation_test_check(mazaq_film_title_from_heading('3 - The Client (1994)') === 'The Client');
+// --- film titles, per post: a Ranked list's paren-year entries, rank + year stripped ---
+rotation_test_check(film_titles(['1. Desperate Hours (1990)', '7. Parasite (2019)', '10. U.S. Marshals (1998)', '3 - The Client (1994)'])
+    === ['Desperate Hours', 'Parasite', 'U.S. Marshals', 'The Client']);
 // Keeps an inner number, strips only the trailing paren-year.
-rotation_test_check(mazaq_film_title_from_heading('2. Blade Runner 2049 (1982)') === 'Blade Runner 2049');
-// Unranked but paren-year-tagged still counts as a film entry.
-rotation_test_check(mazaq_film_title_from_heading('Under the Skin (2013)') === 'Under the Skin');
-// Numbered PROSE (a "10 reasons" list) has no paren-year → rejected.
-rotation_test_check(mazaq_film_title_from_heading('1. إنه الفيلم الأكثر تمرداً من إنتاج استوديو') === '');
-// A bare trailing year is not a paren-year → still rejected.
-rotation_test_check(mazaq_film_title_from_heading('5. أداء Ryan Gosling أفضل أداءات عام 2023') === '');
-rotation_test_check(mazaq_film_title_from_heading('Se7en') === '');
+rotation_test_check(film_titles(['3. Alien (1979)', '2. Blade Runner 2049 (1982)', '1. Heat (1995)'])
+    === ['Alien', 'Blade Runner 2049', 'Heat']);
+// A title that opens with digits keeps them: a colon is never a rank marker.
+rotation_test_check(film_titles(['2001: A Space Odyssey (1968)', '1917 (2019)', '300: Rise of an Empire (2014)'])
+    === ['2001: A Space Odyssey', '1917', '300: Rise of an Empire']);
+// Unranked but paren-year-tagged entries count; the intro has no year and drops out.
+rotation_test_check(film_titles(['مقدمة', 'Under the Skin (2013)', 'Heat (1995)', 'Alien (1979)'])
+    === ['Under the Skin', 'Heat', 'Alien']);
+// Numbered PROSE (a "10 reasons" list) has no paren-year → nothing.
+rotation_test_check(film_titles(['1. إنه الفيلم الأكثر تمرداً من إنتاج استوديو', '2. أداء Ryan Gosling أفضل أداءات عام 2023', '3. Se7en']) === []);
+// Fewer than three H2s is not a Ranked list → nothing, even with paren-years.
+rotation_test_check(film_titles(['1. Alien (1979)', '2. Aliens (1986)']) === []);
 
 // --- skip-list + guards ---
 rotation_test_check(mazaq_film_is_skipped('') === true);

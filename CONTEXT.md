@@ -24,6 +24,10 @@ _Avoid_: generic tile, thumbnail-only card.
 A second- or third-level article heading carrying a stable anchor id and an optional listicle rank.
 _Avoid_: raw heading, anchor id.
 
+**Ranked list**:
+An article whose three or more H2 Article sections form its body list. When its sections carry their own ranks (counting up or down), those ranked sections are its items at those ranks; otherwise every H2 section is an item, by position.
+_Avoid_: listicle; ItemList (that is its schema wire format).
+
 ## Editorial mechanics
 
 **Article pool**:

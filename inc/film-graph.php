@@ -127,29 +127,28 @@ function mazaq_film_get_or_create_term(string $title): int
 }
 
 /**
- * Film titles mined from a post's H2 headings — but only when the post is a
- * ranked list (≥3 H2 items, the same threshold schema-film.php uses to decide a
- * post is an ItemList). Ordinary articles with a few subheadings return nothing.
+ * Film titles mined from a post's H2 headings, but only when the post is a
+ * Ranked list. Ordinary articles with a few subheadings return nothing.
  *
  * @return string[] Parsed titles, before skip-list filtering.
  */
 function mazaq_film_titles_from_headings(int $post_id): array
 {
-    if (!function_exists('mazaq_extract_article_headings')) {
+    if (!function_exists('mazaq_ranked_list')) {
         return [];
     }
 
-    $h2 = array_values(array_filter(
-        mazaq_extract_article_headings($post_id),
-        static fn(array $h): bool => (int) ($h['level'] ?? 0) === 2
-    ));
-    if (count($h2) < 3) {
+    $sections = mazaq_extract_article_headings($post_id);
+    if (mazaq_ranked_list($sections) === null) {
         return [];
     }
 
     $titles = [];
-    foreach ($h2 as $h) {
-        $title = mazaq_film_title_from_heading((string) ($h['text'] ?? ''));
+    foreach ($sections as $section) {
+        if ($section['level'] !== 2) {
+            continue;
+        }
+        $title = mazaq_film_title_from_label($section['label']);
         if ($title !== '') {
             $titles[] = $title;
         }
@@ -159,19 +158,18 @@ function mazaq_film_titles_from_headings(int $post_id): array
 }
 
 /**
- * "1. Parasite (2019)" → "Parasite" — strip a leading rank and a trailing year.
+ * "Parasite (2019)" → "Parasite": strip the trailing year from a section label
+ * (the Article section module has already removed any rank).
  *
- * Returns '' unless the entry carries a parenthesized release year "(YYYY)".
+ * Returns '' unless the label ends in a parenthesized release year "(YYYY)".
  * That paren-year is the reliable discriminator between a real film-list entry
- * and prose: "10 reasons/facts" listicles number their sentence H2s exactly like
- * film lists ("1. …"), so a leading rank proves nothing — but only actual films
- * are tagged "(2019)". A bare trailing year ("… عام 2023") is not enough.
+ * and prose: "10 reasons/facts" lists number their sentence H2s exactly like
+ * film lists, so a rank proves nothing, but only actual films are tagged
+ * "(2019)". A bare trailing year ("… عام 2023") is not enough.
  */
-function mazaq_film_title_from_heading(string $text): string
+function mazaq_film_title_from_label(string $label): string
 {
-    $text = trim($text);
-    $text = (string) preg_replace('/^\s*\d+\s*[\.\)\-–—:]\s*/u', '', $text); // "7. "
-
+    $text = trim($label);
     if (!preg_match('/\(\s*\d{4}\s*\)\s*$/u', $text)) {
         return '';
     }
