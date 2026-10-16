@@ -5,10 +5,11 @@
  * exclusion, page size, per-position presentation, ad-plate cadence, has-more.
  * No framework, no WP: run with `php tests/latest-feed-test.php`.
  *
- * Fakes the two adapters behind the seam: WP_Query (serves pages from a fake
- * pool and records the arguments it was built with) and get_template_part
- * (records each card / ad-plate request with the article being rendered).
- * The Programme's ids are stubbed, as the Continuous Programme self-check does.
+ * Fakes the adapters behind the seam: WP_Query (serves pages from a fake pool
+ * and records the arguments it was built with), get_template_part (records
+ * each card request with the article being rendered; ad template parts load
+ * for real) and the theme options the real Ad placement module reads. The
+ * Programme's ids are stubbed, as the Continuous Programme self-check does.
  */
 
 declare(strict_types=1);
@@ -62,16 +63,43 @@ function wp_reset_postdata(): void
     $GLOBALS['fake_current_post'] = 0;
 }
 
-// --- Fake template loader: records requests, echoes a marker ------------------
+// --- Fake template loader: records cards, echoes a marker; ads load for real --
 $GLOBALS['fake_parts'] = [];
 
 function get_template_part($slug, $name = null, $args = []): void
 {
+    if (str_starts_with($slug, 'template-parts/ads/')) {
+        require __DIR__ . '/../' . $slug . '.php';
+        return;
+    }
     $GLOBALS['fake_parts'][] = ['slug' => $slug, 'args' => $args, 'post' => $GLOBALS['fake_current_post']];
     echo '[' . basename($slug) . ':' . $GLOBALS['fake_current_post'] . ']';
 }
 
+// --- Fake theme options + escaping for the real Ad placement module ----------
+$GLOBALS['fake_options'] = [];
+
+function get_field(string $name, $post_id = null)
+{
+    return $GLOBALS['fake_options'][$name] ?? '';
+}
+function add_action(...$args): void {}
+function add_filter(...$args): void {}
+function esc_url(string $url): string { return $url; }
+function esc_url_raw(string $url, array $protocols = []): string { return $url; }
+function esc_attr(string $text): string { return htmlspecialchars($text, ENT_QUOTES); }
+function esc_attr__(string $text, string $domain = ''): string { return esc_attr($text); }
+function esc_html__(string $text, string $domain = ''): string { return $text; }
+function wp_get_attachment_image_url(int $id, string $size)
+{
+    return $id === 7 ? 'https://cdn.test/direct.gif' : false;
+}
+
+require __DIR__ . '/../inc/ads.php';
 require __DIR__ . '/../inc/latest-feed.php';
+
+/** Network ads configured for the placement the Latest feed uses. */
+const FEED_TEST_NETWORK = ['adsense_publisher_id' => 'ca-pub-1', 'ad_slot_hero_banner' => '111'];
 
 /** Newest-first pool of ids 100..(100 - $size + 1). */
 function feed_test_reset(int $size = 30): void
@@ -80,6 +108,7 @@ function feed_test_reset(int $size = 30): void
     $GLOBALS['fake_pool'] = $size > 0 ? range(100, 100 - $size + 1) : [];
     $GLOBALS['fake_last_query_args'] = [];
     $GLOBALS['fake_parts'] = [];
+    $GLOBALS['fake_options'] = FEED_TEST_NETWORK;
 }
 
 /** Article cards only (ad plates filtered out), in render order. */
@@ -157,19 +186,14 @@ foreach ($cards as $i => $card) {
 
 // An ad plate precedes global positions 9, 17, 25 … (greater than 1, and 1
 // modulo 8), counted across pages; the first page never gets one.
-/** Order in which template parts were requested, as basenames. */
-function feed_test_sequence(): array
+/** Positions (0-based, within the page) that an ad plate precedes, read from the page's markup. */
+function feed_test_ad_positions(string $html): array
 {
-    return array_map(static fn (array $part): string => basename($part['slug']), $GLOBALS['fake_parts']);
-}
-
-/** Positions (0-based, within the page) that an ad plate precedes. */
-function feed_test_ad_positions(): array
-{
+    preg_match_all('/\[article-card:\d+\]|<aside\b/', $html, $tokens);
     $positions = [];
     $card = 0;
-    foreach (feed_test_sequence() as $slug) {
-        if ($slug === 'ad-grid') {
+    foreach ($tokens[0] as $token) {
+        if ($token === '<aside') {
             $positions[] = $card;
         } else {
             $card++;
@@ -181,9 +205,7 @@ function feed_test_ad_positions(): array
 
 feed_test_reset(60);
 foreach ([1 => [], 2 => [2], 3 => [4], 4 => [], 5 => [0], 6 => [2]] as $page => $expected) {
-    $GLOBALS['fake_parts'] = [];
-    mazaq_latest_feed($page);
-    rotation_test_check(feed_test_ad_positions() === $expected, "page {$page} ad plates at " . json_encode($expected));
+    rotation_test_check(feed_test_ad_positions(mazaq_latest_feed($page)['html']) === $expected, "page {$page} ad plates at " . json_encode($expected));
 }
 
 // Has-more is reported on every page, page 1 included, and the Programme's
