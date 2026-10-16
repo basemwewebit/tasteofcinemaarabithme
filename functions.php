@@ -136,4 +136,3 @@ add_filter('wp_is_application_passwords_available', function ($available, $user 
 }, 10, 2);
 
 
-add_filter( 'wp_is_application_passwords_available', '__return_true' );
