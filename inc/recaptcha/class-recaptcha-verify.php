@@ -2,268 +2,100 @@
 
 declare(strict_types=1);
 
-use Google\Cloud\RecaptchaEnterprise\V1\Client\RecaptchaEnterpriseServiceClient;
-use Google\Cloud\RecaptchaEnterprise\V1\Event;
-use Google\Cloud\RecaptchaEnterprise\V1\Assessment;
-use Google\Cloud\RecaptchaEnterprise\V1\CreateAssessmentRequest;
-use Google\Cloud\RecaptchaEnterprise\V1\TokenProperties\InvalidReason;
-
 /**
- * Handles server-side validation of Google reCAPTCHA Enterprise tokens.
+ * Server-side validation of Google reCAPTCHA Enterprise tokens, through the
+ * Enterprise REST API only (see docs/adr/0002).
  */
 class TOC_Recaptcha_Verify
 {
     /**
-     * Sanitizes and validates a hostname to prevent header injection.
-     * Returns empty string if invalid.
-     */
-    private static function sanitize_host(string $host): string
-    {
-        // Remove port if present
-        $host = (string) parse_url('http://' . $host, PHP_URL_HOST);
-        if (empty($host)) {
-            return '';
-        }
-
-        // Convert to lowercase and trim
-        $host = strtolower(trim($host, '[]'));
-
-        // Validate hostname format (RFC 952/1123)
-        if (!preg_match('/^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*$/', $host)) {
-            return '';
-        }
-
-        // Prevent excessively long hostnames
-        if (strlen($host) > 253) {
-            return '';
-        }
-
-        return $host;
-    }
-
-    /**
-     * Detect local development domains where reCAPTCHA should be bypassed.
-     */
-    public static function is_local_environment(): bool
-    {
-        $hosts = [];
-
-        $home_host = wp_parse_url(home_url('/'), PHP_URL_HOST);
-        if (is_string($home_host) && '' !== $home_host) {
-            $sanitized = self::sanitize_host($home_host);
-            if ($sanitized !== '') {
-                $hosts[] = $sanitized;
-            }
-        }
-
-        $site_host = wp_parse_url(site_url('/'), PHP_URL_HOST);
-        if (is_string($site_host) && '' !== $site_host) {
-            $sanitized = self::sanitize_host($site_host);
-            if ($sanitized !== '') {
-                $hosts[] = $sanitized;
-            }
-        }
-
-        $http_host = $_SERVER['HTTP_HOST'] ?? '';
-        if (is_string($http_host) && '' !== $http_host) {
-            $sanitized = self::sanitize_host($http_host);
-            if ($sanitized !== '') {
-                $hosts[] = $sanitized;
-            }
-        }
-
-        $hosts = array_unique(array_filter($hosts));
-
-        foreach ($hosts as $host) {
-            $normalized_host = trim($host, '[]');
-
-            if (in_array($normalized_host, ['localhost', '127.0.0.1', '::1'], true)) {
-                return true;
-            }
-
-            if (str_ends_with($normalized_host, '.local') || str_ends_with($normalized_host, '.test')) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Enhanced environment detection using WordPress function.
-     * Combines domain-based detection with WP environment type.
+     * reCAPTCHA is skipped only where WordPress itself declares a local or
+     * development environment. Never decided from the request's Host header.
      */
     public static function should_bypass_recaptcha(): bool
     {
-        // Check for WordPress environment type first (most reliable)
-        if (function_exists('wp_get_environment_type')) {
-            $env = wp_get_environment_type();
-            if (in_array($env, ['local', 'development'], true)) {
-                return true;
-            }
-        }
-
-        // Use domain-based detection as final check
-        return self::is_local_environment();
+        return in_array(wp_get_environment_type(), ['local', 'development'], true);
     }
 
     /**
-     * Validates a given token against the Google Cloud Recaptcha Enterprise API.
+     * Validates a token against the reCAPTCHA Enterprise REST API.
+     *
+     * Fails closed on missing configuration, a client error from Google, an
+     * invalid token, a different action, or a score below the threshold (a
+     * missing score is 0.0).
      *
      * @param string $token The g-recaptcha-response token.
-     * @param string $action The action to verify against.
-     * @return bool True if valid or if failed open, false if invalid/spam.
+     * @param string $action The action the token must have been minted for.
      */
     public static function verify_token(string $token, string $action = 'submit'): bool
     {
-        // Explicit local bypass to keep local auth/forms usable without reCAPTCHA.
         if (self::should_bypass_recaptcha()) {
             return true;
         }
 
-        $site_key = get_option('toc_recaptcha_site_key', '');
-        $project_id = get_option('toc_recaptcha_project_id', '');
+        $site_key = (string) get_option('toc_recaptcha_site_key', '');
+        $project_id = (string) get_option('toc_recaptcha_project_id', '');
+        $api_key = (string) get_option('toc_recaptcha_secret_key', '');
 
-        // Configuration check - fail closed in production
-        if (empty($site_key) || empty($project_id)) {
-            error_log('reCAPTCHA Configuration Error: Missing credentials');
+        if ($site_key === '' || $project_id === '' || $api_key === '') {
+            error_log('reCAPTCHA: missing credentials, rejected');
             return false;
         }
 
-        if (empty($token)) {
+        if ($token === '') {
+            return false;
+        }
+
+        $response = wp_remote_post(
+            'https://recaptchaenterprise.googleapis.com/v1/projects/' . rawurlencode($project_id) . '/assessments?key=' . rawurlencode($api_key),
+            [
+                'body' => wp_json_encode([
+                    'event' => [
+                        'token' => $token,
+                        'siteKey' => $site_key,
+                        'expectedAction' => $action,
+                    ],
+                ]),
+                'headers' => ['Content-Type' => 'application/json'],
+                'timeout' => 5,
+            ]
+        );
+
+        $code = (int) wp_remote_retrieve_response_code($response);
+        $result = is_wp_error($response) ? null : json_decode(wp_remote_retrieve_body($response), true);
+
+        // Unreachable: a network error, a 5xx, or a non-4xx answer whose body
+        // isn't JSON. The only case Fail-Open Mode lets through.
+        if (is_wp_error($response) || $code >= 500 || ($code < 400 && !is_array($result))) {
+            $fail_open = get_option('toc_recaptcha_fail_open', '0') === '1';
+            error_log($fail_open ? 'reCAPTCHA: Google unreachable, failed open' : 'reCAPTCHA: Google unreachable, rejected');
+            return $fail_open;
+        }
+
+        // A client or configuration error (bad API key, wrong project).
+        if (!is_array($result) || isset($result['error']) || $code < 200 || $code >= 300) {
+            error_log('reCAPTCHA: Google client error, rejected');
+            return false;
+        }
+
+        if (($result['tokenProperties']['valid'] ?? false) !== true) {
+            error_log('reCAPTCHA: invalid token, rejected');
+            return false;
+        }
+
+        if (($result['tokenProperties']['action'] ?? '') !== $action) {
+            error_log('reCAPTCHA: action mismatch, rejected');
             return false;
         }
 
         $threshold_input = get_option('toc_recaptcha_score_threshold', '0.5');
         $threshold = is_numeric($threshold_input) ? (float) $threshold_input : 0.5;
+        // Google's JSON omits a 0.0 score.
+        $score = (float) ($result['riskAnalysis']['score'] ?? 0.0);
 
-        try {
-            $api_key = get_option('toc_recaptcha_secret_key', ''); // This field is now labeled "Secret Key/API Key"
-            
-            // Try to use the Google Cloud PHP Client if credentials exist
-            $use_grpc = getenv('GOOGLE_APPLICATION_CREDENTIALS') !== false;
-
-            if ($use_grpc) {
-                $client = new RecaptchaEnterpriseServiceClient();
-                $projectName = $client->projectName($project_id);
-
-                $event = (new Event())
-                    ->setSiteKey($site_key)
-                    ->setToken($token);
-
-                $assessment = (new Assessment())
-                    ->setEvent($event);
-
-                $request = (new CreateAssessmentRequest())
-                    ->setParent($projectName)
-                    ->setAssessment($assessment);
-
-                $response = $client->createAssessment($request);
-                
-                $is_valid = $response->getTokenProperties()->getValid();
-                $invalid_reason = $is_valid ? '' : InvalidReason::name($response->getTokenProperties()->getInvalidReason());
-                $response_action = $response->getTokenProperties()->getAction();
-                $score = $response->getRiskAnalysis() ? $response->getRiskAnalysis()->getScore() : 0.0;
-
-            } else {
-                // Fallback to REST API passing the API Key or Legacy Secret
-                if (empty($api_key)) {
-                    error_log('reCAPTCHA Verify Error: Missing API Key');
-                    return false;
-                }
-
-                // If it looks like a legacy secret key (starts with 6L), use the siteverify endpoint
-                if (strpos($api_key, '6L') === 0 || strpos($api_key, '6l') === 0) {
-                    $url = 'https://www.google.com/recaptcha/api/siteverify';
-                    $body = [
-                        'secret' => $api_key,
-                        'response' => $token
-                    ];
-
-                    $response = wp_remote_post($url, [
-                        'body' => $body,
-                        'timeout' => 5
-                    ]);
-
-                    if (is_wp_error($response)) {
-                        error_log('reCAPTCHA Verify Error: Request failed');
-                        return false;
-                    }
-
-                    $body_json = wp_remote_retrieve_body($response);
-                    $result = json_decode($body_json, true);
-
-                    if (empty($result)) {
-                        error_log('reCAPTCHA Verify Error: Empty response');
-                        return false;
-                    }
-
-                    $is_valid = !empty($result['success']) && $result['success'] === true;
-                    $invalid_reason = isset($result['error-codes']) ? implode(', ', $result['error-codes']) : '';
-                    $response_action = $result['action'] ?? '';
-                    $score = $result['score'] ?? 0.0;
-
-                } else {
-                    // It's a Google Cloud API Key (starts with AIza)
-                    $url = "https://recaptchaenterprise.googleapis.com/v1/projects/{$project_id}/assessments?key={$api_key}";
-                    $body = [
-                        'event' => [
-                            'token' => $token,
-                            'siteKey' => $site_key,
-                            'expectedAction' => $action
-                        ]
-                    ];
-
-                    $response = wp_remote_post($url, [
-                        'body' => wp_json_encode($body),
-                        'headers' => ['Content-Type' => 'application/json'],
-                        'timeout' => 5
-                    ]);
-
-                    if (is_wp_error($response)) {
-                        error_log('reCAPTCHA Verify Error: Request failed');
-                        return false;
-                    }
-
-                    $body_json = wp_remote_retrieve_body($response);
-                    $result = json_decode($body_json, true);
-
-                    if (empty($result) || isset($result['error'])) {
-                        error_log('reCAPTCHA Verify Error: API error');
-                        return false;
-                    }
-
-                    $is_valid = $result['tokenProperties']['valid'] ?? false;
-                    $invalid_reason = $result['tokenProperties']['invalidReason'] ?? '';
-                    $response_action = $result['tokenProperties']['action'] ?? '';
-                    $score = current($result['riskAnalysis'] ?? [0.0]); // API returns score inside riskAnalysis object
-                }
-            }
-
-            // Check if the token is valid.
-            if (!$is_valid) {
-                error_log('reCAPTCHA Verify Error: Invalid token');
-                return false;
-            }
-
-            // Check if the expected action was executed.
-            if ($response_action !== $action) {
-                error_log('reCAPTCHA Verify Error: Action mismatch');
-                return false;
-            }
-
-            if ($score < $threshold) {
-                error_log('reCAPTCHA Verify Error: Score below threshold');
-                return false; // Spam/bot detected
-            }
-
-        } catch (\Exception $e) {
-            error_log('reCAPTCHA Verify Exception: Validation failed');
+        if ($score < $threshold) {
+            error_log('reCAPTCHA: score below threshold, rejected');
             return false;
-        } finally {
-            if (isset($client)) {
-                $client->close();
-            }
         }
 
         return true;

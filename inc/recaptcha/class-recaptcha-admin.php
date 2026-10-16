@@ -119,7 +119,7 @@ class TOC_Recaptcha_Admin
     {
         $val = get_option('toc_recaptcha_secret_key', '');
         echo '<input type="password" name="toc_recaptcha_secret_key" value="' . esc_attr($val) . '" class="regular-text" />';
-        echo '<p class="description">' . esc_html__('The private reCAPTCHA API/Secret Key (or legacy secret). If using Application Default Credentials, you may not need this.', 'tasteofcinemaarabithme') . '</p>';
+        echo '<p class="description">' . esc_html__('The Google Cloud API key (starts with AIza) used to call the reCAPTCHA Enterprise REST API. Required.', 'tasteofcinemaarabithme') . '</p>';
     }
 
     public static function render_threshold_field(): void
@@ -136,12 +136,13 @@ class TOC_Recaptcha_Admin
 
         echo '<label>';
         echo '<input type="checkbox" name="toc_recaptcha_fail_open" value="1" ' . $checked . ' />';
-        echo ' ' . esc_html__('Allow form submissions when reCAPTCHA verification fails (not recommended for production)', 'tasteofcinemaarabithme');
+        echo ' ' . esc_html__('Let logins and form submissions through when Google cannot be reached (network error or Google outage). Invalid tokens, low scores and missing keys are still rejected.', 'tasteofcinemaarabithme');
         echo '</label>';
 
         $current_env = function_exists('wp_get_environment_type') ? wp_get_environment_type() : 'unknown';
         if (in_array($current_env, ['local', 'development'], true)) {
-            echo '<p class="description">' . esc_html__('Current environment: ' . $current_env . ' - Fail-open may be appropriate for local development.', 'tasteofcinemaarabithme') . '</p>';
+            /* translators: %s: the WordPress environment type */
+            echo '<p class="description">' . esc_html(sprintf(__('Current environment: %s. reCAPTCHA is skipped entirely here.', 'tasteofcinemaarabithme'), $current_env)) . '</p>';
         } else {
             echo '<p class="description notice notice-warning inline" style="margin-top:10px;">' . esc_html__('Warning: Enabling this on production is a security risk!', 'tasteofcinemaarabithme') . '</p>';
         }
@@ -178,28 +179,18 @@ class TOC_Recaptcha_Admin
             return;
         }
 
-        $site_key = get_option('toc_recaptcha_site_key', '');
-        $project_id = get_option('toc_recaptcha_project_id', '');
-        $fail_open = get_option('toc_recaptcha_fail_open', '0') === '1';
-
-        if ((empty($site_key) || empty($project_id)) && !$fail_open) {
-            $settings_url = admin_url('options-general.php?page=toc-recaptcha-settings');
-            printf(
-                '<div class="notice notice-error"><p><strong>%s</strong> %s <a href="%s">%s</a></p></div>',
-                esc_html__('Security Alert:', 'tasteofcinemaarabithme'),
-                esc_html__('Google reCAPTCHA Enterprise is not configured. Form submissions are being BLOCKED. Configure keys or enable fail-open mode.', 'tasteofcinemaarabithme'),
-                esc_url($settings_url),
-                esc_html__('Configure Now', 'tasteofcinemaarabithme')
-            );
-        } elseif ((empty($site_key) || empty($project_id)) && $fail_open) {
-            $settings_url = admin_url('options-general.php?page=toc-recaptcha-settings');
-            printf(
-                '<div class="notice notice-warning"><p><strong>%s</strong> %s <a href="%s">%s</a></p></div>',
-                esc_html__('Security Warning:', 'tasteofcinemaarabithme'),
-                esc_html__('reCAPTCHA is running in fail-open mode with incomplete configuration. Forms are unprotected!', 'tasteofcinemaarabithme'),
-                esc_url($settings_url),
-                esc_html__('Configure Keys', 'tasteofcinemaarabithme')
-            );
+        // Verification fails closed on any missing credential; fail-open doesn't cover it.
+        foreach (['toc_recaptcha_site_key', 'toc_recaptcha_project_id', 'toc_recaptcha_secret_key'] as $option) {
+            if (empty(get_option($option, ''))) {
+                printf(
+                    '<div class="notice notice-error"><p><strong>%s</strong> %s <a href="%s">%s</a></p></div>',
+                    esc_html__('Security Alert:', 'tasteofcinemaarabithme'),
+                    esc_html__('Google reCAPTCHA Enterprise is not fully configured. Logins and form submissions are BLOCKED until the Site Key, Project ID and API Key are all set.', 'tasteofcinemaarabithme'),
+                    esc_url(admin_url('options-general.php?page=toc-recaptcha-settings')),
+                    esc_html__('Configure Now', 'tasteofcinemaarabithme')
+                );
+                return;
+            }
         }
     }
 }

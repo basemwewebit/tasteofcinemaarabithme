@@ -1,6 +1,5 @@
 {
     "require": {
-        "google/cloud-recaptcha-enterprise": "^2.3",
         "minishlink/web-push": "^10.0"
     }
 }
