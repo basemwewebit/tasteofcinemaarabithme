@@ -32,6 +32,10 @@ _Avoid_: listicle; ItemList (that is its schema wire format).
 Placing everything inserted into an article's body (in-article ad plates, the Inline related block) at safe points. A **Safe point** is just after a top-level paragraph with text, never inside a blockquote, figure, list, table or ad plate; inserts are never counted as paragraphs. The **Inline related block** is the related-articles block placed inside the body at the safe point nearest 60%.
 _Avoid_: injection point, split point.
 
+**Related articles**:
+Up to five published articles sharing a category with the post, newest first. The first two form the Inline related block when there are at least two and the post isn't password-protected; the rest form the closing grid.
+_Avoid_: related posts.
+
 **Film record**:
 The film a post reviews, as the editor entered it: title, year, director, rating. Its rating is parsed once, so the infobox, the structured data and the film's average rating always agree.
 _Avoid_: film fields, film meta.

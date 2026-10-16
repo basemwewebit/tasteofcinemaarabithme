@@ -30,6 +30,7 @@ $mazaq_includes = [
     'inc/notifications-web.php',
     'inc/notifications-admin.php',
     'inc/article-pool.php',
+    'inc/related-articles.php',
     'inc/random-film-popup.php',
     'inc/content-rotation.php',
     'inc/continuous-programme.php',
@@ -52,54 +53,6 @@ foreach ($mazaq_includes as $file) {
         require_once $path;
     }
 }
-
-/**
- * T007: Fetch related posts with Transient caching.
- */
-function toc_get_related_posts($post_id, $count = 4) {
-    $cats = get_the_category($post_id);
-    if (empty($cats)) {
-        return [];
-    }
-
-    $cat_ids = array_map(function($c) { return $c->term_id; }, $cats);
-    $cache_key = 'toc_related_posts_' . $post_id . '_' . implode('_', $cat_ids);
-    
-    $related = get_transient($cache_key);
-    if (false === $related) {
-        $args = [
-            'category__in'   => $cat_ids,
-            'post__not_in'   => [$post_id],
-            'posts_per_page' => $count,
-            'post_status'    => 'publish',
-            'no_found_rows'  => true, // Performance boost
-            'ignore_sticky_posts' => true
-        ];
-        
-        $query = new WP_Query($args);
-        $related = $query->posts;
-        
-        // Cache for 12 hours
-        set_transient($cache_key, $related, 12 * HOUR_IN_SECONDS);
-    }
-    
-    return $related;
-}
-
-/**
- * Invalidate related posts transient cache when a post is saved or updated.
- */
-add_action('save_post', function($post_id) {
-    if (wp_is_post_revision($post_id)) {
-        return;
-    }
-    $cats = get_the_category($post_id);
-    if (!empty($cats)) {
-        $cat_ids = array_map(function($c) { return $c->term_id; }, $cats);
-        $cache_key = 'toc_related_posts_' . $post_id . '_' . implode('_', $cat_ids);
-        delete_transient($cache_key);
-    }
-});
 
 /**
  * Restrict application passwords to users who can edit posts (editors, admins, etc.)

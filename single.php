@@ -62,22 +62,9 @@
                         $content = apply_filters('the_content', $content);
                         $content = str_replace(']]>', ']]&gt;', $content);
 
-                        // Fetch related posts (5 posts max to cover both inline and bottom slots)
-                        $related_posts = toc_get_related_posts(get_the_ID(), 5);
-
-                        $inline_related_posts = [];
-                        $bottom_related_posts = [];
-
-                        if (!empty($related_posts)) {
-                            if (count($related_posts) >= 2 && !post_password_required()) {
-                                $inline_related_posts = array_slice($related_posts, 0, 2);
-                                $bottom_related_posts = array_slice($related_posts, 2, 3);
-                            } else {
-                                // Protected posts render the password form instead of content,
-                                // so the inline block has nowhere honest to land: keep the 3-slot bottom grid only.
-                                $bottom_related_posts = array_slice($related_posts, 0, 3);
-                            }
-                        }
+                        $related = mazaq_related_articles(get_the_ID());
+                        $inline_related_posts = $related['inline'];
+                        $bottom_related_posts = $related['bottom'];
 
                         $inline_related_html = '';
                         if (!empty($inline_related_posts)) {
