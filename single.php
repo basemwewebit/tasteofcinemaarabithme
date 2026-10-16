@@ -181,7 +181,7 @@
 
                     <?php get_template_part('template-parts/common/newsletter', null, ['context' => 'single']); ?>
 
-                    <div class="single-article__ad"><?php mazaq_render_ad('ad_slot_bottom_article', 'horizontal'); ?></div>
+                    <div class="single-article__ad"><?php mazaq_render_ad('bottom_article'); ?></div>
                 </div>
             </div>
         </article>

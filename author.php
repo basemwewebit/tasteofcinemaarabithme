@@ -65,7 +65,7 @@ $author_category_counts = array_slice($author_category_counts, 0, 3);
     </div>
 </header>
 
-<div class="archive-ad max-w-7xl mx-auto px-4"><?php mazaq_render_ad('ad_slot_archive_banner', 'horizontal'); ?></div>
+<div class="archive-ad max-w-7xl mx-auto px-4"><?php mazaq_render_ad('archive_banner'); ?></div>
 
 <main id="main-content" class="archive-main max-w-7xl mx-auto px-4 pb-20">
     <section class="archive-collections" aria-labelledby="archive-collections-title">

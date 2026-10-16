@@ -34,7 +34,7 @@ $stars  = ($agg !== null && function_exists('mazaq_film_rating_stars'))
     </div>
 </div>
 
-<div class="max-w-7xl mx-auto px-4 mb-10"><?php mazaq_render_ad('ad_slot_archive_banner', 'horizontal'); ?></div>
+<div class="max-w-7xl mx-auto px-4 mb-10"><?php mazaq_render_ad('archive_banner'); ?></div>
 
 <main id="main-content" class="max-w-7xl mx-auto px-4 pb-20 flex-1 w-full">
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10">

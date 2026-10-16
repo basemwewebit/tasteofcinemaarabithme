@@ -145,7 +145,7 @@ if (!$popular->have_posts()) {
     ]); ?>
 
     <div class="screening-home__ad">
-        <?php get_template_part('template-parts/ads/ad-responsive'); ?>
+        <?php mazaq_render_ad('hero_banner'); ?>
     </div>
 
     <?php if (!empty($categories)) : ?>

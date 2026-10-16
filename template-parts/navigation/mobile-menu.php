@@ -124,6 +124,6 @@ $logo_src = mazaq_theme_logo_url(96);
     </div>
 
     <div class="delight-menu__footer">
-        <?php get_template_part('template-parts/ads/ad-mobile-menu'); ?>
+        <?php mazaq_render_ad('mobile_menu'); ?>
     </div>
 </aside>

@@ -2,13 +2,30 @@
 
 declare(strict_types=1);
 
-function mazaq_get_ad_slot(string $slot_name): string
+/**
+ * The Ad placement catalogue: every placement the theme renders, with the
+ * format its plate reserves. Theme options are generated from it; a
+ * placement's options are stored under "ad_slot_{placement}".
+ */
+const MAZAQ_AD_PLACEMENTS = [
+    'hero_banner' => 'horizontal',
+    'mobile_menu' => 'responsive',
+    'in_article' => 'fluid',
+    'bottom_article' => 'horizontal',
+    'archive_banner' => 'horizontal',
+    'in_feed' => 'rectangle',
+];
+
+// The In-feed placement precedes every Nth item of a feed, counted across pages.
+const MAZAQ_IN_FEED_AD_INTERVAL = 8;
+
+/** The placement's AdSense slot id (its Network ad), or '' when none is set. */
+function mazaq_get_ad_slot(string $placement): string
 {
-    $slot_name = trim($slot_name);
-    if ($slot_name === '' || !function_exists('get_field')) {
+    if (!function_exists('get_field')) {
         return '';
     }
-    return (string) get_field($slot_name, 'option');
+    return trim((string) get_field('ad_slot_' . $placement, 'option'));
 }
 
 /**
@@ -31,12 +48,12 @@ function mazaq_get_adsense_publisher_id(): string
  *
  * @return array{url: string, image: string}|null
  */
-function mazaq_get_direct_ad(string $slot_name): ?array
+function mazaq_get_direct_ad(string $placement): ?array
 {
-    $slot_name = trim($slot_name);
-    if ($slot_name === '' || !function_exists('get_field')) {
+    if (!function_exists('get_field')) {
         return null;
     }
+    $slot_name = 'ad_slot_' . $placement;
 
     // esc_url_raw() would repair "example.com" or keep "//host" and "/path";
     // only an explicit http(s) URL counts.
@@ -48,9 +65,6 @@ function mazaq_get_direct_ad(string $slot_name): ?array
 
     return ($url !== '' && $image) ? ['url' => $url, 'image' => $image] : null;
 }
-
-// The In-feed placement precedes every Nth item of a feed, counted across pages.
-const MAZAQ_IN_FEED_AD_INTERVAL = 8;
 
 /**
  * The In-feed placement's plate before the item at $position (1-based, counted
@@ -64,49 +78,44 @@ function mazaq_render_in_feed_ad(int $position): void
         return;
     }
 
-    mazaq_render_ad('ad_slot_in_feed', 'rectangle', '', $position === MAZAQ_IN_FEED_AD_INTERVAL + 1);
+    mazaq_render_ad('in_feed', $position === MAZAQ_IN_FEED_AD_INTERVAL + 1);
 }
 
 /**
- * Render an ad slot as a sponsor's plate: a quiet celluloid-framed stage with
- * an honest «إعلان» note and space reserved per format, so a late creative
- * never shifts the page. A complete Direct ad takes the placement (once per
- * request, and only where $direct_allowed); otherwise the Network ad; an
- * unconfigured slot renders nothing.
+ * Render a placement as a sponsor's plate: a quiet celluloid-framed stage with
+ * an honest «إعلان» note and space reserved per the placement's format, so a
+ * late creative never shifts the page. A complete Direct ad takes the
+ * placement (once per request); otherwise the Network ad; an unconfigured or
+ * unknown placement renders nothing.
+ *
+ * @param bool $direct_allowed False only for In-feed plates past the first.
  */
-function mazaq_render_ad(string $slot_name, string $format = 'responsive', string $classes = '', bool $direct_allowed = true): void
+function mazaq_render_ad(string $placement, bool $direct_allowed = true): void
 {
-    // A Direct ad wins its placement, but shows once per placement per request
-    // so the in-article injection never repeats one image down a single article.
-    static $direct_shown = [];
-    $direct = (!$direct_allowed || isset($direct_shown[$slot_name])) ? null : mazaq_get_direct_ad($slot_name);
-    if ($direct) {
-        $direct_shown[$slot_name] = true;
-    }
-
-    $slot_id = mazaq_get_ad_slot($slot_name);
-    $publisher = mazaq_get_adsense_publisher_id();
-    $dummy_ads_enabled = false;
-    $expects_network_ad = (bool) (!$direct && $slot_id && $publisher && !$dummy_ads_enabled);
-
-    // Production silence: an unconfigured slot never draws a husk.
-    if (!$direct && !$expects_network_ad && !$dummy_ads_enabled) {
+    $format = MAZAQ_AD_PLACEMENTS[$placement] ?? null;
+    if ($format === null) {
         return;
     }
 
-    // An unknown format would silently lose its CLS reservation; fold it
-    // back onto the responsive reservation instead.
-    if (!in_array($format, ['horizontal', 'rectangle', 'vertical', 'fluid', 'responsive'], true)) {
-        $format = 'responsive';
+    // A Direct ad wins its placement, but shows once per placement per request
+    // so the in-article injection never repeats one image down a single article.
+    static $direct_shown = [];
+    $direct = (!$direct_allowed || isset($direct_shown[$placement])) ? null : mazaq_get_direct_ad($placement);
+    if ($direct) {
+        $direct_shown[$placement] = true;
     }
 
-    $class_attr = trim('ad-container ' . $classes);
+    $slot_id = mazaq_get_ad_slot($placement);
+    $publisher = mazaq_get_adsense_publisher_id();
+    if (!$direct && ($slot_id === '' || $publisher === '')) {
+        return;
+    }
+
     printf(
-        '<aside class="%1$s" data-ad-container="true" data-slot-name="%2$s" data-ad-format="%3$s" data-expects-network-ad="%4$d">',
-        esc_attr($class_attr),
-        esc_attr($slot_name),
+        '<aside class="ad-container" data-ad-container="true" data-slot-name="%1$s" data-ad-format="%2$s" data-expects-network-ad="%3$d">',
+        esc_attr('ad_slot_' . $placement),
         esc_attr($format),
-        $expects_network_ad ? 1 : 0
+        $direct ? 0 : 1
     );
 
     echo '<p class="ad-container__note"><span class="ad-container__mark" aria-hidden="true"></span>' . esc_html__('إعلان', 'mazaq') . '</p>';
@@ -119,7 +128,7 @@ function mazaq_render_ad(string $slot_name, string $format = 'responsive', strin
             esc_url($direct['image']),
             esc_attr__('إعلان', 'mazaq')
         );
-    } elseif ($expects_network_ad) {
+    } else {
         // The creative stays pending until the shared observer promotes it near
         // the viewport (see mazaq_ads_lazy_push); space is reserved meanwhile.
         printf(
@@ -128,8 +137,6 @@ function mazaq_render_ad(string $slot_name, string $format = 'responsive', strin
             esc_attr($slot_id),
             esc_attr($format)
         );
-    } else {
-        echo '<span class="ad-container__dummy">' . esc_html__('مساحة إعلانية', 'mazaq') . '</span>';
     }
 
     echo '</div>';
@@ -247,7 +254,7 @@ function mazaq_inject_in_article_ads(string $content): string
         // wp_strip_all_tags also drops script/style guts, unlike strip_tags
         if (strlen(trim(wp_strip_all_tags($part))) > 0 && ($index + 1) % 3 === 0 && $ad_count < $max_ads) {
             ob_start();
-            get_template_part('template-parts/ads/ad-in-article');
+            mazaq_render_ad('in_article');
             $new_content .= (string) ob_get_clean();
             $ad_count++;
         }

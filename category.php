@@ -33,7 +33,7 @@ $bg_url = $bg_id ? wp_get_attachment_image_url($bg_id, 'full') : '';
     </div>
 </header>
 
-<div class="archive-ad max-w-7xl mx-auto px-4"><?php mazaq_render_ad('ad_slot_archive_banner', 'horizontal'); ?></div>
+<div class="archive-ad max-w-7xl mx-auto px-4"><?php mazaq_render_ad('archive_banner'); ?></div>
 
 <main id="main-content" class="archive-main max-w-7xl mx-auto px-4 pb-20">
     <?php get_template_part('template-parts/archive/archive-feed', null, [

@@ -40,30 +40,18 @@ function mazaq_get_ad_support_url(): string
     return $cached_url;
 }
 
+/**
+ * Adblock detection loads wherever a Network ad could render; the script
+ * itself does nothing on a page without an ad plate.
+ */
 function mazaq_should_enqueue_adblock_assets(): bool
 {
-    if (!function_exists('get_field') || !function_exists('mazaq_get_ad_slot')) {
+    if (mazaq_get_adsense_publisher_id() === '') {
         return false;
     }
 
-    $publisher = (string) get_field('adsense_publisher_id', 'option');
-    if ($publisher === '') {
-        return false;
-    }
-
-    $slot_names = ['ad_slot_mobile_menu'];
-    if (is_front_page()) {
-        $slot_names[] = 'ad_slot_hero_banner';
-    }
-    if (is_singular('post')) {
-        array_push($slot_names, 'ad_slot_in_article', 'ad_slot_bottom_article');
-    }
-    if (is_home() || is_archive() || is_search()) {
-        $slot_names[] = 'ad_slot_archive_banner';
-    }
-
-    foreach (array_unique($slot_names) as $slot_name) {
-        if (mazaq_get_ad_slot($slot_name) !== '') {
+    foreach (array_keys(MAZAQ_AD_PLACEMENTS) as $placement) {
+        if (mazaq_get_ad_slot($placement) !== '') {
             return true;
         }
     }
