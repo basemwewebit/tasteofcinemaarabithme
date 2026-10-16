@@ -2,7 +2,7 @@
 /**
  * Search room: the archive's quiet operative sibling.
  *
- * Best match leads as a wide card; the rest file into ruled index rows;
+ * Results run through the Archive feed in relevance order (no grouping bar);
  * emptiness recovers like the 404 with popular ledger and category chips.
  *
  * @package Mazaq
@@ -13,7 +13,6 @@ get_header(); ?>
 <?php
 $search_query_text = (string) get_search_query();
 $search_total = (int) $wp_query->found_posts;
-$is_first_page = max(1, (int) get_query_var('paged')) <= 1;
 ?>
 
 <header class="archive-head search-head">
@@ -43,35 +42,10 @@ $is_first_page = max(1, (int) get_query_var('paged')) <= 1;
 <main id="main-content" class="archive-main search-room max-w-7xl mx-auto px-4 pb-20">
     <?php if (have_posts()) : ?>
 
-        <?php if ($is_first_page) : ?>
-            <section class="archive-lead" aria-label="<?php esc_attr_e('أقرب نتيجة لبحثك', 'mazaq'); ?>">
-                <?php the_post(); ?>
-                <?php get_template_part('template-parts/content/article-card', null, ['layout' => 'wide', 'class' => 'archive-lead__card']); ?>
-                <?php rewind_posts(); ?>
-            </section>
-        <?php endif; ?>
-
-        <?php
-        $search_page_count = isset($wp_query->posts) && is_array($wp_query->posts) ? count($wp_query->posts) : 0;
-        $search_has_rows = $is_first_page ? $search_page_count > 1 : $search_page_count > 0;
-        ?>
-        <?php if ($search_has_rows) : ?>
-        <div class="archive-index">
-            <?php
-            $search_index = 0;
-            while (have_posts()) :
-                the_post();
-                $search_index++;
-                if ($is_first_page && $search_index === 1) {
-                    continue;
-                }
-                get_template_part('template-parts/archive/archive-row');
-            endwhile;
-            ?>
-        </div>
-        <?php endif; ?>
-
-        <?php get_template_part('template-parts/navigation/pagination'); ?>
+        <?php get_template_part('template-parts/archive/archive-feed', null, [
+            'groupings' => [],
+            'lead_label' => __('أقرب نتيجة لبحثك', 'mazaq'),
+        ]); ?>
 
     <?php else : ?>
 

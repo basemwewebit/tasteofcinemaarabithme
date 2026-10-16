@@ -12,6 +12,10 @@ _Avoid_: generic carousel, when referring to the editorial set; hero ids, when r
 The front page's reverse-chronological run of articles below the Continuous Programme, excluding the Programme's four, delivered in pages of six: page 1 with the page, later pages on demand.
 _Avoid_: infinite scroll, load-more posts, latest posts grid.
 
+**Archive feed**:
+The listing under every archive page's header (category, tag, author, date, film, search): a lead article on page 1, then ruled rows, with the In-feed placement counted across pages.
+_Avoid_: archive loop, post grid.
+
 **Programme slide**:
 One article within the Continuous Programme, retaining its own title, summary, and link as part of the page’s reading sequence.
 _Avoid_: decorative slide, card-only item.
@@ -71,7 +75,7 @@ A fixed position in the theme where an advertisement may appear, each holding a 
 _Avoid_: ad slot, when referring to the position (an ad network's "slot" is a unit id, not a position).
 
 **In-feed placement**:
-The Ad placement that recurs every Nth item of a feed (the Latest feed, an archive, a film page), counted across pages. Only its first plate in a feed may carry the Direct ad, however many pages the reader loads.
+The Ad placement that recurs every Nth item of a feed (the Latest feed, or an Archive feed: an archive, a film page, search results), counted across pages. Only its first plate in a feed may carry the Direct ad, however many pages the reader loads.
 _Avoid_: grid ad, feed slot.
 
 **Direct ad**:

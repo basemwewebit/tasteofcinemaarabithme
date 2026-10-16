@@ -131,7 +131,7 @@ function mazaq_enqueue_assets(): void
         );
     }
 
-    // Archive family: filing-cabinet index grouping (archive, category, tag, author)
+    // Archive family: filing-cabinet index grouping (archive, category, tag, author, film)
     if (is_archive()) {
         wp_enqueue_script(
             'mazaq-archive-index',

@@ -9525,11 +9525,6 @@ html.dark .search-empty .err-404__meta {
     color: var(--color-pewter);
 }
 
-/* An empty ruled index never renders a stray container. */
-.search-room .archive-index:empty {
-    display: none;
-}
-
 /* ============================================================
    NOTIFICATION BULLETINS: a quiet cinema signal for the reader
    The surface is intentionally solid and compact: paper by day,

@@ -6,52 +6,40 @@ $term = get_queried_object();
 // Cross-article aggregate, rendered through the same helper + partial as the infobox.
 $agg    = $term instanceof WP_Term ? mazaq_film_agg($term->term_id) : null;
 $stars  = $agg !== null ? mazaq_film_rating_stars(['ratingValue' => $agg['rating'], 'bestRating' => 10]) : null;
+$film_article_count = (int) $wp_query->found_posts;
 ?>
 
-<div class="relative bg-slate-900 text-white pt-20 pb-16 md:pt-28 md:pb-20 mb-12 overflow-hidden">
-    <div class="absolute inset-0 opacity-20">
-        <div class="absolute inset-0 bg-gradient-to-t from-slate-900 to-slate-900/60"></div>
-    </div>
-    <div class="max-w-7xl mx-auto px-4 relative z-10">
-        <div class="max-w-3xl">
-            <span class="inline-block bg-primary text-slate-900 font-bold px-4 py-1.5 rounded-full text-sm mb-6">فيلم</span>
-            <h1 class="text-display mb-6 text-white break-words"><?php single_term_title(); ?></h1>
+<header class="archive-head">
+    <div class="archive-head__inner max-w-7xl mx-auto px-4">
+        <div class="archive-head__content">
+            <span class="archive-head__pill">
+                <span class="archive-head__tick" aria-hidden="true"></span>
+                <?php esc_html_e('فيلم', 'mazaq'); ?>
+            </span>
+            <h1 class="archive-head__title"><?php single_term_title(); ?></h1>
             <?php $film_desc = term_description(); if ($film_desc) : ?>
-                <p class="text-lg md:text-xl text-slate-300 font-medium leading-relaxed"><?php echo wp_kses_post($film_desc); ?></p>
+                <div class="archive-head__desc"><?php echo wp_kses_post($film_desc); ?></div>
             <?php endif; ?>
-            <div class="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-slate-300 text-sm">
+            <p class="archive-head__meta">
                 <?php if ($stars !== null) : ?>
                     <?php get_template_part('template-parts/content/rating-stars', null, ['stars' => $stars]); ?>
-                    <span class="w-1.5 h-1.5 bg-primary rounded-full" aria-hidden="true"></span>
                     <span><?php echo esc_html(sprintf(_n('عن %d تقييم', 'عن %d تقييمات', $agg['count'], 'mazaq'), $agg['count'])); ?></span>
-                    <span class="w-1.5 h-1.5 bg-primary rounded-full" aria-hidden="true"></span>
+                    <span class="archive-head__sep" aria-hidden="true"></span>
                 <?php endif; ?>
-                <span><?php echo esc_html(sprintf(_n('%d مقال يذكر هذا الفيلم', '%d مقالات تذكر هذا الفيلم', (int) $wp_query->found_posts, 'mazaq'), (int) $wp_query->found_posts)); ?></span>
-            </div>
+                <span class="archive-head__count num"><?php echo esc_html((string) $film_article_count); ?></span>
+                <span><?php echo esc_html(_n('مقال يذكر هذا الفيلم', 'مقالات تذكر هذا الفيلم', $film_article_count, 'mazaq')); ?></span>
+            </p>
         </div>
     </div>
-</div>
+</header>
 
-<div class="max-w-7xl mx-auto px-4 mb-10"><?php mazaq_render_ad('archive_banner'); ?></div>
+<div class="archive-ad max-w-7xl mx-auto px-4"><?php mazaq_render_ad('archive_banner'); ?></div>
 
-<main id="main-content" class="max-w-7xl mx-auto px-4 pb-20 flex-1 w-full">
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10">
-        <?php if (have_posts()) :
-            $position = (max(1, (int) get_query_var('paged')) - 1) * (int) get_query_var('posts_per_page');
-            while (have_posts()) : the_post();
-                mazaq_render_in_feed_ad(++$position);
-                get_template_part('template-parts/content/card-category');
-            endwhile;
-        else : ?>
-            <div class="col-span-full text-center py-16">
-                <p class="text-slate-600 dark:text-slate-300 text-lg mb-4">لا توجد مقالات تذكر هذا الفيلم حالياً.</p>
-                <a href="<?php echo esc_url(home_url('/')); ?>" class="inline-flex items-center gap-2 text-primary font-medium hover:underline">
-                    <span>تصفح أحدث المقالات</span>
-                </a>
-            </div>
-        <?php endif; ?>
-    </div>
-    <?php get_template_part('template-parts/navigation/pagination'); ?>
+<main id="main-content" class="archive-main max-w-7xl mx-auto px-4 pb-20">
+    <?php get_template_part('template-parts/archive/archive-feed', null, [
+        'empty_message' => __('لا توجد مقالات تذكر هذا الفيلم حالياً.', 'mazaq'),
+        'empty_link' => true,
+    ]); ?>
 </main>
 
 <?php get_footer(); ?>
