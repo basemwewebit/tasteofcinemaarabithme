@@ -1,7 +1,7 @@
 <?php
 /**
  * Overlaid star rating. Single markup for both the film infobox and the
- * /film/ archive header, fed by mazaq_film_rating_stars().
+ * /film/ archive header, fed by mazaq_film_rating_stars() (inc/film-record.php).
  *
  * @var array{value:int|float,best:int|float,percent:float,label:string}|null $stars
  */

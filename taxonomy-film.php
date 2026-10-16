@@ -4,10 +4,8 @@ global $wp_query;
 $term = get_queried_object();
 
 // Cross-article aggregate, rendered through the same helper + partial as the infobox.
-$agg    = ($term instanceof WP_Term && function_exists('mazaq_film_agg')) ? mazaq_film_agg($term->term_id) : null;
-$stars  = ($agg !== null && function_exists('mazaq_film_rating_stars'))
-    ? mazaq_film_rating_stars($agg['rating'] . '/10')
-    : null;
+$agg    = $term instanceof WP_Term ? mazaq_film_agg($term->term_id) : null;
+$stars  = $agg !== null ? mazaq_film_rating_stars(['ratingValue' => $agg['rating'], 'bestRating' => 10]) : null;
 ?>
 
 <div class="relative bg-slate-900 text-white pt-20 pb-16 md:pt-28 md:pb-20 mb-12 overflow-hidden">

@@ -15,8 +15,8 @@
  * ponytail: no editor-review queue yet — the skip-list + list threshold are the
  * phase-1 noise guard. Add a review queue if junk terms still slip through.
  *
- * Reuses mazaq_schema_parse_rating() (inc/schema-film.php) for rating parsing so
- * the aggregate can never diverge from per-review schema ratings, and
+ * Reads each review's rating from the Film record (inc/film-record.php) so the
+ * aggregate can never diverge from per-review schema ratings, and
  * mazaq_extract_article_headings() for the exact H2 list schema-film.php reads.
  * Indexes on the save_post hook that already fires for reading-time and transients.
  *
@@ -62,11 +62,9 @@ function mazaq_film_graph_index(int $post_id, WP_Post $post): void
     $titles = [];
     if ($post->post_status === 'publish') {
         // (a) Clean review subject — empty on listicles, ready for future reviews.
-        if (function_exists('get_field')) {
-            $t = trim((string) get_field('film_title', $post_id));
-            if ($t !== '') {
-                $titles[] = $t;
-            }
+        $t = mazaq_film_record($post_id)['title'] ?? '';
+        if ($t !== '') {
+            $titles[] = $t;
         }
         // (b) Listicle H2 entries — the site's actual film data.
         $titles = array_merge($titles, mazaq_film_titles_from_headings($post_id));
@@ -134,10 +132,6 @@ function mazaq_film_get_or_create_term(string $title): int
  */
 function mazaq_film_titles_from_headings(int $post_id): array
 {
-    if (!function_exists('mazaq_ranked_list')) {
-        return [];
-    }
-
     $sections = mazaq_extract_article_headings($post_id);
     if (mazaq_ranked_list($sections) === null) {
         return [];
@@ -229,29 +223,26 @@ function mazaq_film_recompute_rating(int $term_id): void
         return;
     }
 
-    $agg = null;
-    if (function_exists('get_field') && function_exists('mazaq_schema_parse_rating')) {
-        $post_ids = get_posts([
-            'post_type'   => 'post',
-            'post_status' => 'publish',
-            'fields'      => 'ids',
-            'nopaging'    => true,
-            'tax_query'   => [[
-                'taxonomy' => 'film',
-                'field'    => 'term_id',
-                'terms'    => $term_id,
-            ]],
-        ]);
+    $post_ids = get_posts([
+        'post_type'   => 'post',
+        'post_status' => 'publish',
+        'fields'      => 'ids',
+        'nopaging'    => true,
+        'tax_query'   => [[
+            'taxonomy' => 'film',
+            'field'    => 'term_id',
+            'terms'    => $term_id,
+        ]],
+    ]);
 
-        $fragments = [];
-        foreach ($post_ids as $pid) {
-            $fragment = mazaq_schema_parse_rating((string) get_field('film_rating', $pid));
-            if ($fragment !== null) {
-                $fragments[] = $fragment;
-            }
+    $fragments = [];
+    foreach ($post_ids as $pid) {
+        $fragment = mazaq_film_record((int) $pid)['rating'] ?? null;
+        if ($fragment !== null) {
+            $fragments[] = $fragment;
         }
-        $agg = mazaq_film_average_normalized($fragments);
     }
+    $agg = mazaq_film_average_normalized($fragments);
 
     if ($agg === null) {
         delete_term_meta($term->term_id, '_mazaq_agg_rating');
@@ -299,10 +290,7 @@ function mazaq_film_average_normalized(array $fragments): ?array
  */
 function mazaq_film_term_for_post(int $post_id): ?WP_Term
 {
-    if (!function_exists('get_field')) {
-        return null;
-    }
-    $slug = sanitize_title(trim((string) get_field('film_title', $post_id)));
+    $slug = sanitize_title(mazaq_film_record($post_id)['title'] ?? '');
     if ($slug === '') {
         return null;
     }
