@@ -92,4 +92,58 @@ rotation_test_check(mazaq_extract_article_headings(15) === [
 ]);
 rotation_test_check(mazaq_add_article_heading_ids($GLOBALS['__heading_fixtures'][15]) === '<h2 id="article-section-1">Blank</h2><h2 id="article-section-2">Next</h2>');
 
+// --- numbering, through the extractor: h2 fixtures, one per heading text ---
+function heading_fixture(array $texts): int
+{
+    static $post_id = 100;
+    $post_id++;
+    $GLOBALS['__heading_fixtures'][$post_id] = implode('', array_map(
+        static fn(string $text): string => '<h2>' . $text . '</h2><p>Body.</p>',
+        $texts
+    ));
+    return $post_id;
+}
+
+function heading_numbers(array $texts): array
+{
+    return array_column(mazaq_extract_article_headings(heading_fixture($texts)), 'number');
+}
+
+// No headings → nothing to number.
+rotation_test_check(heading_numbers([]) === []);
+
+// Prose article, no numbers anywhere → positional 1..N.
+rotation_test_check(heading_numbers(['المقدمة', 'الحبكة', 'الخاتمة']) === [1, 2, 3]);
+
+// A countdown listicle mirrors its own ranks rather than its document order.
+rotation_test_check(heading_numbers(['31. Cars 3 (2017)', '30. The Good Dinosaur (2015)', '1. Toy Story (1995)']) === [31, 30, 1]);
+
+// Ascending listicles work the same way.
+rotation_test_check(heading_numbers(['1. Alien', '2. Aliens']) === [1, 2]);
+
+// Separator may be a paren, a dash, or an en/em dash, with or without a space.
+// Descending on purpose, so a positional fallback could not produce this.
+rotation_test_check(heading_numbers(['9) Alien', '8 - Aliens', '7 – Alien 3', '6 — Resurrection']) === [9, 8, 7, 6]);
+
+// A title that merely opens with digits is not a rank: no punctuation follows them,
+// and a colon is never a rank marker. Nothing else numbered → position.
+rotation_test_check(heading_numbers(['1917 (2019)', '2001: A Space Odyssey', 'مقدمة']) === [1, 2, 3]);
+
+// An unnumbered heading among ranks (an intro) shows no number at all. Giving it its
+// position would print "01" beside "1. Toy Story" -- the very contradiction this ends.
+rotation_test_check(heading_numbers(['مقدمة', '3. Ratatouille', '2. Monsters, Inc.', '1. Toy Story']) === [null, 3, 2, 1]);
+
+// Once anything is numbered, real ranks always win, half-and-half included.
+rotation_test_check(heading_numbers(['مقدمة', 'خاتمة', '2. Aliens', '1. Alien']) === [null, null, 2, 1]);
+
+// Ranks are capped at three digits, so a four-digit year is never read as one.
+rotation_test_check(heading_numbers(['100. Alien', '101. Aliens', '1000. Movies']) === [100, 101, null]);
+
+// Arabic-Indic digits are not parsed as ranks ((int) would cast them to 0, printing
+// "00" on this Arabic site); they fall back to position instead.
+rotation_test_check(heading_numbers(['١١. Up (2009)', '١٠. Inside Out']) === [1, 2]);
+
+// Mixed scripts: only the ASCII rank counts.
+rotation_test_check(heading_numbers(['١١. Up (2009)', '10. Inside Out']) === [null, 10]);
+
 echo "article-headings: all assertions passed\n";

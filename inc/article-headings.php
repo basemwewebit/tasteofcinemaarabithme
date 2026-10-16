@@ -107,7 +107,8 @@ function mazaq_extract_article_headings(int $post_id): array
  * (an intro, a conclusion) returns null: showing its position there would put a
  * positional number next to real ranks, which is the contradiction this exists to end.
  *
- * Pure: no WP, no post. Covered by tests/heading-numbers-test.php.
+ * Internal: the extractor fills each row's `number` from this; callers read rows.
+ * Covered through the extractor in tests/article-headings-test.php.
  *
  * @param string[] $texts Heading texts, in document order.
  * @return array<int, int|null> One entry per heading, same order. Null = show no number.
