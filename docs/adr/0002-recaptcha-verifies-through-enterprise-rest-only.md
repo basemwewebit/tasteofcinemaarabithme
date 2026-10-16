@@ -1,0 +1,5 @@
+# reCAPTCHA verifies through the Enterprise REST API only
+
+Token verification calls the reCAPTCHA Enterprise REST API with an API key, and nothing else. The legacy `siteverify` path was removed because it cannot validate the Enterprise tokens our forms mint (the front end loads `enterprise.js`). The gRPC path via `google/cloud-recaptcha-enterprise` was removed because it needed `GOOGLE_APPLICATION_CREDENTIALS` on the server, which is unused, and pulled roughly 10 MB of vendor code into the theme. One transport means one code path to test: the verification self-check fakes WordPress's HTTP call rather than a transport seam.
+
+Whether reCAPTCHA is skipped is decided only by `wp_get_environment_type()` (`local` or `development`), never by the request's Host header. Consistent with ADR-0001, Host validation belongs at the edge, and the theme makes no security decision from it. Fail-Open Mode lets a submission through only when Google cannot be reached (network error, 5xx, unreadable body); missing keys and client errors always fail closed.
