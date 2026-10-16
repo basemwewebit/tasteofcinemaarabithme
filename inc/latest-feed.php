@@ -10,10 +10,6 @@ declare(strict_types=1);
 
 const MAZAQ_LATEST_FEED_PER_PAGE = 6;
 
-// An ad plate precedes every Nth article of the feed (counted across pages),
-// starting with the (N + 1)th. ponytail: absorbed by the Ad module when it exists.
-const MAZAQ_LATEST_FEED_AD_INTERVAL = 8;
-
 /**
  * One page of the Latest feed.
  *
@@ -37,10 +33,7 @@ function mazaq_latest_feed(int $page = 1): array
     while ($query->have_posts()) {
         $query->the_post();
 
-        $position = ($page - 1) * MAZAQ_LATEST_FEED_PER_PAGE + $index + 1;
-        if ($position > 1 && ($position - 1) % MAZAQ_LATEST_FEED_AD_INTERVAL === 0) {
-            get_template_part('template-parts/ads/ad-grid');
-        }
+        mazaq_render_in_feed_ad(($page - 1) * MAZAQ_LATEST_FEED_PER_PAGE + $index + 1);
 
         get_template_part(
             'template-parts/content/article-card',

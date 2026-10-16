@@ -98,8 +98,8 @@ function wp_get_attachment_image_url(int $id, string $size)
 require __DIR__ . '/../inc/ads.php';
 require __DIR__ . '/../inc/latest-feed.php';
 
-/** Network ads configured for the placement the Latest feed uses. */
-const FEED_TEST_NETWORK = ['adsense_publisher_id' => 'ca-pub-1', 'ad_slot_hero_banner' => '111'];
+/** Network ads configured for the In-feed placement. */
+const FEED_TEST_NETWORK = ['adsense_publisher_id' => 'ca-pub-1', 'ad_slot_in_feed' => '111'];
 
 /** Newest-first pool of ids 100..(100 - $size + 1). */
 function feed_test_reset(int $size = 30): void
@@ -207,6 +207,24 @@ feed_test_reset(60);
 foreach ([1 => [], 2 => [2], 3 => [4], 4 => [], 5 => [0], 6 => [2]] as $page => $expected) {
     rotation_test_check(feed_test_ad_positions(mazaq_latest_feed($page)['html']) === $expected, "page {$page} ad plates at " . json_encode($expected));
 }
+
+// The plates are the In-feed placement, not a borrowed banner.
+feed_test_reset(60);
+rotation_test_check(str_contains(mazaq_latest_feed(2)['html'], 'data-slot-name="ad_slot_in_feed"'), 'plates are the In-feed placement');
+$GLOBALS['fake_options'] = ['adsense_publisher_id' => 'ca-pub-1', 'ad_slot_hero_banner' => '111'];
+rotation_test_check(feed_test_ad_positions(mazaq_latest_feed(2)['html']) === [], 'an unconfigured In-feed placement renders no plates');
+
+// A Direct ad shows once per page view: only the feed's first plate (before
+// item 9, on page 2) carries it. Each load-more page is its own request, so
+// page 3 is rendered first here: its plate must not claim the Direct ad.
+feed_test_reset(60);
+$GLOBALS['fake_options'] += ['ad_slot_in_feed_direct_url' => 'https://sponsor.test', 'ad_slot_in_feed_direct_image' => 7];
+$page3 = mazaq_latest_feed(3)['html'];
+rotation_test_check(!str_contains($page3, 'sponsor.test') && str_contains($page3, 'adsbygoogle'), 'a later plate on a load-more page carries the Network ad');
+$page2 = mazaq_latest_feed(2)['html'];
+rotation_test_check(str_contains($page2, 'https://sponsor.test') && !str_contains($page2, 'adsbygoogle'), 'the first plate of the feed carries the Direct ad');
+$page5 = mazaq_latest_feed(5)['html'];
+rotation_test_check(!str_contains($page5, 'sponsor.test') && str_contains($page5, 'adsbygoogle'), 'plates after the first never repeat the Direct ad');
 
 // Has-more is reported on every page, page 1 included, and the Programme's
 // articles do not count towards it.

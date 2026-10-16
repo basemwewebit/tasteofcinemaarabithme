@@ -41,7 +41,7 @@ function mazaq_register_acf_fields(): void
     // Per Ad placement: the AdSense slot id (Network ad) and an image + URL
     // (Direct ad, see inc/ads.php). One list feeds all three fields.
     $ad_fields = [];
-    foreach (['hero_banner', 'mobile_menu', 'in_article', 'bottom_article', 'archive_banner'] as $placement) {
+    foreach (['hero_banner', 'mobile_menu', 'in_article', 'bottom_article', 'archive_banner', 'in_feed'] as $placement) {
         $label = ucwords(str_replace('_', ' ', $placement));
         $ad_fields[] = ['key' => "field_ad_slot_{$placement}", 'label' => "{$label} Slot", 'name' => "ad_slot_{$placement}", 'type' => 'text'];
         $ad_fields[] = ['key' => "field_ad_slot_{$placement}_direct_image", 'label' => "{$label} Direct Ad Image", 'name' => "ad_slot_{$placement}_direct_image", 'type' => 'image', 'return_format' => 'id', 'preview_size' => 'medium', 'mime_types' => 'gif,png,jpg,jpeg,webp'];

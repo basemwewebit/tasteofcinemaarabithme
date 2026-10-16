@@ -49,18 +49,37 @@ function mazaq_get_direct_ad(string $slot_name): ?array
     return ($url !== '' && $image) ? ['url' => $url, 'image' => $image] : null;
 }
 
+// The In-feed placement precedes every Nth item of a feed, counted across pages.
+const MAZAQ_IN_FEED_AD_INTERVAL = 8;
+
+/**
+ * The In-feed placement's plate before the item at $position (1-based, counted
+ * across pages), or nothing when none is due there. Plates fall before items
+ * 9, 17, 25 … Only the first may carry the Direct ad: load-more pages are
+ * separate requests, so the once-per-page-view budget is read from position.
+ */
+function mazaq_render_in_feed_ad(int $position): void
+{
+    if ($position <= 1 || ($position - 1) % MAZAQ_IN_FEED_AD_INTERVAL !== 0) {
+        return;
+    }
+
+    mazaq_render_ad('ad_slot_in_feed', 'rectangle', '', $position === MAZAQ_IN_FEED_AD_INTERVAL + 1);
+}
+
 /**
  * Render an ad slot as a sponsor's plate: a quiet celluloid-framed stage with
  * an honest «إعلان» note and space reserved per format, so a late creative
  * never shifts the page. A complete Direct ad takes the placement (once per
- * request); otherwise the Network ad; an unconfigured slot renders nothing.
+ * request, and only where $direct_allowed); otherwise the Network ad; an
+ * unconfigured slot renders nothing.
  */
-function mazaq_render_ad(string $slot_name, string $format = 'responsive', string $classes = ''): void
+function mazaq_render_ad(string $slot_name, string $format = 'responsive', string $classes = '', bool $direct_allowed = true): void
 {
     // A Direct ad wins its placement, but shows once per placement per request
     // so the in-article injection never repeats one image down a single article.
     static $direct_shown = [];
-    $direct = isset($direct_shown[$slot_name]) ? null : mazaq_get_direct_ad($slot_name);
+    $direct = (!$direct_allowed || isset($direct_shown[$slot_name])) ? null : mazaq_get_direct_ad($slot_name);
     if ($direct) {
         $direct_shown[$slot_name] = true;
     }

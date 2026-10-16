@@ -58,8 +58,12 @@ _Avoid_: fallback feed.
 A fixed position in the theme where an advertisement may appear, each holding a reserved format so a late creative never shifts the page.
 _Avoid_: ad slot, when referring to the position (an ad network's "slot" is a unit id, not a position).
 
+**In-feed placement**:
+The Ad placement that recurs every Nth item of a feed (the Latest feed, an archive, a film page), counted across pages. Only its first plate in a feed may carry the Direct ad, however many pages the reader loads.
+_Avoid_: grid ad, feed slot.
+
 **Direct ad**:
-An image linked to another website that the editor places in an Ad placement. Where both exist, it takes the Ad placement over the Network ad. It shows once per Ad placement per page view; a repeat falls back to the Network ad.
+An image linked to another website that the editor places in an Ad placement. Where both exist, it takes the Ad placement over the Network ad. It shows once per Ad placement per page view; a repeat falls back to the Network ad. In a feed, that is the In-feed placement's first plate.
 _Avoid_: house ad (that is our own promotion), sponsor ad.
 
 **Network ad**:
