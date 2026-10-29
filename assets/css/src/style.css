@@ -904,6 +904,207 @@ html.dark .ad-container {
     color: var(--color-pewter);
 }
 
+/* --- Article stills: a print mounted on a column-wide plate (inc/article-stills.php) --- */
+.article-content .still {
+    /* The screen, not the page: an ink mount in both themes keeps stills apart from the pale ad plates. */
+    --still-mount: var(--color-midnight);
+    --still-line: color-mix(in srgb, var(--color-celluloid) 30%, transparent);
+    --still-line-hover: color-mix(in srgb, var(--color-celluloid) 64%, transparent);
+    width: auto !important;
+    margin: 2.5rem 0;
+}
+
+.dark .article-content .still {
+    --still-line: color-mix(in srgb, var(--color-celluloid) 20%, transparent);
+    --still-line-hover: color-mix(in srgb, var(--color-celluloid) 46%, transparent);
+}
+
+.article-content .still + .still {
+    margin-top: -1.5rem;
+}
+
+.article-content .still__plate {
+    position: relative;
+    display: grid;
+    place-items: center;
+    padding: clamp(0.875rem, 3.2vw, 1.75rem);
+    border-radius: var(--radius-lg);
+    background: var(--still-mount);
+    text-decoration: none;
+}
+
+.article-content .still__plate::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: inset 0 0 0 1px var(--still-line);
+    pointer-events: none;
+    transition: box-shadow 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.article-content .still__plate img {
+    margin: 0;
+    border-radius: var(--radius-sm);
+    box-shadow: 0 12px 28px -14px rgba(0, 0, 0, 0.8);
+}
+
+.article-content .still--full .still__plate {
+    padding: 0;
+    overflow: hidden;
+}
+
+.article-content .still--full .still__plate img {
+    width: 100%;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+a.still__plate {
+    cursor: zoom-in;
+}
+
+a.still__plate:hover::after,
+a.still__plate:focus-visible::after {
+    box-shadow: inset 0 0 0 1px var(--still-line-hover);
+}
+
+.still__zoom {
+    position: absolute;
+    inset-block-end: 0.625rem;
+    inset-inline-end: 0.625rem;
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: var(--radius-md);
+    color: var(--color-text-on-ink);
+    background: color-mix(in srgb, var(--color-nocturnal-slate) 64%, transparent);
+    opacity: 0.85;
+    transition: opacity 220ms cubic-bezier(0.22, 1, 0.36, 1), color 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+a.still__plate:hover .still__zoom,
+a.still__plate:focus-visible .still__zoom {
+    opacity: 1;
+    color: var(--color-gold-tint);
+}
+
+.article-content .still__credit {
+    max-width: none;
+    margin: 0.75rem 0 0;
+    padding-inline: 0.25rem;
+    text-align: start;
+    font-family: var(--font-editorial);
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    color: var(--color-text-on-paper-muted);
+}
+
+.dark .article-content .still__credit {
+    color: var(--color-pewter);
+}
+
+.still__year {
+    margin-inline-start: 0.25em;
+    font-size: 0.8125rem;
+    letter-spacing: 0.02em;
+}
+
+@media (max-width: 760px) {
+    .article-content .still__plate {
+        border-radius: var(--radius-md);
+    }
+}
+
+/* --- Still lightbox (app-single.js) --- */
+.still-viewer {
+    width: 100vw;
+    max-width: none;
+    height: 100dvh;
+    max-height: none;
+    margin: 0;
+    padding: clamp(1rem, 4vw, 3rem);
+    border: 0;
+    background: transparent;
+    color: var(--color-text-on-ink);
+    overflow: hidden;
+}
+
+.still-viewer[open] {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.still-viewer::backdrop {
+    background: color-mix(in srgb, var(--color-deep-shadow) 96%, transparent);
+    backdrop-filter: blur(8px);
+}
+
+.still-viewer__img {
+    max-width: 100%;
+    max-height: calc(100% - 4rem);
+    width: auto;
+    height: auto;
+    min-height: 0;
+    object-fit: contain;
+    border-radius: var(--radius-sm);
+    box-shadow: 0 24px 48px -24px rgba(0, 0, 0, 0.7), 0 0 0 1px color-mix(in srgb, var(--color-celluloid) 22%, transparent);
+}
+
+.still-viewer__credit {
+    margin: 0;
+    font-family: var(--font-editorial);
+    font-size: 1.25rem;
+    line-height: 1.5;
+    text-align: center;
+    color: var(--color-text-on-ink);
+}
+
+.still-viewer__credit:empty {
+    display: none;
+}
+
+.still-viewer__close {
+    position: absolute;
+    inset-block-start: clamp(0.75rem, 2vw, 1.25rem);
+    inset-inline-end: clamp(0.75rem, 2vw, 1.25rem);
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: var(--radius-pill);
+    color: var(--color-text-on-ink);
+    background: color-mix(in srgb, var(--color-text-on-ink) 10%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-celluloid) 28%, transparent);
+    transition: background-color 220ms cubic-bezier(0.22, 1, 0.36, 1), color 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.still-viewer__close:hover {
+    color: var(--color-gold-tint);
+    background: color-mix(in srgb, var(--color-text-on-ink) 16%, transparent);
+}
+
+html:not(.motion-reduced) .still-viewer[open] .still-viewer__img {
+    animation: still-viewer-in 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+html:not(.motion-reduced) .still-viewer[open]::backdrop {
+    animation: still-viewer-fade 240ms ease-out both;
+}
+
+@keyframes still-viewer-in {
+    from { opacity: 0; transform: scale(0.97); filter: blur(4px); }
+    to { opacity: 1; transform: none; filter: none; }
+}
+
+@keyframes still-viewer-fade {
+    from { opacity: 0; }
+}
+
 .single .article-content > p:first-of-type {
     font-family: var(--font-editorial);
     font-size: var(--text-lead);

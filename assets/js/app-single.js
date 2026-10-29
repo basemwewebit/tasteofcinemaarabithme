@@ -270,4 +270,41 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
+
+    // --- Still lightbox: an article still opens large in a native <dialog>.
+    // Without this script (or <dialog> support) the plate's link opens the image file.
+    var viewer = document.querySelector('[data-still-viewer]');
+    if (viewer && typeof viewer.showModal === 'function') {
+        var viewerImg = viewer.querySelector('[data-still-viewer-img]');
+        var viewerCredit = viewer.querySelector('[data-still-viewer-credit]');
+        var viewerOpener = null;
+
+        document.addEventListener('click', function (e) {
+            var plate = e.target.closest('[data-still-open]');
+            if (!plate || e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) {
+                return;
+            }
+            e.preventDefault();
+            var img = plate.querySelector('img');
+            viewerImg.src = plate.getAttribute('href');
+            viewerImg.alt = img ? img.alt : '';
+            viewerCredit.textContent = plate.getAttribute('data-still-credit') || '';
+            viewerOpener = plate;
+            viewer.showModal();
+        });
+
+        viewer.addEventListener('click', function (e) {
+            // The backdrop and the dialog's empty area both land on the dialog itself.
+            if (e.target === viewer || e.target.closest('[data-still-viewer-close]')) {
+                viewer.close();
+            }
+        });
+
+        viewer.addEventListener('close', function () {
+            viewerImg.removeAttribute('src');
+            if (viewerOpener) {
+                viewerOpener.focus();
+            }
+        });
+    }
 });

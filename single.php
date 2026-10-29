@@ -98,6 +98,16 @@
                         ?>
                     </div>
 
+                    <?php if (str_contains($content, 'data-still-open')) : ?>
+                        <dialog class="still-viewer" data-still-viewer aria-label="<?php esc_attr_e('الصورة كاملة', 'mazaq'); ?>">
+                            <img class="still-viewer__img" alt="" data-still-viewer-img>
+                            <p class="still-viewer__credit" data-still-viewer-credit></p>
+                            <button type="button" class="still-viewer__close" data-still-viewer-close aria-label="<?php esc_attr_e('إغلاق', 'mazaq'); ?>">
+                                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                            </button>
+                        </dialog>
+                    <?php endif; ?>
+
                     <?php get_template_part('template-parts/content/series-nav'); ?>
 
                     <?php $tags = get_the_tags(); if (!empty($tags)) : ?>

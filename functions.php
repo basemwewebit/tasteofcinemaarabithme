@@ -21,6 +21,7 @@ $mazaq_includes = [
     'inc/helpers.php',
     'inc/article-headings.php',
     'inc/article-body.php',
+    'inc/article-stills.php',
     'inc/film-graph.php',
     'inc/notifications-settings.php',
     'inc/notifications-store.php',

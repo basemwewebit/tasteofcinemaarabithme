@@ -222,7 +222,7 @@ The core form language is a restrained editorial frame: small utility details ma
 
 Borders are hairline and warm or softly translucent. Gold borders appear in active, hover, or focus states rather than outlining every object at rest. Image crops inherit their container shape and keep a consistent silhouette even while a fallback is showing.
 
-Full-bleed imagery is framed, not clipped: a non-interactive `::after` overlay draws a 1px inset hairline (`box-shadow: inset 0 0 0 1px`) in the celluloid tone, so stills read as mounted plates on both themes. Linear progress and tracks are 3px pills (999px radius) riding over a low-opacity ink or cream hairline track.
+Full-bleed imagery is framed, not clipped: a non-interactive `::after` overlay draws a 1px inset hairline (`box-shadow: inset 0 0 0 1px`) in the celluloid tone, so stills read as mounted plates on both themes. Article-body stills are mounted on an ink screen plate (Midnight in both themes, celluloid hairline) at the column's width, the print at its own size and never upscaled; the plate opens a native-dialog lightbox. A credit line in the editorial face appears only when it adds to the heading above; otherwise the credit travels to the lightbox alone. The ink plate is deliberate: it keeps stills visibly apart from the pale ad plates. Linear progress and tracks are 3px pills (999px radius) riding over a low-opacity ink or cream hairline track.
 
 ## Components
 
